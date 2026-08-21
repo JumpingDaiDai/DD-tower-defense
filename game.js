@@ -1331,6 +1331,15 @@ class Game {
     document.getElementById('upgrade-btn').addEventListener('click', () => this.upgradeTower());
     document.getElementById('sell-btn').addEventListener('click', () => this.sellTower());
     document.getElementById('close-info-btn').addEventListener('click', () => this.deselectTower());
+    document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+
+    // Fullscreen change listener
+    document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
+    document.addEventListener('webkitfullscreenchange', () => this.onFullscreenChange());
+
+    // Responsive canvas scaling
+    window.addEventListener('resize', () => this.resizeCanvas());
+    this.resizeCanvas();
 
     // Best score
     document.getElementById('best-score').textContent = this.bestScore;
@@ -1676,6 +1685,45 @@ class Game {
   toggleSound() {
     const enabled = this.sfx.toggle();
     document.getElementById('sound-btn').textContent = enabled ? '🔊' : '🔇';
+  }
+
+  toggleFullscreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const container = document.documentElement;
+      if (container.requestFullscreen) {
+        container.requestFullscreen().catch(err => console.log(err));
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => console.log(err));
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }
+
+  onFullscreenChange() {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    const fsBtn = document.getElementById('fullscreen-btn');
+    if (fsBtn) {
+      fsBtn.textContent = isFs ? '🗗' : '⛶';
+      fsBtn.title = isFs ? '退出全螢幕' : '全螢幕';
+    }
+    this.resizeCanvas();
+  }
+
+  resizeCanvas() {
+    // 保持 900:550 比例自適應不同視窗尺寸
+    const maxW = Math.min(window.innerWidth - (window.innerWidth > 1100 ? 230 : 20), 900);
+    const maxH = Math.min(window.innerHeight - 80, 550);
+    const scale = Math.min(maxW / CANVAS_W, maxH / CANVAS_H, 1);
+    
+    if (this.canvas) {
+      this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
+      this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
+    }
   }
 
   updateUI() {
