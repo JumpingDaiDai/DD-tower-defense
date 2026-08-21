@@ -1715,10 +1715,17 @@ class Game {
   }
 
   resizeCanvas() {
-    // 保持 900:550 比例自適應不同視窗尺寸
-    const maxW = Math.min(window.innerWidth - (window.innerWidth > 1100 ? 230 : 20), 900);
-    const maxH = Math.min(window.innerHeight - 80, 550);
-    const scale = Math.min(maxW / CANVAS_W, maxH / CANVAS_H, 1);
+    // 取得視窗與上下欄位高度動態扣除
+    const topBar = document.getElementById('top-bar');
+    const bottomBar = document.getElementById('tower-panel');
+    const topH = topBar ? topBar.offsetHeight + 10 : 50;
+    const bottomH = (bottomBar && window.innerWidth < 1024) ? bottomBar.offsetHeight + 10 : 0;
+    const sideW = window.innerWidth >= 1024 ? 210 : 16;
+    
+    const availW = Math.max(window.innerWidth - sideW, 300);
+    const availH = Math.max(window.innerHeight - topH - bottomH - 12, 180);
+    
+    const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H, 1);
     
     if (this.canvas) {
       this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
