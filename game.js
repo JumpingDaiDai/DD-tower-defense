@@ -153,6 +153,172 @@ const WAVE_DATA = [
   { enemies: [{ type: 'dragon', count: 3, interval: 4 }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 10, interval: 0.3 }, { type: 'bee', count: 20, interval: 0.15 }], bonus: 500 },
 ];
 
+// ─── 5.5 Canvas 手繪角色系統 ─────────────────
+const Sprites = {
+  drawFace: function(ctx) {
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-4, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 3, 1.5, 0, Math.PI, false); ctx.stroke();
+    ctx.fillStyle = '#ffb3ba';
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath(); ctx.arc(-6, 2, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(6, 2, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+  },
+
+  drawTower_petal: function(ctx, time) {
+    ctx.save();
+    ctx.rotate(time * 0.5);
+    ctx.fillStyle = '#ffb3ba';
+    for(let i = 0; i < 5; i++) {
+      ctx.rotate((Math.PI * 2) / 5);
+      ctx.beginPath(); ctx.ellipse(0, -12, 6, 10, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 1; ctx.strokeStyle = '#000';
+    this.drawFace(ctx);
+  },
+
+  drawTower_ice: function(ctx, time) {
+    ctx.fillStyle = '#ffdead';
+    ctx.beginPath(); ctx.moveTo(-8, -4); ctx.lineTo(8, -4); ctx.lineTo(0, 12); ctx.fill();
+    ctx.fillStyle = '#bae1ff';
+    ctx.beginPath(); ctx.arc(0, -8, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-3, -11, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.translate(0, -6); this.drawFace(ctx); ctx.restore();
+  },
+
+  drawTower_sunflower: function(ctx, time) {
+    ctx.save();
+    ctx.rotate(Math.sin(time * 2) * 0.1);
+    ctx.fillStyle = '#ffffba';
+    for(let i = 0; i < 8; i++) {
+      ctx.rotate((Math.PI * 2) / 8);
+      ctx.beginPath(); ctx.ellipse(0, -12, 5, 8, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.fillStyle = '#8b4513';
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 2, 3, 0.2, Math.PI - 0.2, false); ctx.stroke();
+    ctx.restore();
+  },
+
+  drawTower_candy: function(ctx, time) {
+    ctx.fillStyle = '#ffb3ba';
+    ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(-16, -8); ctx.lineTo(-16, 8); ctx.lineTo(-12, 4); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(12, -4); ctx.lineTo(16, -8); ctx.lineTo(16, 8); ctx.lineTo(12, 4); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.save();
+    ctx.rotate(time);
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI, false); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 10, Math.PI, Math.PI * 2, false); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = '#ffd1dc';
+    ctx.fillRect(-3, -18, 6, 8);
+    ctx.save(); ctx.translate(0, 2); this.drawFace(ctx); ctx.restore();
+  },
+
+  drawTower_rainbow: function(ctx, time) {
+    const colors = ['#ffb3ba', '#ffffba', '#baffc9', '#bae1ff'];
+    for(let i=0; i<4; i++) {
+      ctx.strokeStyle = colors[i];
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 4, 12 - i*3, Math.PI, 0);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(-10, 4, 5, 0, Math.PI*2); ctx.arc(-14, 6, 4, 0, Math.PI*2); ctx.arc(-6, 6, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(10, 4, 5, 0, Math.PI*2); ctx.arc(14, 6, 4, 0, Math.PI*2); ctx.arc(6, 6, 4, 0, Math.PI*2); ctx.fill();
+  },
+
+  drawEnemy_caterpillar: function(ctx, time) {
+    const offset = Math.sin(time * 5) * 2;
+    ctx.fillStyle = '#baffc9';
+    ctx.beginPath(); ctx.arc(8 - offset, 0, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0 + offset*0.5, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-8 + offset, 0, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-10, -5); ctx.lineTo(-14, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-6, -5); ctx.lineTo(-4, -10); ctx.stroke();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-10, -2, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-6, -2, 1, 0, Math.PI * 2); ctx.fill();
+  },
+
+  drawEnemy_bee: function(ctx, time) {
+    const flap = Math.sin(time * 20) * 4;
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.beginPath(); ctx.ellipse(-2, -6 - flap, 4, 6, Math.PI/4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(4, -6 - flap, 4, 6, -Math.PI/4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffffba';
+    ctx.beginPath(); ctx.ellipse(0, 0, 10, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.fillRect(-2, -7.5, 4, 15);
+    ctx.fillRect(4, -6, 3, 12);
+    ctx.beginPath(); ctx.arc(-6, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+  },
+
+  drawEnemy_snail: function(ctx, time) {
+    const slide = Math.sin(time * 2) * 1;
+    ctx.fillStyle = '#baffc9';
+    ctx.beginPath(); ctx.ellipse(slide, 6, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#baffc9'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-8 + slide, 4); ctx.lineTo(-12 + slide, -2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-4 + slide, 4); ctx.lineTo(-6 + slide, -4); ctx.stroke();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-12 + slide, -2, 1, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-6 + slide, -4, 1, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffb347';
+    ctx.beginPath(); ctx.arc(2, 0, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#a65e2e'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(2, 0, 4, 0, Math.PI*1.5); ctx.stroke();
+  },
+
+  drawEnemy_butterfly: function(ctx, time) {
+    const flap = Math.sin(time * 10);
+    const wingY = flap * 6;
+    ctx.fillStyle = '#bae1ff';
+    ctx.beginPath(); ctx.ellipse(-6, -2 + wingY/2, 8, 10, -Math.PI/6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, -2 + wingY/2, 8, 10, Math.PI/6, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffb3ba';
+    ctx.beginPath(); ctx.ellipse(0, 0, 3, 10, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(-1, -8); ctx.quadraticCurveTo(-4, -12, -6, -10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(1, -8); ctx.quadraticCurveTo(4, -12, 6, -10); ctx.stroke();
+  },
+
+  drawEnemy_dragon: function(ctx, time) {
+    const floatY = Math.sin(time * 3) * 2;
+    ctx.save();
+    ctx.translate(0, floatY);
+    const flap = Math.sin(time * 15) * 3;
+    ctx.fillStyle = '#ff9aa2';
+    ctx.beginPath(); ctx.moveTo(-6, -4); ctx.lineTo(-16, -10 - flap); ctx.lineTo(-12, 0); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(6, -4); ctx.lineTo(16, -10 - flap); ctx.lineTo(12, 0); ctx.fill();
+    ctx.fillStyle = '#ff6b6b';
+    ctx.beginPath(); ctx.ellipse(0, 2, 10, 12, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffba';
+    ctx.beginPath(); ctx.ellipse(0, 5, 6, 8, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-4, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(-2, 1); ctx.lineTo(-1, 3); ctx.lineTo(0, 1); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(2, 1); ctx.lineTo(1, 3); ctx.lineTo(0, 1); ctx.fill();
+    ctx.restore();
+  }
+};
+
 // ─── 6. 工具函數 ─────────────────────────────
 function dist(x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -391,14 +557,14 @@ class GameMap {
   }
 
   generateDecorations() {
-    const flowers = ['🌷', '🌼', '🌺', '🍀', '🌿', '🪻', '🌱'];
+    const decoTypes = ['flower1', 'flower2', 'grass', 'mushroom'];
     for (let r = 0; r < CONFIG.ROWS; r++) {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.grid[r][c] === 0 && Math.random() < 0.12) {
           this.decorations.push({
             x: c * CONFIG.CELL_SIZE + 10 + Math.random() * 30,
             y: r * CONFIG.CELL_SIZE + 10 + Math.random() * 30,
-            emoji: flowers[Math.floor(Math.random() * flowers.length)],
+            decoType: decoTypes[Math.floor(Math.random() * decoTypes.length)],
             size: 10 + Math.random() * 8,
           });
         }
@@ -461,9 +627,11 @@ class Enemy {
     this.hitFlash = 0;
     this.scale = 0;
     this.targetScale = 1;
+    this.animTime = Math.random() * 10;
   }
 
   update(dt) {
+    this.animTime += dt;
     // Scale animation (spawn pop)
     this.scale = lerp(this.scale, this.targetScale, dt * 8);
 
@@ -518,31 +686,31 @@ class Enemy {
       ctx.globalAlpha = 0.4;
       ctx.fillStyle = '#88ddff';
       ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Draw Canvas Sprite
+    const drawFunc = Sprites['drawEnemy_' + this.typeKey];
+    if (drawFunc) {
+      drawFunc.call(Sprites, ctx, this.animTime);
+    }
+
+    // Hit flash overlay
+    if (this.hitFlash > 0) {
+      ctx.globalAlpha = this.hitFlash * 0.5;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
       ctx.arc(0, 0, 18, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
     }
 
-    // Hit flash
-    if (this.hitFlash > 0) {
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(0, 0, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-
-    // Emoji
-    ctx.font = '26px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.emoji, 0, 1);
-
     // Health bar
     const barW = 30;
     const barH = 4;
-    const barY = -20;
+    const barY = -24;
     const hpRatio = this.hp / this.maxHp;
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.fillRect(-barW / 2, barY, barW, barH);
@@ -727,6 +895,7 @@ class Tower {
     // Visual
     this.scale = 0;
     this.pulseTimer = 0;
+    this.animTime = Math.random() * 10;
   }
 
   getStats() {
@@ -753,6 +922,7 @@ class Tower {
   }
 
   update(dt, enemies, game) {
+    this.animTime += dt;
     // Spawn animation
     this.scale = lerp(this.scale, 1, dt * 8);
     if (this.pulseTimer > 0) this.pulseTimer -= dt;
@@ -841,17 +1011,32 @@ class Tower {
     ctx.arc(0, 0, 20, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Emoji
-    ctx.font = '28px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(this.data.emoji, 0, 1);
+    // Draw Canvas Sprite
+    const drawFunc = Sprites['drawTower_' + this.typeKey];
+    if (drawFunc) {
+      ctx.save();
+      drawFunc.call(Sprites, ctx, this.animTime);
+      ctx.restore();
+    }
 
-    // Level stars
+    // Level stars (hand-drawn)
     if (this.level > 1) {
-      ctx.font = '10px serif';
+      ctx.fillStyle = '#ffdf00';
+      ctx.strokeStyle = '#d4af37';
+      ctx.lineWidth = 1;
       for (let i = 0; i < this.level - 1; i++) {
-        ctx.fillText('⭐', -6 + i * 12, -22);
+        const starX = -6 + i * 12;
+        const starY = -24;
+        ctx.beginPath();
+        for (let j = 0; j < 5; j++) {
+          const a = (Math.PI * 2 / 5) * j - Math.PI / 2;
+          ctx.lineTo(starX + Math.cos(a) * 4, starY + Math.sin(a) * 4);
+          const a2 = (Math.PI * 2 / 5) * j + Math.PI / 5 - Math.PI / 2;
+          ctx.lineTo(starX + Math.cos(a2) * 2, starY + Math.sin(a2) * 2);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
       }
     }
 
@@ -1055,22 +1240,64 @@ class Game {
       ctx.stroke();
     }
 
-    // Decorations (flowers, etc.)
+    // Decorations (Canvas hand-drawn)
     for (const d of this.map.decorations) {
-      ctx.font = `${d.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(d.emoji, d.x, d.y);
+      ctx.save();
+      ctx.translate(d.x, d.y);
+      ctx.scale(d.size / 15, d.size / 15);
+      if (d.decoType === 'flower1') {
+        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(0,-4,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(-4,2,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(4,2,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffba'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+      } else if (d.decoType === 'flower2') {
+        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(-3,-3,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(3,-3,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(-3,3,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(3,3,4,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#ffffba'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+      } else if (d.decoType === 'grass') {
+        ctx.fillStyle = '#baffc9';
+        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(-4,0,-6,-6); ctx.quadraticCurveTo(-2,2,0,4); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(0,-2,0,-8); ctx.quadraticCurveTo(2,0,0,4); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(4,0,6,-6); ctx.quadraticCurveTo(2,2,0,4); ctx.fill();
+      } else if (d.decoType === 'mushroom') {
+        ctx.fillStyle = '#fff'; ctx.fillRect(-2,0,4,6);
+        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(0,0,6,Math.PI,0); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-3,-2,1.5,0,Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(2,-3,1,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
     }
 
-    // Entry & exit markers
+    // Entry (Cute Doorway)
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
-    ctx.font = '30px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🚪', Math.max(15, entry.x), entry.y);
-    ctx.fillText('🏠', Math.min(CANVAS_W - 15, exit.x), exit.y);
+    ctx.save();
+    ctx.translate(Math.max(20, entry.x), entry.y);
+    ctx.fillStyle = '#8b5a2b';
+    ctx.fillRect(-12, -18, 24, 36);
+    ctx.beginPath(); ctx.arc(0, -18, 12, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#6b4226';
+    ctx.fillRect(-10, -16, 20, 34);
+    ctx.beginPath(); ctx.arc(0, -16, 10, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath(); ctx.arc(6, 0, 2, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // Exit (Cute House)
+    ctx.save();
+    ctx.translate(Math.min(CANVAS_W - 20, exit.x), exit.y);
+    ctx.fillStyle = '#f5deb3';
+    ctx.fillRect(-14, -10, 28, 20);
+    ctx.fillStyle = '#fa8072';
+    ctx.beginPath(); ctx.moveTo(-18, -10); ctx.lineTo(0, -22); ctx.lineTo(18, -10); ctx.fill();
+    ctx.fillStyle = '#8b4513';
+    ctx.fillRect(-4, -2, 8, 12);
+    ctx.fillStyle = '#87ceeb';
+    ctx.fillRect(-10, -6, 6, 6);
+    ctx.fillRect(4, -6, 6, 6);
+    ctx.restore();
   }
 
   // ─── UI Setup ───
