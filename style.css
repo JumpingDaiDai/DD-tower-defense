@@ -1,0 +1,531 @@
+/* ═══════════════════════════════════════
+   🏰 DD Tower Defense - 可愛塔防樣式
+   馬卡龍配色 + 圓潤字體
+   ═══════════════════════════════════════ */
+
+/* --- Reset & Base --- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Zen Maru Gothic', 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #fce4ec 0%, #e8f5e9 50%, #e3f2fd 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* --- Game Container --- */
+#game-container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0;
+  max-width: 1150px;
+}
+
+/* --- Top Bar --- */
+#top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(255, 240, 243, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(255, 182, 193, 0.4);
+  border-radius: 16px 16px 0 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: #5c4033;
+}
+
+#top-bar .stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+#top-bar .stat.best-score {
+  margin-left: auto;
+  background: rgba(255, 215, 0, 0.2);
+}
+
+#top-bar .controls {
+  display: flex;
+  gap: 6px;
+}
+
+#top-bar .controls button {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+#top-bar .controls button:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+/* --- Canvas --- */
+#game-canvas {
+  display: block;
+  border-radius: 0 0 0 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  cursor: crosshair;
+  background: #d3f9d8;
+}
+
+/* --- Tower Panel --- */
+#tower-panel {
+  width: 200px;
+  background: rgba(255, 249, 219, 0.95);
+  backdrop-filter: blur(8px);
+  border-left: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 0 16px 16px 0;
+  padding: 48px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+#tower-panel h3 {
+  font-size: 16px;
+  color: #5c4033;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* Tower list items */
+.tower-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+}
+
+.tower-item:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tower-item.selected {
+  border-color: #ff69b4;
+  background: rgba(255, 182, 193, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.2);
+}
+
+.tower-item.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tower-item .tower-emoji {
+  font-size: 24px;
+  width: 32px;
+  text-align: center;
+}
+
+.tower-item .tower-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.tower-item .tower-name {
+  font-weight: 700;
+  color: #5c4033;
+  font-size: 13px;
+}
+
+.tower-item .tower-cost {
+  font-size: 11px;
+  color: #888;
+}
+
+.tower-item .tower-desc {
+  font-size: 10px;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Start wave button */
+.btn-start {
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a8e6cf, #88d8b0);
+  color: #2d5a3d;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: auto;
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(136, 216, 176, 0.4);
+}
+
+.btn-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Wave preview */
+#wave-preview {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  min-height: 40px;
+  padding: 4px;
+}
+
+/* --- Tower Info Panel --- */
+#tower-info {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 20;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 16px;
+  min-width: 220px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: 2px solid rgba(255, 182, 193, 0.3);
+}
+
+#tower-info.hidden {
+  display: none;
+}
+
+#tower-info h4 {
+  font-size: 16px;
+  color: #5c4033;
+  margin-bottom: 4px;
+}
+
+#tower-info-level {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+#tower-info-stats {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+#tower-info-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-upgrade {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b5e8ff, #88c8ff);
+  color: #2d4a6d;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-upgrade:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(136, 200, 255, 0.4);
+}
+
+.btn-upgrade:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-sell {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffd6d6, #ffb3b3);
+  color: #6d2d2d;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-sell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 179, 179, 0.4);
+}
+
+.btn-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  color: #888;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.btn-close:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* --- Screens (Overlay) --- */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 240, 243, 0.92);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+.screen-content {
+  text-align: center;
+  padding: 40px;
+}
+
+.screen-content .title-emoji {
+  font-size: 72px;
+  margin-bottom: 16px;
+  animation: bounce-in 0.6s ease-out;
+}
+
+.screen-content h1 {
+  font-size: 36px;
+  color: #5c4033;
+  margin-bottom: 12px;
+  font-weight: 900;
+}
+
+.screen-content .subtitle {
+  font-size: 16px;
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.screen-content .menu-info {
+  text-align: left;
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 14px;
+  color: #666;
+  line-height: 2;
+}
+
+.screen-content p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.btn-primary {
+  padding: 14px 36px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffb6c1, #ff69b4);
+  color: white;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+  margin-top: 16px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 105, 180, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* --- Toast Notifications --- */
+#toast-container {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5c4033;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  animation: toast-in 0.3s ease-out, toast-out 0.3s ease-in forwards;
+  animation-delay: 0s, 2s;
+  white-space: nowrap;
+}
+
+/* --- Animations --- */
+@keyframes bounce-in {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* --- Responsive --- */
+@media (max-width: 1100px) {
+  #game-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #game-canvas {
+    border-radius: 0;
+    max-width: 100vw;
+  }
+
+  #tower-panel {
+    width: 100%;
+    max-width: 900px;
+    border-radius: 0 0 16px 16px;
+    border-left: none;
+    border-top: 2px solid rgba(255, 215, 0, 0.3);
+    padding: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #tower-panel h3 {
+    width: 100%;
+  }
+
+  .tower-item {
+    flex: 0 0 auto;
+    min-width: 140px;
+  }
+
+  .btn-start {
+    margin: 0;
+    min-width: 140px;
+  }
+
+  #wave-preview {
+    width: 100%;
+  }
+
+  #top-bar {
+    border-radius: 16px 16px 0 0;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  #tower-info {
+    bottom: auto;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 600px) {
+  .screen-content h1 {
+    font-size: 24px;
+  }
+
+  .screen-content .title-emoji {
+    font-size: 48px;
+  }
+
+  #top-bar .stat {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .tower-item {
+    min-width: 120px;
+    padding: 6px 8px;
+  }
+}

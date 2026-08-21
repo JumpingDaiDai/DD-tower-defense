@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🏰 可愛塔防 - DD Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- 頂部狀態列 -->
+    <div id="top-bar">
+      <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
+      <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
+      <div class="stat" title="波次">🌊 <span id="wave-info">準備中</span></div>
+      <div class="stat" title="分數">⭐ <span id="score">0</span></div>
+      <div class="stat best-score" title="最高分">🏆 <span id="best-score">0</span></div>
+      <div class="controls">
+        <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
+        <button id="sound-btn" title="音效">🔊</button>
+      </div>
+    </div>
+
+    <!-- 遊戲畫布 -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- 右側塔選擇面板 -->
+    <div id="tower-panel">
+      <h3>🏗️ 防禦塔</h3>
+      <div id="tower-list"></div>
+      <button id="start-wave-btn" class="btn-start">▶️ 開始波次</button>
+      <div id="wave-preview"></div>
+    </div>
+
+    <!-- 塔資訊面板 -->
+    <div id="tower-info" class="hidden">
+      <button id="close-info-btn" class="btn-close">✕</button>
+      <h4 id="tower-info-name"></h4>
+      <p id="tower-info-level"></p>
+      <div id="tower-info-stats"></div>
+      <div id="tower-info-actions">
+        <button id="upgrade-btn" class="btn-upgrade">⬆️ 升級</button>
+        <button id="sell-btn" class="btn-sell">💰 出售</button>
+      </div>
+    </div>
+
+    <!-- 通知 Toast -->
+    <div id="toast-container"></div>
+
+    <!-- 開始畫面 -->
+    <div id="menu-screen" class="screen">
+      <div class="screen-content">
+        <div class="title-emoji">🏰</div>
+        <h1>可愛塔防</h1>
+        <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
+        <div class="menu-info">
+          <p>🌸 放置防禦塔阻擋敵人</p>
+          <p>💰 消滅敵人獲得金幣</p>
+          <p>⬆️ 升級塔提升戰力</p>
+        </div>
+        <button id="start-btn" class="btn-primary">🎮 開始遊戲</button>
+      </div>
+    </div>
+
+    <!-- 遊戲結束畫面 -->
+    <div id="gameover-screen" class="screen hidden">
+      <div class="screen-content">
+        <div class="title-emoji">💔</div>
+        <h1>花園淪陷了！</h1>
+        <p>你撐到了第 <span id="final-wave">0</span> 波</p>
+        <p>最終得分：<span id="final-score">0</span></p>
+        <button id="retry-btn" class="btn-primary">🔄 再試一次</button>
+      </div>
+    </div>
+
+    <!-- 勝利畫面 -->
+    <div id="victory-screen" class="screen hidden">
+      <div class="screen-content">
+        <div class="title-emoji">🎉</div>
+        <h1>花園保衛成功！</h1>
+        <p>恭喜通關所有 15 波！</p>
+        <p>最終得分：<span id="victory-score">0</span></p>
+        <button id="replay-btn" class="btn-primary">🔄 再玩一次</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
