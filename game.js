@@ -29,6 +29,10 @@ window.addEventListener('unhandledrejection', (e) => {
   dbgLog(`❌ Promise Error: ${e.reason}`);
 });
 
+// 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
+// （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
+const DEBUG_TOKEN = '1a1e476d6158794f';
+
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身
 (function setupRemoteLog() {
@@ -40,7 +44,7 @@ window.addEventListener('unhandledrejection', (e) => {
     }).join(' ');
     fetch('/__log', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Debug-Token': DEBUG_TOKEN },
       body: JSON.stringify({ level, msg })
     }).catch(() => {});
   }
@@ -58,9 +62,12 @@ function dbgUploadScreenshot() {
   if (!canvas) return;
   canvas.toBlob(blob => {
     if (!blob) return;
-    fetch('/__upload', { method: 'POST', body: blob })
-      .then(() => dbgLog('📷 截圖已上傳'))
-      .catch(() => dbgLog('📷 截圖上傳失敗（devserver 未啟動？）'));
+    fetch('/__upload', { method: 'POST', headers: { 'X-Debug-Token': DEBUG_TOKEN }, body: blob })
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        dbgLog('📷 截圖已上傳');
+      })
+      .catch(() => dbgLog('📷 截圖上傳失敗（devserver 未啟動或 token 不符？）'));
   }, 'image/png');
 }
 
@@ -82,19 +89,74 @@ const CONFIG = {
 const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 500
 const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 700
 
-// ─── 2. 路徑定義 (直向手機地圖：由上往下蜿蜒穿梭) ──
-const PATH_WAYPOINTS = [
-  [1, 0],   // 上方入口
-  [1, 2],
-  [8, 2],
-  [8, 5],
-  [1, 5],
-  [1, 8],
-  [8, 8],
-  [8, 11],
-  [2, 11],
-  [2, 13],  // 下方城堡終點
-];
+// ─── 2. 多地圖配置數據 ──────────────────────
+const MAP_CONFIGS = {
+  serpentine: {
+    id: 'serpentine',
+    name: '🌸 花園小徑 (蛇形)',
+    desc: '經典蜿蜒路線，適合均衡佈局',
+    icon: '〰️',
+    cols: 10,
+    rows: 14,
+    waypoints: [
+      [1, 0],
+      [1, 2],
+      [8, 2],
+      [8, 5],
+      [1, 5],
+      [1, 8],
+      [8, 8],
+      [8, 11],
+      [2, 11],
+      [2, 13],
+    ],
+  },
+  ring: {
+    id: 'ring',
+    name: '🎯 競技之環 (外圍環繞)',
+    desc: '外圍一整圈路線，中央為建造平台',
+    icon: '⭕',
+    cols: 10,
+    rows: 14,
+    // 怪物從左上進場，順時針沿著邊界繞外圍一大圈，最後到左側門
+    waypoints: [
+      [1, 0],
+      [1, 1],
+      [8, 1],
+      [8, 12],
+      [1, 12],
+      [1, 3],
+      [2, 3], // 進入終點
+    ],
+    // 特別限制：只有中間 3~6 欄、3~10 列可以建造，更貼合中央競技場
+    customBuildable: (col, row) => {
+      // 僅中央核心區域可建造
+      return col >= 2 && col <= 7 && row >= 3 && row <= 10;
+    },
+  },
+  spiral: {
+    id: 'spiral',
+    name: '🌀 漩渦迷宮 (向心螺旋)',
+    desc: '由外往內旋轉，考驗射程重疊',
+    icon: '🌀',
+    cols: 10,
+    rows: 14,
+    waypoints: [
+      [1, 0],
+      [1, 12],
+      [8, 12],
+      [8, 2],
+      [3, 2],
+      [3, 9],
+      [6, 9],
+      [6, 5],
+      [5, 5],
+    ],
+  }
+};
+
+let CURRENT_MAP_ID = 'serpentine';
+let PATH_WAYPOINTS = MAP_CONFIGS[CURRENT_MAP_ID].waypoints;
 
 // ─── 3. 防禦塔數據 ──────────────────────────
 const TOWER_DATA = {
@@ -561,7 +623,9 @@ class SoundManager {
 
 // ─── 8. 地圖系統 ─────────────────────────────
 class GameMap {
-  constructor() {
+  constructor(mapId = CURRENT_MAP_ID) {
+    this.mapId = mapId;
+    this.config = MAP_CONFIGS[mapId] || MAP_CONFIGS['serpentine'];
     this.grid = [];
     this.pathCells = new Set();
     this.pathPixels = [];
@@ -574,6 +638,7 @@ class GameMap {
   }
 
   buildGrid() {
+    const waypoints = this.config.waypoints;
     for (let r = 0; r < CONFIG.ROWS; r++) {
       this.grid[r] = [];
       for (let c = 0; c < CONFIG.COLS; c++) {
@@ -581,9 +646,9 @@ class GameMap {
       }
     }
     // Mark path cells safely
-    for (let i = 0; i < PATH_WAYPOINTS.length - 1; i++) {
-      const [c1, r1] = PATH_WAYPOINTS[i];
-      const [c2, r2] = PATH_WAYPOINTS[i + 1];
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const [c1, r1] = waypoints[i];
+      const [c2, r2] = waypoints[i + 1];
       if (r1 === r2) {
         // Horizontal segment
         if (r1 >= 0 && r1 < CONFIG.ROWS) {
@@ -609,7 +674,8 @@ class GameMap {
   }
 
   computePath() {
-    this.pathPixels = PATH_WAYPOINTS.map(([c, r]) => gridToPixel(c, r));
+    const waypoints = this.config.waypoints;
+    this.pathPixels = waypoints.map(([c, r]) => gridToPixel(c, r));
     this.segmentLengths = [];
     this.totalPathLength = 0;
     for (let i = 0; i < this.pathPixels.length - 1; i++) {
@@ -659,7 +725,11 @@ class GameMap {
 
   isBuildable(col, row) {
     if (col < 0 || col >= CONFIG.COLS || row < 0 || row >= CONFIG.ROWS) return false;
-    return this.grid[row][col] === 0;
+    if (this.grid[row][col] !== 0) return false;
+    if (typeof this.config.customBuildable === 'function') {
+      return this.config.customBuildable(col, row);
+    }
+    return true;
   }
 }
 
@@ -1252,14 +1322,30 @@ class Game {
     ctx.fillStyle = '#d3f9d8';
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-    // Subtle grass texture
+    // Subtle grass texture & Buildable platform highlights
     for (let r = 0; r < CONFIG.ROWS; r++) {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.map.grid[r][c] === 0) {
-          // Subtle checker pattern
-          const shade = (r + c) % 2 === 0 ? '#d3f9d8' : '#c5f5ca';
-          ctx.fillStyle = shade;
-          ctx.fillRect(c * cs, r * cs, cs, cs);
+          const isBuildable = this.map.isBuildable(c, r);
+          if (this.map.mapId === 'ring') {
+            if (isBuildable) {
+              // 中央競技場建造平台（淡白/奶油色格子帶微邊框）
+              ctx.fillStyle = (r + c) % 2 === 0 ? '#ffffff' : '#fff9db';
+              ctx.fillRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
+              ctx.strokeStyle = 'rgba(255, 182, 193, 0.4)';
+              ctx.lineWidth = 1.5;
+              ctx.strokeRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
+            } else {
+              // 外圍不可建造的草地
+              ctx.fillStyle = (r + c) % 2 === 0 ? '#bbf2c2' : '#abebb4';
+              ctx.fillRect(c * cs, r * cs, cs, cs);
+            }
+          } else {
+            // 一般地圖棋盤草地
+            const shade = (r + c) % 2 === 0 ? '#d3f9d8' : '#c5f5ca';
+            ctx.fillStyle = shade;
+            ctx.fillRect(c * cs, r * cs, cs, cs);
+          }
         }
       }
     }
@@ -1386,6 +1472,27 @@ class Game {
       list.appendChild(item);
     }
 
+    // Map selector setup
+    const mapSelectContainer = document.getElementById('map-selection-list');
+    if (mapSelectContainer) {
+      mapSelectContainer.innerHTML = '';
+      for (const [key, mapCfg] of Object.entries(MAP_CONFIGS)) {
+        const card = document.createElement('div');
+        card.className = `map-select-card ${key === this.map.mapId ? 'active' : ''}`;
+        card.dataset.mapId = key;
+        card.innerHTML = `
+          <div class="map-card-icon">${mapCfg.icon}</div>
+          <div class="map-card-info">
+            <div class="map-card-title">${mapCfg.name}</div>
+            <div class="map-card-desc">${mapCfg.desc}</div>
+          </div>
+          <div class="map-card-radio"></div>
+        `;
+        card.addEventListener('click', () => this.selectMap(key));
+        mapSelectContainer.appendChild(card);
+      }
+    }
+
     // Buttons
     const bindTap = (btnId, handler) => {
       const btn = document.getElementById(btnId);
@@ -1421,6 +1528,25 @@ class Game {
 
     // Best score
     document.getElementById('best-score').textContent = this.bestScore;
+  }
+
+  selectMap(mapId) {
+    if (!MAP_CONFIGS[mapId]) return;
+    CURRENT_MAP_ID = mapId;
+    this.map = new GameMap(mapId);
+    this.renderMapToBuffer();
+    
+    // Update map selection card UI
+    document.querySelectorAll('.map-select-card').forEach(card => {
+      if (card.dataset.mapId === mapId) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    });
+
+    this.sfx.play('tap');
+    this.showToast(`🗺️ 已切換地圖：${MAP_CONFIGS[mapId].name}`);
   }
 
   setupEvents() {
@@ -1723,6 +1849,8 @@ class Game {
   }
 
   restartGame() {
+    this.map = new GameMap(CURRENT_MAP_ID);
+    this.renderMapToBuffer();
     this.gold = CONFIG.STARTING_GOLD;
     this.lives = CONFIG.STARTING_LIVES;
     this.score = 0;

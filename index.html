@@ -76,15 +76,17 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v2.1.3 (Toggle Log Fix)</div>
+        <div class="menu-version-badge">v2.2.0 (Multi-Map Selection)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
-        <div class="menu-info">
-          <p>🌸 放置防禦塔阻擋敵人</p>
-          <p>💰 消滅敵人獲得金幣</p>
-          <p>⬆️ 升級塔提升戰力</p>
+
+        <!-- 地圖選擇器 -->
+        <div class="map-selection-container">
+          <div class="map-selection-header">🗺️ 選擇戰場地圖</div>
+          <div id="map-selection-list"></div>
         </div>
+
         <button id="start-btn" class="btn-primary">🎮 開始遊戲</button>
       </div>
     </div>
