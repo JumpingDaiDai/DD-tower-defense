@@ -12,12 +12,23 @@
   <meta name="theme-color" content="#deb887">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?t=202608230420">
+  <link rel="stylesheet" href="style.css?t=202608230422">
+  <style>
+    /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
+    #top-bar, #tower-panel {
+      background: rgba(45, 30, 15, 0.78) !important;
+      border: 1.5px solid rgba(255, 215, 0, 0.4) !important;
+    }
+    .btn-start {
+      background: linear-gradient(135deg, #ff9800, #f57c00) !important;
+      box-shadow: 0 2px 8px rgba(245, 124, 0, 0.4) !important;
+    }
+  </style>
 </head>
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v3.6.0 (Pure Amber Desert Theme)</div>
+    <div id="app-version">v3.6.1 (Force Cache Bust Amber Theme)</div>
 
     <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪) -->
     <div id="top-bar">
@@ -104,7 +115,7 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v3.6.0 (Pure Amber Desert Theme)</div>
+        <div class="menu-version-badge">v3.6.1 (Force Cache Bust Amber Theme)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
