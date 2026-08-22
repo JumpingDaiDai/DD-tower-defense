@@ -1743,6 +1743,9 @@ class Game {
     this.canvas.addEventListener('touchstart', (e) => {
       this.sfx.init();
       this.sfx.resume();
+      if (e.cancelable) {
+        e.preventDefault();
+      }
       if (e.touches && e.touches.length > 0) {
         const touch = e.touches[0];
         const pos = getCanvasPos(touch.clientX, touch.clientY);
@@ -1752,7 +1755,7 @@ class Game {
         }
         this.handleCanvasPoint(pos.x, pos.y);
       }
-    }, { passive: true });
+    }, { passive: false });
 
     this.canvas.addEventListener('touchmove', (e) => {
       if (e.target === this.canvas) {
