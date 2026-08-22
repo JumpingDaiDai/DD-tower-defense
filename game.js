@@ -1322,16 +1322,29 @@ class Game {
     }
 
     // Buttons
-    document.getElementById('start-wave-btn').addEventListener('click', () => this.startNextWave());
-    document.getElementById('start-btn').addEventListener('click', () => this.startGame());
-    document.getElementById('retry-btn').addEventListener('click', () => this.restartGame());
-    document.getElementById('replay-btn').addEventListener('click', () => this.restartGame());
-    document.getElementById('speed-btn').addEventListener('click', () => this.toggleSpeed());
-    document.getElementById('sound-btn').addEventListener('click', () => this.toggleSound());
-    document.getElementById('upgrade-btn').addEventListener('click', () => this.upgradeTower());
-    document.getElementById('sell-btn').addEventListener('click', () => this.sellTower());
-    document.getElementById('close-info-btn').addEventListener('click', () => this.deselectTower());
-    document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
+    const bindTap = (btnId, handler) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handler();
+      });
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handler();
+      });
+    };
+
+    bindTap('start-btn', () => this.startGame());
+    bindTap('start-wave-btn', () => this.startNextWave());
+    bindTap('retry-btn', () => this.restartGame());
+    bindTap('replay-btn', () => this.restartGame());
+    bindTap('speed-btn', () => this.toggleSpeed());
+    bindTap('sound-btn', () => this.toggleSound());
+    bindTap('upgrade-btn', () => this.upgradeTower());
+    bindTap('sell-btn', () => this.sellTower());
+    bindTap('close-info-btn', () => this.deselectTower());
+    bindTap('fullscreen-btn', () => this.toggleFullscreen());
 
     // Fullscreen change listener
     document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
@@ -1617,14 +1630,24 @@ class Game {
 
   // ─── Game state ───
   startGame() {
-    this.sfx.init();
-    this.sfx.resume();
-    document.getElementById('menu-screen').classList.add('hidden');
+    try {
+      this.sfx.init();
+      this.sfx.resume();
+    } catch (e) {
+      console.warn('Audio unlock error:', e);
+    }
+    const menu = document.getElementById('menu-screen');
+    if (menu) {
+      menu.classList.add('hidden');
+      menu.style.display = 'none';
+    }
     this.state = 'planning';
-    document.getElementById('start-wave-btn').disabled = false;
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = false;
     this.showToast('🏗️ 放置防禦塔，然後開始波次！');
     this.updateWavePreview();
     this.updateUI();
+    this.resizeCanvas();
   }
 
   restartGame() {
