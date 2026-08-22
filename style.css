@@ -79,7 +79,7 @@ html, body {
   justify-content: space-between;
   gap: 6px;
   padding: 4px 6px;
-  background: rgba(20, 35, 20, 0.55);
+  background: rgba(45, 30, 15, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1.5px solid rgba(255, 255, 255, 0.35);
@@ -234,7 +234,7 @@ html, body {
   z-index: 10;
   width: 100%;
   max-width: 600px;
-  background: rgba(20, 35, 20, 0.55);
+  background: rgba(45, 30, 15, 0.7);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1.5px solid rgba(255, 255, 255, 0.35);

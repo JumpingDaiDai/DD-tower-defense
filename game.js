@@ -1437,13 +1437,13 @@ class Game {
         ctx.fillStyle = '#fff9c4';
         ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       } else if (d.decoType === 'grass') {
-        // 立體小草叢
-        ctx.fillStyle = '#689f38';
-        ctx.beginPath(); ctx.moveTo(-6, 4); ctx.quadraticCurveTo(-8, -4, -12, -8); ctx.quadraticCurveTo(-6, -2, -4, 4); ctx.fill();
-        ctx.fillStyle = '#7cb342';
-        ctx.beginPath(); ctx.moveTo(-2, 4); ctx.quadraticCurveTo(0, -6, 0, -12); ctx.quadraticCurveTo(2, -4, 2, 4); ctx.fill();
-        ctx.fillStyle = '#8bc34a';
-        ctx.beginPath(); ctx.moveTo(4, 4); ctx.quadraticCurveTo(8, -2, 12, -8); ctx.quadraticCurveTo(6, -4, 6, 4); ctx.fill();
+        // 金黃荒漠晶石 / 仙人掌灌木
+        ctx.fillStyle = '#b8860b';
+        ctx.beginPath(); ctx.moveTo(-5, 4); ctx.lineTo(-8, -8); ctx.lineTo(-2, 4); ctx.fill();
+        ctx.fillStyle = '#cd853f';
+        ctx.beginPath(); ctx.moveTo(-2, 4); ctx.lineTo(0, -12); ctx.lineTo(2, 4); ctx.fill();
+        ctx.fillStyle = '#d2691e';
+        ctx.beginPath(); ctx.moveTo(2, 4); ctx.lineTo(8, -8); ctx.lineTo(5, 4); ctx.fill();
       } else if (d.decoType === 'mushroom') {
         // 紅色白點小蘑菇
         ctx.fillStyle = 'rgba(0,0,0,0.15)';
