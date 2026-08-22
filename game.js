@@ -2336,7 +2336,7 @@ class Game {
 
   toggleSpeed() {
     this.speedMultiplier = this.speedMultiplier === 1 ? 2 : this.speedMultiplier === 2 ? 3 : 1;
-    document.getElementById('speed-btn').textContent = `⏩ ${this.speedMultiplier}x`;
+    document.getElementById('speed-btn').textContent = `${this.speedMultiplier}x`;
   }
 
   toggleSound() {
