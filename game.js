@@ -1303,20 +1303,6 @@ class Game {
     this.gameLoop(0);
   }
 
-  // ─── Map rendering (to offscreen buffer) ───
-  renderMapToBuffer() {
-    const ctx = this.mapCtx;
-    const cs = CONFIG.CELL_SIZE;
-
-    // Background grass
-    ctx.fillStyle = '#d3f9d8';
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-
-    // Subtle grass texture & Buildable platform highlights
-    for (let r = 0; r < CONFIG.ROWS; r++) {
-      for (let c = 0; c < CONFIG.COLS; c++) {
-        if (this.map.grid[r][c] === 0) {
-          const isBuildable = this.map.isBuildable(c, r);
   // ─── Map rendering (to offscreen buffer: 精緻石板路 + 質感草地 + 圓角光影) ───
   renderMapToBuffer() {
     const ctx = this.mapCtx;
