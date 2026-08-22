@@ -75,27 +75,29 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 4px 8px;
   background: rgba(255, 240, 243, 0.95);
   backdrop-filter: blur(8px);
   border: 2px solid rgba(255, 182, 193, 0.5);
   border-radius: 14px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
   color: #5c4033;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 #top-bar .stat {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
+  gap: 2px;
+  padding: 2px 6px;
   background: rgba(255, 255, 255, 0.7);
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: 10px;
+  font-size: 11px;
   white-space: nowrap;
+  flex-shrink: 1;
 }
 
 #top-bar .stat.best-score {
@@ -104,23 +106,40 @@ html, body {
 
 #top-bar .controls {
   display: flex;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 #top-bar .controls button {
-  padding: 4px 8px;
+  padding: 3px 6px;
   border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.85);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-family: inherit;
   font-weight: 700;
+  white-space: nowrap;
   transition: transform 0.1s, background 0.2s;
 }
 
 #top-bar .controls button:active {
   transform: scale(0.95);
+}
+
+@media (max-width: 480px) {
+  #top-bar {
+    padding: 3px 6px;
+    gap: 2px;
+  }
+  #top-bar .stat {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+  #top-bar .controls button {
+    font-size: 10px;
+    padding: 2px 5px;
+  }
 }
 
 /* --- Canvas Wrapper --- */
@@ -219,12 +238,6 @@ html, body {
   transform: scale(0.9);
   border-color: #ff69b4;
   background: #ffe4ec;
-}
-
-.tower-item.selected {
-  border-color: #ff69b4;
-  background: #ffe4ec;
-  box-shadow: 0 0 0 2px rgba(255, 105, 180, 0.3);
 }
 
 .tower-item.disabled {

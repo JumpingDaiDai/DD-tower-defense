@@ -1563,8 +1563,8 @@ class Game {
           isLongPressed = false;
           document.getElementById('tower-info').classList.add('hidden');
         } else {
-          // 短按點擊（未達長按且未拖曳）
-          this.selectTowerType(key);
+          // 點擊生產區塔卡片 -> 關閉現有的場上塔資訊面板並取消場上塔選取
+          this.deselectTower();
         }
       };
 
@@ -2244,7 +2244,7 @@ class Game {
       const cost = TOWER_DATA[type].cost;
       const canAfford = this.gold >= cost;
       item.classList.toggle('disabled', !canAfford);
-      item.classList.toggle('selected', this.selectedTowerType === type);
+      item.classList.remove('selected');
     });
   }
 
