@@ -134,25 +134,25 @@ const MAP_CONFIGS = {
       return col >= 2 && col <= 7 && row >= 3 && row <= 10;
     },
   },
-  spiral: {
-    id: 'spiral',
-    name: '🌀 漩渦迷宮 (向心螺旋)',
-    desc: '由外往內旋轉，考驗射程重疊',
-    icon: '🌀',
+  outer_ring: {
+    id: 'outer_ring',
+    name: '🏰 城堡外廊 (8×12 環形)',
+    desc: '左上出發繞外圍一圈至右上終點，中央核心建造',
+    icon: '🔲',
     cols: 10,
     rows: 14,
+    // 怪物從左上 [1, 0] 進場 -> 左側直下 [1, 12] -> 底部橫移 [8, 12] -> 右側直上 [8, 0] 離開
     waypoints: [
       [1, 0],
       [1, 12],
       [8, 12],
-      [8, 2],
-      [3, 2],
-      [3, 9],
-      [6, 9],
-      [6, 5],
-      [5, 5],
+      [8, 0],
     ],
-  }
+    // 限制在 8x12 區域內建造（中間 2~7 欄、1~11 列均為建造區）
+    customBuildable: (col, row) => {
+      return col >= 1 && col <= 8 && row >= 1 && row <= 12;
+    },
+  },
 };
 
 let CURRENT_MAP_ID = 'serpentine';
@@ -1441,9 +1441,10 @@ class Game {
     ctx.beginPath(); ctx.arc(6, 0, 2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
-    // Exit (Cute House at bottom)
+    // Exit (Cute House)
     ctx.save();
-    ctx.translate(exit.x, Math.min(CANVAS_H - 16, exit.y - 25));
+    const exitY = exit.y <= 50 ? Math.max(20, exit.y + 25) : Math.min(CANVAS_H - 16, exit.y - 25);
+    ctx.translate(exit.x, exitY);
     ctx.fillStyle = '#f5deb3';
     ctx.fillRect(-14, -10, 28, 20);
     ctx.fillStyle = '#fa8072';
