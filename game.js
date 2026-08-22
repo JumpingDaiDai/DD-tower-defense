@@ -1513,8 +1513,6 @@ class Game {
           }
           if (!isItemDragging) {
             if (this.gold < data.cost) {
-              this.showToast(`💰 金幣不足！需要 ${data.cost}`);
-              this.sfx.play('error');
               return;
             }
             isItemDragging = true;
