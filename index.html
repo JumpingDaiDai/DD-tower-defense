@@ -12,25 +12,24 @@
   <meta name="theme-color" content="#d3f9d8">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?t=202608230400">
+  <link rel="stylesheet" href="style.css?t=202608230405">
 </head>
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v3.3.0 (Full Grass Continuity & Dedicated Tower Bar)</div>
+    <div id="app-version">v3.3.1 (Clean Top Bar & No Wave Arrows)</div>
 
-    <!-- 頂部狀態列 (整合波次開始與預覽，極致節省空間) -->
+    <!-- 頂部狀態列 -->
     <div id="top-bar">
       <div class="top-bar-left">
         <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
         <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
-        <div class="stat" title="波次">🌊 <span id="wave-info">準備中</span></div>
+        <div class="stat" title="波次"><span id="wave-info">準備中</span></div>
         <div class="stat" title="分數">⭐ <span id="score">0</span></div>
         <div class="stat best-score" title="最高分">🏆 <span id="best-score">0</span></div>
       </div>
       <div class="top-bar-right">
-        <div id="wave-preview"></div>
-        <button id="start-wave-btn" class="btn-start">▶️ 出怪</button>
+        <button id="start-wave-btn" class="btn-start">出怪</button>
         <div class="controls">
           <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
           <button id="sound-btn" title="音效">🔊</button>
@@ -82,7 +81,7 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v3.3.0 (Full Grass Continuity & Dedicated Tower Bar)</div>
+        <div class="menu-version-badge">v3.3.1 (Clean Top Bar & No Wave Arrows)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>

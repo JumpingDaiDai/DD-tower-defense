@@ -68,21 +68,22 @@ html, body {
   z-index: 99;
 }
 
-/* --- Top Bar (頂部整合狀態列：左數值、右按鈕) --- */
+/* --- Top Bar (頂部整合狀態列：極簡單行排列) --- */
 #top-bar {
   position: relative;
   z-index: 10;
   width: 100%;
   max-width: 600px;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 4px 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 4px 8px;
   background: rgba(20, 35, 20, 0.55);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1.5px solid rgba(255, 255, 255, 0.35);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
   box-sizing: border-box;
@@ -91,28 +92,26 @@ html, body {
 .top-bar-left {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 4px;
-  width: 100%;
+  flex: 1;
 }
 
 .top-bar-right {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 4px;
-  width: 100%;
+  flex-shrink: 0;
 }
 
 #top-bar .stat {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 6px;
+  padding: 3px 6px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
   color: #fff;
@@ -132,13 +131,13 @@ html, body {
 }
 
 #top-bar .controls button {
-  padding: 3px 7px;
+  padding: 3px 6px;
   border: 1.5px solid rgba(255, 255, 255, 0.4);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   cursor: pointer;
-  font-size: 10.5px;
+  font-size: 11px;
   font-family: inherit;
   font-weight: 800;
   white-space: nowrap;
@@ -154,7 +153,7 @@ html, body {
 
 /* Start wave button in top-bar */
 .btn-start {
-  padding: 3px 10px;
+  padding: 4px 10px;
   border: none;
   border-radius: 10px;
   background: linear-gradient(135deg, #ff9800, #f57c00);

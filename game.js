@@ -2345,13 +2345,9 @@ class Game {
 
   updateWavePreview() {
     const preview = document.getElementById('wave-preview');
-    if (this.currentWave >= CONFIG.TOTAL_WAVES) {
+    if (preview) {
       preview.textContent = '';
-      return;
     }
-    const wave = WAVE_DATA[this.currentWave];
-    const enemies = wave.enemies.map((g) => `${ENEMY_DATA[g.type].emoji}×${g.count}`).join(' ');
-    preview.textContent = `下一波：${enemies}`;
   }
 
   // ─── Game Loop ───
