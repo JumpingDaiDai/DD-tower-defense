@@ -1349,13 +1349,17 @@ class Game {
       const btn = document.getElementById(btnId);
       if (!btn) return;
       btn.addEventListener('click', (e) => {
-        e.preventDefault();
+        dbgLog('👆 Click on #' + btnId);
         handler();
       });
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
+      btn.addEventListener('pointerdown', (e) => {
+        dbgLog('👉 PointerDown on #' + btnId);
         handler();
       });
+      btn.addEventListener('touchstart', (e) => {
+        dbgLog('📱 TouchStart on #' + btnId);
+        handler();
+      }, { passive: true });
     };
 
     bindTap('start-btn', () => this.startGame());
@@ -1417,7 +1421,6 @@ class Game {
 
     // Touch support (iOS Safari & Android)
     this.canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
       this.sfx.init();
       this.sfx.resume();
       if (e.touches && e.touches.length > 0) {
@@ -1425,10 +1428,12 @@ class Game {
         const pos = getCanvasPos(touch.clientX, touch.clientY);
         this.handleCanvasPoint(pos.x, pos.y);
       }
-    }, { passive: false });
+    }, { passive: true });
 
     this.canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault();
+      if (e.target === this.canvas) {
+        e.preventDefault();
+      }
     }, { passive: false });
 
     // 全域解鎖 iOS AudioContext
