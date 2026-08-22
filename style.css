@@ -23,7 +23,7 @@ html, body {
   padding: 0;
   overflow: hidden;
   font-family: 'Zen Maru Gothic', 'Segoe UI', sans-serif;
-  background: #8bc34a;
+  background: #deb887;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -35,10 +35,10 @@ html, body {
 
 :fullscreen body,
 :-webkit-full-screen body {
-  background: #8bc34a;
+  background: #deb887;
 }
 
-/* --- Game Container (全螢幕草地融合，無邊界感) --- */
+/* --- Game Container (消除上方多餘空白，完美貼齊安全區) --- */
 #game-container {
   position: relative;
   width: 100vw;
@@ -48,9 +48,9 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: calc(6px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
-  gap: 4px;
-  background: #8bc34a;
+  padding: env(safe-area-inset-top, 4px) calc(6px + env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) calc(6px + env(safe-area-inset-left, 0px));
+  gap: 2px;
+  background: #deb887;
 }
 
 /* --- Version Tag --- */
@@ -464,7 +464,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #8bc34a;
+  background: #deb887;
   border-radius: 0px;
 }
 

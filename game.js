@@ -1303,45 +1303,40 @@ class Game {
     this.gameLoop(0);
   }
 
-  // ─── Map rendering (to offscreen buffer: 精緻石板路 + 質感草地 + 圓角光影) ───
+  // ─── Map rendering (to offscreen buffer: 暖金黃沙海島/古代石陣風格) ───
   renderMapToBuffer() {
     const ctx = this.mapCtx;
     const cs = CONFIG.CELL_SIZE;
 
-    // 1. 基底草地：細緻微漸層
-    const bgGrad = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
-    bgGrad.addColorStop(0, '#98d89e');
-    bgGrad.addColorStop(0.5, '#8bc34a');
-    bgGrad.addColorStop(1, '#7cb342');
-    ctx.fillStyle = bgGrad;
+    // 1. 基底大地：暖金黃沙大地色系
+    ctx.fillStyle = '#deb887';
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-    // 2. 草地柔和棋盤與微質地
+    // 2. 建造平台格線微光
     for (let r = 0; r < CONFIG.ROWS; r++) {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.map.grid[r][c] === 0) {
-          // 建造區平台微凸起立體效果
-          ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.04)';
+          // 建造區基座立體石台微光
+          ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(100, 60, 20, 0.04)';
           ctx.fillRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
 
-          // 建造網格柔和邊框
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
           ctx.lineWidth = 1;
           ctx.strokeRect(c * cs + 3, r * cs + 3, cs - 6, cs - 6);
         }
       }
     }
 
-    // 3. 怪物行徑道路：圓潤平滑的石板步道（帶立體邊緣與石子鋪面）
+    // 3. 怪物行徑道路：圓潤平滑的古代青石步道
     const pathWidth = cs * 0.76;
     const waypoints = this.map.pathPixels;
 
-    // 3.1 道路深色外框與陰影（柔和投影）
+    // 3.1 道路深色外框與立體陰影
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    ctx.strokeStyle = 'rgba(40, 30, 20, 0.22)';
+    ctx.strokeStyle = 'rgba(60, 40, 20, 0.25)';
     ctx.lineWidth = pathWidth + 12;
     ctx.beginPath();
     waypoints.forEach((p, idx) => {
@@ -1350,8 +1345,8 @@ class Game {
     });
     ctx.stroke();
 
-    // 3.2 道路石緣泥土底層
-    ctx.strokeStyle = '#c2a378';
+    // 3.2 道路石緣底層
+    ctx.strokeStyle = '#a68058';
     ctx.lineWidth = pathWidth + 4;
     ctx.beginPath();
     waypoints.forEach((p, idx) => {
@@ -1360,8 +1355,8 @@ class Game {
     });
     ctx.stroke();
 
-    // 3.3 道路石板主體
-    ctx.strokeStyle = '#ebd5b3';
+    // 3.3 道路石板主體（米白古代石磚）
+    ctx.strokeStyle = '#f4ecd8';
     ctx.lineWidth = pathWidth;
     ctx.beginPath();
     waypoints.forEach((p, idx) => {
@@ -1370,7 +1365,7 @@ class Game {
     });
     ctx.stroke();
 
-    // 3.4 鋪設自然鵝卵石 / 石板紋理
+    // 3.4 鋪設自然鵝卵石 / 復古石紋
     ctx.restore();
     ctx.save();
     for (const cellKey of this.map.pathCells) {
@@ -1378,29 +1373,28 @@ class Game {
       const cx = c * cs + cs / 2;
       const cy = r * cs + cs / 2;
       
-      // 在每個道路格子繪製多顆隨機排列的自然石塊
       const stones = [
-        { dx: -18, dy: -14, rw: 12, rh: 8, col: '#d8c29d' },
-        { dx: 12, dy: -16, rw: 14, rh: 9, col: '#dfcbb0' },
-        { dx: -10, dy: 14, rw: 16, rh: 10, col: '#cfb792' },
-        { dx: 16, dy: 12, rw: 11, rh: 8, col: '#dac4a1' },
-        { dx: 0, dy: 0, rw: 18, rh: 12, col: '#f3e5d0' },
+        { dx: -18, dy: -14, rw: 12, rh: 8, col: '#e8dcbf' },
+        { dx: 12, dy: -16, rw: 14, rh: 9, col: '#eee4cd' },
+        { dx: -10, dy: 14, rw: 16, rh: 10, col: '#dfd2b0' },
+        { dx: 16, dy: 12, rw: 11, rh: 8, col: '#e5d7b5' },
+        { dx: 0, dy: 0, rw: 18, rh: 12, col: '#fbf5e6' },
       ];
       for (const st of stones) {
         ctx.fillStyle = st.col;
         ctx.beginPath();
         ctx.ellipse(cx + st.dx, cy + st.dy, st.rw, st.rh, (c * 7 + r * 13) % 3, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(120, 90, 60, 0.25)';
+        ctx.strokeStyle = 'rgba(140, 100, 60, 0.2)';
         ctx.lineWidth = 1;
         ctx.stroke();
       }
     }
     ctx.restore();
 
-    // 3.5 道路中心行徑導引點（細膩小巧）
+    // 3.5 道路中心行徑導引點
     ctx.save();
-    ctx.strokeStyle = 'rgba(140, 110, 80, 0.45)';
+    ctx.strokeStyle = 'rgba(160, 120, 80, 0.45)';
     ctx.lineWidth = 2.5;
     ctx.setLineDash([6, 10]);
     ctx.beginPath();
