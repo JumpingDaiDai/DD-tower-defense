@@ -9,32 +9,28 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#d3f9d8">
+  <meta name="theme-color" content="#8bc34a">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?t=202608230405">
+  <link rel="stylesheet" href="style.css?t=202608230411">
 </head>
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v3.3.1 (Clean Top Bar & No Wave Arrows)</div>
+    <div id="app-version">v3.4.0 (Settings Menu & Home Leaderboard)</div>
 
-    <!-- 頂部狀態列 -->
+    <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪) -->
     <div id="top-bar">
       <div class="top-bar-left">
         <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
         <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
         <div class="stat" title="波次"><span id="wave-info">準備中</span></div>
         <div class="stat" title="分數">⭐ <span id="score">0</span></div>
-        <div class="stat best-score" title="最高分">🏆 <span id="best-score">0</span></div>
       </div>
       <div class="top-bar-right">
+        <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
         <button id="start-wave-btn" class="btn-start">出怪</button>
-        <div class="controls">
-          <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
-          <button id="sound-btn" title="音效">🔊</button>
-          <button id="fullscreen-btn" title="全螢幕">⛶</button>
-        </div>
+        <button id="settings-btn" class="btn-gear" title="設定">⚙️</button>
       </div>
     </div>
 
@@ -60,6 +56,34 @@
       </div>
     </div>
 
+    <!-- 設定與暫停彈窗 (點擊齒輪時暫停遊戲) -->
+    <div id="settings-screen" class="screen hidden">
+      <div class="screen-content settings-modal-content">
+        <button id="settings-close-btn" class="btn-close">✕</button>
+        <div class="title-emoji">⚙️</div>
+        <h2>遊戲設定</h2>
+        <div class="settings-options-list">
+          <button id="settings-sound-btn" class="btn-settings-opt">
+            <span class="settings-opt-icon">🔊</span>
+            <span class="settings-opt-text" id="sound-status-text">音效：開啟</span>
+          </button>
+          <button id="settings-fullscreen-btn" class="btn-settings-opt">
+            <span class="settings-opt-icon">⛶</span>
+            <span class="settings-opt-text">切換全螢幕</span>
+          </button>
+          <button id="settings-retry-btn" class="btn-settings-opt btn-opt-warning">
+            <span class="settings-opt-icon">🔄</span>
+            <span class="settings-opt-text">重試關卡</span>
+          </button>
+          <button id="settings-quit-btn" class="btn-settings-opt btn-opt-danger">
+            <span class="settings-opt-icon">🚪</span>
+            <span class="settings-opt-text">退出關卡（返回首頁）</span>
+          </button>
+        </div>
+        <button id="settings-resume-btn" class="btn-primary" style="margin-top: 14px;">▶️ 繼續遊戲</button>
+      </div>
+    </div>
+
     <!-- 浮動 Log 按鈕與日誌面板與截圖按鈕 -->
     <div id="debug-container" style="position:fixed;bottom:10px;right:10px;z-index:99999;display:flex;gap:4px;align-items:center;">
       <button id="debug-toggle-btn" style="background:#222;color:#00ff66;border:1px solid #00ff66;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);touch-action:manipulation;" onclick="const l=document.getElementById('debug-log'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
@@ -81,10 +105,17 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v3.3.1 (Clean Top Bar & No Wave Arrows)</div>
+        <div class="menu-version-badge">v3.4.0 (Settings Menu & Home Leaderboard)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
+
+        <!-- 首頁高分榜 -->
+        <div class="menu-leaderboard-card">
+          <span class="leaderboard-icon">🏆</span>
+          <span class="leaderboard-label">歷史最高分：</span>
+          <span class="leaderboard-score" id="menu-best-score">0</span>
+        </div>
 
         <!-- 地圖選擇器 -->
         <div class="map-selection-container">

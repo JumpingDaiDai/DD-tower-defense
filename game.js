@@ -1749,11 +1749,30 @@ class Game {
     bindTap('retry-btn', () => this.restartGame());
     bindTap('replay-btn', () => this.restartGame());
     bindTap('speed-btn', () => this.toggleSpeed());
-    bindTap('sound-btn', () => this.toggleSound());
     bindTap('upgrade-btn', () => this.upgradeTower());
     bindTap('sell-btn', () => this.sellTower());
     bindTap('close-info-btn', () => this.deselectTower());
-    bindTap('fullscreen-btn', () => this.toggleFullscreen());
+    
+    // Settings modal bindings
+    bindTap('settings-btn', () => this.openSettingsModal());
+    bindTap('settings-close-btn', () => this.closeSettingsModal());
+    bindTap('settings-resume-btn', () => this.closeSettingsModal());
+    bindTap('settings-sound-btn', () => {
+      const enabled = this.sfx.toggle();
+      const statusText = document.getElementById('sound-status-text');
+      if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
+      const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
+      if (icon) icon.textContent = enabled ? '🔊' : '🔇';
+    });
+    bindTap('settings-fullscreen-btn', () => this.toggleFullscreen());
+    bindTap('settings-retry-btn', () => {
+      this.closeSettingsModal();
+      this.restartGame();
+    });
+    bindTap('settings-quit-btn', () => {
+      this.closeSettingsModal();
+      this.quitToMenu();
+    });
 
     // Fullscreen change listener
     document.addEventListener('fullscreenchange', () => this.onFullscreenChange());
@@ -1764,7 +1783,8 @@ class Game {
     this.resizeCanvas();
 
     // Best score
-    document.getElementById('best-score').textContent = this.bestScore;
+    const menuScore = document.getElementById('menu-best-score');
+    if (menuScore) menuScore.textContent = this.bestScore;
   }
 
   selectMap(mapId) {
@@ -2235,11 +2255,42 @@ class Game {
     document.getElementById('victory-screen').classList.remove('hidden');
   }
 
+  openSettingsModal() {
+    if (this.state === 'menu' || this.state === 'gameover' || this.state === 'victory') return;
+    this.previousState = this.state;
+    this.state = 'paused';
+    document.getElementById('settings-screen').classList.remove('hidden');
+    this.sfx.play('tap');
+    dbgLog('⏸️ Game paused via Settings modal');
+  }
+
+  closeSettingsModal() {
+    if (this.state === 'paused') {
+      this.state = this.previousState || 'planning';
+      this.previousState = null;
+    }
+    document.getElementById('settings-screen').classList.add('hidden');
+    this.sfx.play('tap');
+    dbgLog('▶️ Game resumed');
+  }
+
+  quitToMenu() {
+    this.state = 'menu';
+    document.getElementById('menu-screen').classList.remove('hidden');
+    document.getElementById('gameover-screen').classList.add('hidden');
+    document.getElementById('victory-screen').classList.add('hidden');
+    document.getElementById('settings-screen').classList.add('hidden');
+    const menuScore = document.getElementById('menu-best-score');
+    if (menuScore) menuScore.textContent = this.bestScore;
+    this.showToast('🏠 已返回主選單');
+  }
+
   saveBestScore() {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
       localStorage.setItem(CONFIG.LS_KEY, this.bestScore);
-      document.getElementById('best-score').textContent = this.bestScore;
+      const menuScore = document.getElementById('menu-best-score');
+      if (menuScore) menuScore.textContent = this.bestScore;
     }
   }
 
