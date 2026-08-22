@@ -38,156 +38,127 @@ html, body {
   background: #1e1e2f;
 }
 
-/* --- Game Container --- */
+/* --- Game Container (全螢幕無縫世界，RPG 懸浮 HUD 介面) --- */
 #game-container {
   position: relative;
   width: 100vw;
   height: 100dvh;
-  max-width: 1200px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: space-between;
-  padding: calc(6px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
-  gap: 4px;
+  align-items: center;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) calc(12px + env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) calc(12px + env(safe-area-inset-left, 0px));
 }
 
-/* --- Version Tag --- */
-#app-version {
+/* --- Canvas Wrapper (底層 100% 滿版無縫地圖畫布，無任何邊界) --- */
+#game-viewport {
   position: absolute;
-  top: calc(8px + env(safe-area-inset-top, 0px));
-  right: calc(12px + env(safe-area-inset-right, 0px));
-  font-size: 9px;
-  font-weight: 700;
-  color: rgba(92, 64, 51, 0.4);
-  background: rgba(255, 255, 255, 0.4);
-  padding: 1px 6px;
-  border-radius: 8px;
-  pointer-events: none;
-  z-index: 99;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  overflow: hidden;
 }
 
-/* --- Top Bar (懸浮羽量級資訊列，無生硬框線，融入自然背景) --- */
+#game-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  cursor: crosshair;
+  background: transparent;
+  touch-action: none;
+}
+
+/* --- Top Bar (懸浮在遊戲畫面上方的 RPG 狀態膠囊) --- */
 #top-bar {
+  position: relative;
+  z-index: 10;
   width: 100%;
   max-width: 960px;
-  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 6px;
-  background: rgba(255, 255, 255, 0.45);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 11px;
-  color: #3e2723;
-  box-shadow: 0 4px 16px rgba(40, 70, 40, 0.08);
-  flex-shrink: 0;
+  padding: 5px 10px;
+  background: rgba(30, 40, 30, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 12px;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
 }
 
 #top-bar .stat {
   display: flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 14px;
-  font-size: 11px;
+  gap: 4px;
+  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  font-size: 12px;
   white-space: nowrap;
-  flex-shrink: 1;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 #top-bar .stat.best-score {
-  background: rgba(255, 243, 205, 0.85);
-  border: 1px solid rgba(255, 215, 0, 0.4);
+  background: rgba(255, 193, 7, 0.25);
+  border: 1px solid rgba(255, 215, 0, 0.6);
+  color: #ffe082;
 }
 
 #top-bar .controls {
   display: flex;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 5px;
 }
 
 #top-bar .controls button {
-  padding: 4px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
+  padding: 4px 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   cursor: pointer;
   font-size: 11px;
   font-family: inherit;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
   transition: transform 0.1s, background 0.2s;
 }
 
 #top-bar .controls button:active {
-  transform: scale(0.92);
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.4);
 }
 
-@media (max-width: 480px) {
-  #top-bar {
-    padding: 3px 6px;
-    gap: 3px;
-  }
-  #top-bar .stat {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-  #top-bar .controls button {
-    font-size: 10px;
-    padding: 3px 6px;
-  }
-}
-
-/* --- Canvas Wrapper (滿版無邊框融合戰場) --- */
-#game-viewport {
-  flex: 1;
-  width: 100%;
-  max-width: 960px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-  border-radius: 20px;
-}
-
-#game-canvas {
-  display: block;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(30, 60, 30, 0.18);
-  cursor: crosshair;
-  background: transparent;
-  max-width: 100%;
-  max-height: 100%;
-  touch-action: none;
-}
-
-/* --- Tower Panel (底部輕透操作列，絕不遮擋塔視野，自然融入草地) --- */
+/* --- Tower Panel (直接懸浮在遊戲草地上的 RPG 技能/防禦塔底欄) --- */
 #tower-panel {
+  position: relative;
+  z-index: 10;
   width: 100%;
   max-width: 960px;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(25, 35, 25, 0.5);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 20px;
-  padding: 6px 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 24px;
+  padding: 6px 12px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 6px 20px rgba(30, 60, 30, 0.1);
-  flex-shrink: 0;
-  overflow: hidden;
+  gap: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -199,33 +170,30 @@ html, body {
 
 #tower-list {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   overflow-x: auto;
-  padding: 2px 0;
+  padding: 3px 0;
   touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
 
 #tower-list::-webkit-scrollbar {
   display: none;
 }
 
-/* Tower item cards (毛玻璃懸浮小卡) */
+/* Tower item cards (精緻 RPG 英雄/防禦塔懸浮卡槽) */
 .tower-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-width: 66px;
-  padding: 5px 8px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 14px;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
   cursor: grab;
   flex-shrink: 0;
   touch-action: none;
@@ -233,7 +201,8 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s, border-color 0.2s;
 }
 
 .tower-item:active {
@@ -243,19 +212,20 @@ html, body {
 .tower-item.is-dragging {
   opacity: 0.5;
   transform: scale(0.9);
-  border-color: #ff80ab;
-  background: #fff0f3;
+  border-color: #ff4081;
+  background: rgba(255, 64, 129, 0.25);
 }
 
 .tower-item.disabled {
-  opacity: 0.45;
-  filter: grayscale(0.5);
+  opacity: 0.4;
+  filter: grayscale(0.7);
   cursor: not-allowed;
 }
 
 .tower-item .tower-emoji {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .tower-item .tower-details {
@@ -264,16 +234,18 @@ html, body {
 }
 
 .tower-item .tower-name {
-  font-weight: 700;
-  color: #5c4033;
+  font-weight: 800;
+  color: #ffffff;
   font-size: 10px;
   white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .tower-item .tower-cost {
   font-size: 10px;
-  color: #c47d00;
-  font-weight: 700;
+  color: #ffd54f;
+  font-weight: 800;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .tower-item .tower-desc {

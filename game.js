@@ -2310,24 +2310,15 @@ class Game {
     const viewport = document.getElementById('game-viewport');
     if (!viewport || !this.canvas) return;
 
-    if (window.innerWidth >= 1024) {
-      // 桌機模式保持原生 900x550 或適當縮放
-      const maxW = Math.min(window.innerWidth - 230, CANVAS_W);
-      const maxH = Math.min(window.innerHeight - 70, CANVAS_H);
-      const scale = Math.min(maxW / CANVAS_W, maxH / CANVAS_H, 1);
-      this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
-      this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
-    } else {
-      // 行動端模式：依據 game-viewport 實體可用空間填滿最大可能面積
-      const availW = viewport.clientWidth - 8;
-      const availH = viewport.clientHeight - 8;
-      
-      if (availW <= 0 || availH <= 0) return;
-      
-      const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H);
-      this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
-      this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
-    }
+    const availW = window.innerWidth;
+    const availH = window.innerHeight;
+    
+    if (availW <= 0 || availH <= 0) return;
+    
+    // 全螢幕滿版無縫填滿（維持 480:640 比例並以 cover/contain 最佳比例放大）
+    const scale = Math.max(availW / CANVAS_W, availH / CANVAS_H);
+    this.canvas.style.width = `${Math.ceil(CANVAS_W * scale)}px`;
+    this.canvas.style.height = `${Math.ceil(CANVAS_H * scale)}px`;
   }
 
   updateUI() {
