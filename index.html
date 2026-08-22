@@ -12,24 +12,30 @@
   <meta name="theme-color" content="#d3f9d8">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?t=202608230356">
+  <link rel="stylesheet" href="style.css?t=202608230400">
 </head>
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v3.2.0 (Stable Full UI & Zero Distortion)</div>
+    <div id="app-version">v3.3.0 (Full Grass Continuity & Dedicated Tower Bar)</div>
 
-    <!-- 頂部狀態列 -->
+    <!-- 頂部狀態列 (整合波次開始與預覽，極致節省空間) -->
     <div id="top-bar">
-      <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
-      <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
-      <div class="stat" title="波次">🌊 <span id="wave-info">準備中</span></div>
-      <div class="stat" title="分數">⭐ <span id="score">0</span></div>
-      <div class="stat best-score" title="最高分">🏆 <span id="best-score">0</span></div>
-      <div class="controls">
-        <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
-        <button id="sound-btn" title="音效">🔊</button>
-        <button id="fullscreen-btn" title="全螢幕">⛶</button>
+      <div class="top-bar-left">
+        <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
+        <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
+        <div class="stat" title="波次">🌊 <span id="wave-info">準備中</span></div>
+        <div class="stat" title="分數">⭐ <span id="score">0</span></div>
+        <div class="stat best-score" title="最高分">🏆 <span id="best-score">0</span></div>
+      </div>
+      <div class="top-bar-right">
+        <div id="wave-preview"></div>
+        <button id="start-wave-btn" class="btn-start">▶️ 出怪</button>
+        <div class="controls">
+          <button id="speed-btn" title="遊戲速度">⏩ 1x</button>
+          <button id="sound-btn" title="音效">🔊</button>
+          <button id="fullscreen-btn" title="全螢幕">⛶</button>
+        </div>
       </div>
     </div>
 
@@ -38,12 +44,9 @@
       <canvas id="game-canvas"></canvas>
     </div>
 
-    <!-- 右側塔選擇面板 -->
+    <!-- 底部專屬防禦塔選擇面板 (100% 空間全給塔卡片，不再被開始按鈕遮擋) -->
     <div id="tower-panel">
-      <h3>🏗️ 防禦塔</h3>
       <div id="tower-list"></div>
-      <button id="start-wave-btn" class="btn-start">▶️ 開始波次</button>
-      <div id="wave-preview"></div>
     </div>
 
     <!-- 塔資訊面板 -->
@@ -79,7 +82,7 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v3.2.0 (Stable Full UI & Zero Distortion)</div>
+        <div class="menu-version-badge">v3.3.0 (Full Grass Continuity & Dedicated Tower Bar)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
