@@ -58,8 +58,18 @@
       </div>
     </div>
 
-    <!-- 即時偵錯 Log 視窗 (行動端可見) -->
-    <div id="debug-log" style="position:fixed;bottom:2px;left:2px;right:2px;background:rgba(0,0,0,0.85);color:#00ff66;font-family:monospace;font-size:10px;padding:4px 8px;border-radius:6px;z-index:9999;max-height:80px;overflow-y:auto;pointer-events:none;display:none;"></div>
+    <!-- 浮動 Log 按鈕與日誌面板 -->
+    <div id="debug-container" style="position:fixed;bottom:10px;right:10px;z-index:99999;">
+      <button id="debug-toggle-btn" style="background:#222;color:#00ff66;border:1px solid #00ff66;padding:4px 8px;border-radius:12px;font-size:10px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);" onclick="const l=document.getElementById('debug-log'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
+        🐞 Log
+      </button>
+      <div id="debug-log" style="display:none;position:absolute;bottom:30px;right:0;width:280px;max-height:180px;background:rgba(0,0,0,0.92);color:#00ff66;font-family:monospace;font-size:10px;padding:8px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;overflow-y:auto;pointer-events:auto;">
+        <div style="display:flex;justify-content:space-between;border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:4px;">
+          <span>📋 系統偵錯日誌</span>
+          <span style="cursor:pointer;color:#ff6b6b;" onclick="document.getElementById('debug-log').style.display='none'">✕ 關閉</span>
+        </div>
+      </div>
+    </div>
 
     <!-- 通知 Toast -->
     <div id="toast-container"></div>
@@ -67,7 +77,7 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v2.1.1 (Crash Fixed)</div>
+        <div class="menu-version-badge">v2.1.2 (Floating Log Toggle)</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
@@ -104,26 +114,13 @@
   </div>
 
   <script>
-    // 全域直接監聽，確認手指點擊了畫面上哪個元素
+    // 全域直接監聽，確認手指點擊了畫面上哪個元素（靜默記錄至 Log 面板）
     window.addEventListener('click', function(e) {
       const dbg = document.getElementById('debug-log');
       if (dbg) {
-        dbg.style.display = 'block';
         const d = document.createElement('div');
-        d.textContent = `🎯 Tap target: <${e.target.tagName} class="${e.target.className}" id="${e.target.id}">`;
+        d.textContent = `🎯 Tap: <${e.target.tagName} id="${e.target.id}">`;
         dbg.appendChild(d);
-        dbg.scrollTop = dbg.scrollHeight;
-      }
-    }, true);
-
-    window.addEventListener('touchstart', function(e) {
-      const dbg = document.getElementById('debug-log');
-      if (dbg) {
-        dbg.style.display = 'block';
-        const d = document.createElement('div');
-        d.textContent = `📱 Touch target: <${e.target.tagName} id="${e.target.id}">`;
-        dbg.appendChild(d);
-        dbg.scrollTop = dbg.scrollHeight;
       }
     }, true);
 

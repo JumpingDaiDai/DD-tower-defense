@@ -8,8 +8,9 @@ function dbgLog(msg) {
   console.log('[GameLog]', msg);
   const logBox = document.getElementById('debug-log');
   if (logBox) {
-    logBox.style.display = 'block';
     const line = document.createElement('div');
+    line.style.borderBottom = '1px dashed #222';
+    line.style.padding = '2px 0';
     line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${msg}`;
     logBox.appendChild(line);
     logBox.scrollTop = logBox.scrollHeight;
