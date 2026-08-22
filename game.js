@@ -2064,7 +2064,19 @@ class Game {
 }
 
 // ─── 15. 初始化 ──────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const game = new Game();
-  game.init();
-});
+function bootGame() {
+  if (window.gameInstance) return;
+  try {
+    const game = new Game();
+    window.gameInstance = game;
+    game.init();
+  } catch (e) {
+    console.error('Game initialization error:', e);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bootGame);
+} else {
+  bootGame();
+}

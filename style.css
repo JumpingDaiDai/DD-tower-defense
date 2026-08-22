@@ -447,10 +447,15 @@ html, body {
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
   margin-top: 10px;
+  pointer-events: auto;
+  touch-action: manipulation;
+  position: relative;
+  z-index: 105;
 }
 
 .btn-primary:active {
   transform: scale(0.96);
+  opacity: 0.9;
 }
 
 /* --- Toast Notifications --- */
