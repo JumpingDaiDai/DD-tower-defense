@@ -3,6 +3,29 @@
 // 馬卡龍風格 × 固定路徑塔防 × Canvas 渲染
 // ═══════════════════════════════════════════════════════════
 
+// ─── 0. 全域行動端偵錯日誌系統 ─────────────────
+function dbgLog(msg) {
+  console.log('[GameLog]', msg);
+  const logBox = document.getElementById('debug-log');
+  if (logBox) {
+    logBox.style.display = 'block';
+    const line = document.createElement('div');
+    line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${msg}`;
+    logBox.appendChild(line);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+}
+
+window.addEventListener('error', (e) => {
+  dbgLog(`❌ JS Error: ${e.message} (${e.filename}:${e.lineno})`);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  dbgLog(`❌ Promise Error: ${e.reason}`);
+});
+
+dbgLog('Script loading...');
+
 // ─── 1. 遊戲設定 ─────────────────────────────
 const CONFIG = {
   COLS: 10,
@@ -1630,16 +1653,21 @@ class Game {
 
   // ─── Game state ───
   startGame() {
+    dbgLog('🎮 startGame triggered!');
     try {
       this.sfx.init();
       this.sfx.resume();
+      dbgLog('🔊 Sound initialized');
     } catch (e) {
-      console.warn('Audio unlock error:', e);
+      dbgLog('⚠️ Audio warning: ' + e.message);
     }
     const menu = document.getElementById('menu-screen');
     if (menu) {
       menu.classList.add('hidden');
       menu.style.display = 'none';
+      dbgLog('✅ Menu screen hidden');
+    } else {
+      dbgLog('❌ menu-screen not found!');
     }
     this.state = 'planning';
     const startWaveBtn = document.getElementById('start-wave-btn');
@@ -1648,6 +1676,7 @@ class Game {
     this.updateWavePreview();
     this.updateUI();
     this.resizeCanvas();
+    dbgLog('🚀 Game state is now PLANNING');
   }
 
   restartGame() {
@@ -2066,12 +2095,14 @@ class Game {
 // ─── 15. 初始化 ──────────────────────────────
 function bootGame() {
   if (window.gameInstance) return;
+  dbgLog('⚡ bootGame executing...');
   try {
     const game = new Game();
     window.gameInstance = game;
     game.init();
+    dbgLog('✅ game.init() finished successfully!');
   } catch (e) {
-    console.error('Game initialization error:', e);
+    dbgLog('❌ Game init exception: ' + e.message + '\n' + e.stack);
   }
 }
 
