@@ -1,3 +1,4 @@
 .debug_token
 debug.log
 screenshots/
+__pycache__/

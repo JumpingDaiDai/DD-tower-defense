@@ -31,7 +31,38 @@ with open(LOG_FILE, 'w', encoding='utf-8') as f:
     f.write(f"=== Log session started {datetime.datetime.now()} ===\n")
 
 
+# 這些路徑不透過一般靜態檔案 GET 對外提供，避免 log/截圖被人直接下載
+# （開頭是 . 的檔案，例如 .debug_token，另外在 _blocked() 裡統一擋掉）
+BLOCKED_GET_PREFIXES = ('/debug.log', '/screenshots')
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
+    def _blocked(self):
+        path = self.path.split('?', 1)[0]
+        if path.startswith('/.'):
+            return True
+        return any(path == p or path.startswith(p + '/') for p in BLOCKED_GET_PREFIXES)
+
+    def do_GET(self):
+        if self._blocked():
+            self.send_response(403)
+            self.end_headers()
+            return
+        super().do_GET()
+
+    def do_HEAD(self):
+        if self._blocked():
+            self.send_response(403)
+            self.end_headers()
+            return
+        super().do_HEAD()
+
+    def list_directory(self, path):
+        # 完全關掉目錄列表功能，避免任何子資料夾內容被瀏覽
+        self.send_response(403)
+        self.end_headers()
+        return None
+
     def do_POST(self):
         if self.headers.get('X-Debug-Token') != DEBUG_TOKEN:
             self.send_response(401)
