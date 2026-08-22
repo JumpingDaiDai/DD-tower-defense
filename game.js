@@ -1348,18 +1348,17 @@ class Game {
     const bindTap = (btnId, handler) => {
       const btn = document.getElementById(btnId);
       if (!btn) return;
-      btn.addEventListener('click', (e) => {
-        dbgLog('👆 Click on #' + btnId);
+      
+      const fire = (e) => {
+        dbgLog('🎯 Button fired: #' + btnId);
         handler();
-      });
-      btn.addEventListener('pointerdown', (e) => {
-        dbgLog('👉 PointerDown on #' + btnId);
-        handler();
-      });
-      btn.addEventListener('touchstart', (e) => {
-        dbgLog('📱 TouchStart on #' + btnId);
-        handler();
-      }, { passive: true });
+      };
+
+      btn.addEventListener('click', fire);
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        fire(e);
+      }, { passive: false });
     };
 
     bindTap('start-btn', () => this.startGame());
