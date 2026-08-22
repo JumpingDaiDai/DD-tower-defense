@@ -13,6 +13,10 @@ function dbgLog(msg) {
     line.style.padding = '2px 0';
     line.textContent = `[${new Date().toTimeString().split(' ')[0]}] ${msg}`;
     logBox.appendChild(line);
+    // children[0] 是固定的標題列，只裁掉超過 50 條的日誌本體
+    while (logBox.children.length > 51) {
+      logBox.removeChild(logBox.children[1]);
+    }
     logBox.scrollTop = logBox.scrollHeight;
   }
 }
@@ -24,6 +28,41 @@ window.addEventListener('error', (e) => {
 window.addEventListener('unhandledrejection', (e) => {
   dbgLog(`❌ Promise Error: ${e.reason}`);
 });
+
+// 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
+// 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身
+(function setupRemoteLog() {
+  const orig = { log: console.log, warn: console.warn, error: console.error };
+  function forward(level, args) {
+    const msg = args.map(a => {
+      try { return typeof a === 'string' ? a : JSON.stringify(a); }
+      catch (e) { return String(a); }
+    }).join(' ');
+    fetch('/__log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ level, msg })
+    }).catch(() => {});
+  }
+  ['log', 'warn', 'error'].forEach(level => {
+    console[level] = function (...args) {
+      orig[level].apply(console, args);
+      forward(level, args);
+    };
+  });
+})();
+
+// 截圖上傳到電腦（配合 debug 面板的 📷 按鈕）
+function dbgUploadScreenshot() {
+  const canvas = document.getElementById('game-canvas');
+  if (!canvas) return;
+  canvas.toBlob(blob => {
+    if (!blob) return;
+    fetch('/__upload', { method: 'POST', body: blob })
+      .then(() => dbgLog('📷 截圖已上傳'))
+      .catch(() => dbgLog('📷 截圖上傳失敗（devserver 未啟動？）'));
+  }, 'image/png');
+}
 
 dbgLog('Script loading...');
 
