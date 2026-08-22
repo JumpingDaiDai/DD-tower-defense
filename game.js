@@ -73,11 +73,11 @@ function dbgUploadScreenshot() {
 
 dbgLog('Script loading...');
 
-// ─── 1. 遊戲設定 ─────────────────────────────
+// ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  COLS: 8,
-  ROWS: 12,
-  CELL_SIZE: 60, // 格子放大 (480x720 完美適配手機滿版)
+  COLS: 6,
+  ROWS: 8,
+  CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
   STARTING_GOLD: 200,
   STARTING_LIVES: 20,
   SELL_RATIO: 0.7,
@@ -87,23 +87,23 @@ const CONFIG = {
 };
 
 const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 480
-const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 720
+const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 640
 
-// ─── 2. 多地圖配置數據 (純 8×12 規格) ──────────
+// ─── 2. 多地圖配置數據 (純 6×8 規格，中央 4×6 建造) ──────────
 const MAP_CONFIGS = {
   outer_ring: {
     id: 'outer_ring',
-    name: '🏰 城堡外廊 (8×12 環形)',
-    desc: '左上 [0,0] 出發繞最外圍一整圈至右上 [7,0] 終點',
+    name: '🏰 經典外廊 (4×6 建造)',
+    desc: '左上 [0,0] 出發繞最外圍一圈至右上 [5,0]，中央 4×6 蓋塔',
     icon: '🔲',
-    cols: 8,
-    rows: 12,
-    // 怪物緊貼畫布最外圍邊界：左上 -> 左下 -> 右下 -> 右上
+    cols: 6,
+    rows: 8,
+    // 怪物緊貼畫布最外圍一圈：左上 -> 左下 -> 右下 -> 右上
     waypoints: [
       [0, 0],
-      [0, 11],
-      [7, 11],
-      [7, 0],
+      [0, 7],
+      [5, 7],
+      [5, 0],
     ],
   },
   serpentine: {
@@ -111,17 +111,16 @@ const MAP_CONFIGS = {
     name: '🌸 花園小徑 (蛇形)',
     desc: '經典蜿蜒路線，適合均衡佈局',
     icon: '〰️',
-    cols: 8,
-    rows: 12,
+    cols: 6,
+    rows: 8,
     waypoints: [
       [0, 0],
       [0, 2],
-      [7, 2],
-      [7, 5],
+      [5, 2],
+      [5, 5],
       [0, 5],
-      [0, 8],
-      [7, 8],
-      [7, 11],
+      [0, 7],
+      [5, 7],
     ],
   },
   ring: {
@@ -129,13 +128,13 @@ const MAP_CONFIGS = {
     name: '🎯 競技之環 (中央競技)',
     desc: '外圍環繞一圈，中央為建造平台',
     icon: '⭕',
-    cols: 8,
-    rows: 12,
+    cols: 6,
+    rows: 8,
     waypoints: [
       [0, 0],
-      [0, 11],
-      [7, 11],
-      [7, 2],
+      [0, 7],
+      [5, 7],
+      [5, 2],
       [1, 2],
     ],
   },
