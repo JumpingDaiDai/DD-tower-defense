@@ -1896,16 +1896,38 @@ class Game {
       e.preventDefault();
     }, { passive: false });
 
-    // 阻斷 iOS 快速雙擊觸發 Viewport Zoom（不再呼叫 e.target.click() 避免二次觸發 iOS 系統長按）
+    // 阻斷 iOS 快速雙擊觸發 Viewport Zoom（在 touchstart 階段若兩次間隔小於 350ms 且非可點擊元件，直接 preventDefault）
     let lastTouchTime = 0;
-    document.addEventListener('touchend', (e) => {
+    document.addEventListener('touchstart', (e) => {
       const now = Date.now();
-      if (now - lastTouchTime <= 300) {
-        if (e.cancelable) {
+      if (now - lastTouchTime <= 350) {
+        // 如果不是按鈕或卡片元件，阻止雙擊放大行為
+        const isClickable = e.target && (
+          e.target.tagName === 'BUTTON' ||
+          e.target.closest('button') ||
+          e.target.closest('.map-select-card') ||
+          e.target.closest('.tower-item')
+        );
+        if (!isClickable && e.cancelable) {
           e.preventDefault();
         }
       }
       lastTouchTime = now;
+    }, { passive: false });
+
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchTime <= 300) {
+        const isClickable = e.target && (
+          e.target.tagName === 'BUTTON' ||
+          e.target.closest('button') ||
+          e.target.closest('.map-select-card') ||
+          e.target.closest('.tower-item')
+        );
+        if (!isClickable && e.cancelable) {
+          e.preventDefault();
+        }
+      }
     }, { passive: false });
 
     // 防止多指縮放手勢 (Pinch to zoom)
