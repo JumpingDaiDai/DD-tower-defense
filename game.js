@@ -2310,15 +2310,15 @@ class Game {
     const viewport = document.getElementById('game-viewport');
     if (!viewport || !this.canvas) return;
 
-    const availW = window.innerWidth;
-    const availH = window.innerHeight;
+    const availW = viewport.clientWidth - 4;
+    const availH = viewport.clientHeight - 4;
     
     if (availW <= 0 || availH <= 0) return;
     
-    // 全螢幕滿版無縫填滿（維持 480:640 比例並以 cover/contain 最佳比例放大）
-    const scale = Math.max(availW / CANVAS_W, availH / CANVAS_H);
-    this.canvas.style.width = `${Math.ceil(CANVAS_W * scale)}px`;
-    this.canvas.style.height = `${Math.ceil(CANVAS_H * scale)}px`;
+    // 依據 viewport 可用區域自適應等比例縮放（完整顯示 6x8 戰場與石板路，不遮擋頂部與底部）
+    const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H);
+    this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
+    this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
   }
 
   updateUI() {
