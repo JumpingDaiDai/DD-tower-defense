@@ -1317,127 +1317,237 @@ class Game {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.map.grid[r][c] === 0) {
           const isBuildable = this.map.isBuildable(c, r);
-          if (this.map.mapId === 'ring') {
-            if (isBuildable) {
-              // 中央競技場建造平台（淡白/奶油色格子帶微邊框）
-              ctx.fillStyle = (r + c) % 2 === 0 ? '#ffffff' : '#fff9db';
-              ctx.fillRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
-              ctx.strokeStyle = 'rgba(255, 182, 193, 0.4)';
-              ctx.lineWidth = 1.5;
-              ctx.strokeRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
-            } else {
-              // 外圍不可建造的草地
-              ctx.fillStyle = (r + c) % 2 === 0 ? '#bbf2c2' : '#abebb4';
-              ctx.fillRect(c * cs, r * cs, cs, cs);
-            }
-          } else {
-            // 一般地圖棋盤草地
-            const shade = (r + c) % 2 === 0 ? '#d3f9d8' : '#c5f5ca';
-            ctx.fillStyle = shade;
-            ctx.fillRect(c * cs, r * cs, cs, cs);
-          }
+  // ─── Map rendering (to offscreen buffer: 精緻石板路 + 質感草地 + 圓角光影) ───
+  renderMapToBuffer() {
+    const ctx = this.mapCtx;
+    const cs = CONFIG.CELL_SIZE;
+
+    // 1. 基底草地：細緻微漸層
+    const bgGrad = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+    bgGrad.addColorStop(0, '#98d89e');
+    bgGrad.addColorStop(0.5, '#8bc34a');
+    bgGrad.addColorStop(1, '#7cb342');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+    // 2. 草地柔和棋盤與微質地
+    for (let r = 0; r < CONFIG.ROWS; r++) {
+      for (let c = 0; c < CONFIG.COLS; c++) {
+        if (this.map.grid[r][c] === 0) {
+          // 建造區平台微凸起立體效果
+          ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.04)';
+          ctx.fillRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
+
+          // 建造網格柔和邊框
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(c * cs + 3, r * cs + 3, cs - 6, cs - 6);
         }
       }
     }
 
-    // Path
+    // 3. 怪物行徑道路：圓潤平滑的石板步道（帶立體邊緣與石子鋪面）
+    const pathWidth = cs * 0.76;
+    const waypoints = this.map.pathPixels;
+
+    // 3.1 道路深色外框與陰影（柔和投影）
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.strokeStyle = 'rgba(40, 30, 20, 0.22)';
+    ctx.lineWidth = pathWidth + 12;
+    ctx.beginPath();
+    waypoints.forEach((p, idx) => {
+      if (idx === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+
+    // 3.2 道路石緣泥土底層
+    ctx.strokeStyle = '#c2a378';
+    ctx.lineWidth = pathWidth + 4;
+    ctx.beginPath();
+    waypoints.forEach((p, idx) => {
+      if (idx === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+
+    // 3.3 道路石板主體
+    ctx.strokeStyle = '#ebd5b3';
+    ctx.lineWidth = pathWidth;
+    ctx.beginPath();
+    waypoints.forEach((p, idx) => {
+      if (idx === 0) ctx.moveTo(p.x, p.y);
+      else ctx.lineTo(p.x, p.y);
+    });
+    ctx.stroke();
+
+    // 3.4 鋪設自然鵝卵石 / 石板紋理
+    ctx.restore();
+    ctx.save();
     for (const cellKey of this.map.pathCells) {
       const [c, r] = cellKey.split(',').map(Number);
-      ctx.fillStyle = '#ffe8cc';
-      ctx.fillRect(c * cs, r * cs, cs, cs);
-      // Path border/shadow
-      ctx.fillStyle = '#ffd9a0';
-      ctx.fillRect(c * cs, r * cs, cs, 2);
-      ctx.fillRect(c * cs, r * cs, 2, cs);
+      const cx = c * cs + cs / 2;
+      const cy = r * cs + cs / 2;
+      
+      // 在每個道路格子繪製多顆隨機排列的自然石塊
+      const stones = [
+        { dx: -18, dy: -14, rw: 12, rh: 8, col: '#d8c29d' },
+        { dx: 12, dy: -16, rw: 14, rh: 9, col: '#dfcbb0' },
+        { dx: -10, dy: 14, rw: 16, rh: 10, col: '#cfb792' },
+        { dx: 16, dy: 12, rw: 11, rh: 8, col: '#dac4a1' },
+        { dx: 0, dy: 0, rw: 18, rh: 12, col: '#f3e5d0' },
+      ];
+      for (const st of stones) {
+        ctx.fillStyle = st.col;
+        ctx.beginPath();
+        ctx.ellipse(cx + st.dx, cy + st.dy, st.rw, st.rh, (c * 7 + r * 13) % 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(120, 90, 60, 0.25)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
     }
+    ctx.restore();
 
-    // Path center line (dotted)
+    // 3.5 道路中心行徑導引點（細膩小巧）
     ctx.save();
-    ctx.strokeStyle = 'rgba(200, 160, 100, 0.3)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 8]);
+    ctx.strokeStyle = 'rgba(140, 110, 80, 0.45)';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 10]);
     ctx.beginPath();
-    for (let i = 0; i < this.map.pathPixels.length; i++) {
-      const p = this.map.pathPixels[i];
-      if (i === 0) ctx.moveTo(p.x, p.y);
+    waypoints.forEach((p, idx) => {
+      if (idx === 0) ctx.moveTo(p.x, p.y);
       else ctx.lineTo(p.x, p.y);
-    }
+    });
     ctx.stroke();
     ctx.restore();
 
-    // Grid lines (subtle)
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
-    ctx.lineWidth = 0.5;
-    for (let r = 0; r <= CONFIG.ROWS; r++) {
-      ctx.beginPath();
-      ctx.moveTo(0, r * cs);
-      ctx.lineTo(CANVAS_W, r * cs);
-      ctx.stroke();
-    }
-    for (let c = 0; c <= CONFIG.COLS; c++) {
-      ctx.beginPath();
-      ctx.moveTo(c * cs, 0);
-      ctx.lineTo(c * cs, CANVAS_H);
-      ctx.stroke();
-    }
-
-    // Decorations (Canvas hand-drawn)
+    // 4. 自然裝飾（立體花草、彩色小蘑菇）
     for (const d of this.map.decorations) {
       ctx.save();
       ctx.translate(d.x, d.y);
       ctx.scale(d.size / 15, d.size / 15);
       if (d.decoType === 'flower1') {
-        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(0,-4,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(-4,2,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(4,2,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffba'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+        // 精緻粉紅小花
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.beginPath(); ctx.ellipse(0, 4, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ff80ab';
+        for (let a = 0; a < 5; a++) {
+          const ang = (a * Math.PI * 2) / 5;
+          ctx.beginPath();
+          ctx.arc(Math.cos(ang) * 5, Math.sin(ang) * 5, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#ffe082';
+        ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
       } else if (d.decoType === 'flower2') {
-        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(-3,-3,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(3,-3,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(-3,3,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#bae1ff'; ctx.beginPath(); ctx.arc(3,3,4,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#ffffba'; ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+        // 精緻淡藍小花
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.beginPath(); ctx.ellipse(0, 4, 8, 4, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#80d8ff';
+        for (let a = 0; a < 4; a++) {
+          const ang = (a * Math.PI * 2) / 4 + Math.PI / 4;
+          ctx.beginPath();
+          ctx.arc(Math.cos(ang) * 5, Math.sin(ang) * 5, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#fff9c4';
+        ctx.beginPath(); ctx.arc(0, 0, 3.5, 0, Math.PI * 2); ctx.fill();
       } else if (d.decoType === 'grass') {
-        ctx.fillStyle = '#baffc9';
-        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(-4,0,-6,-6); ctx.quadraticCurveTo(-2,2,0,4); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(0,-2,0,-8); ctx.quadraticCurveTo(2,0,0,4); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(0,4); ctx.quadraticCurveTo(4,0,6,-6); ctx.quadraticCurveTo(2,2,0,4); ctx.fill();
+        // 立體小草叢
+        ctx.fillStyle = '#689f38';
+        ctx.beginPath(); ctx.moveTo(-6, 4); ctx.quadraticCurveTo(-8, -4, -12, -8); ctx.quadraticCurveTo(-6, -2, -4, 4); ctx.fill();
+        ctx.fillStyle = '#7cb342';
+        ctx.beginPath(); ctx.moveTo(-2, 4); ctx.quadraticCurveTo(0, -6, 0, -12); ctx.quadraticCurveTo(2, -4, 2, 4); ctx.fill();
+        ctx.fillStyle = '#8bc34a';
+        ctx.beginPath(); ctx.moveTo(4, 4); ctx.quadraticCurveTo(8, -2, 12, -8); ctx.quadraticCurveTo(6, -4, 6, 4); ctx.fill();
       } else if (d.decoType === 'mushroom') {
-        ctx.fillStyle = '#fff'; ctx.fillRect(-2,0,4,6);
-        ctx.fillStyle = '#ffb3ba'; ctx.beginPath(); ctx.arc(0,0,6,Math.PI,0); ctx.fill();
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-3,-2,1.5,0,Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(2,-3,1,0,Math.PI*2); ctx.fill();
+        // 紅色白點小蘑菇
+        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+        ctx.beginPath(); ctx.ellipse(0, 6, 7, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(-3, 0, 6, 7);
+        ctx.fillStyle = '#ff5252';
+        ctx.beginPath(); ctx.arc(0, 0, 8, Math.PI, 0); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(-3, -3, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(3, -4, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -1, 1.2, 0, Math.PI * 2); ctx.fill();
       }
       ctx.restore();
     }
 
-    // Entry (Cute Doorway at top-left [0,0])
+    // 5. 起點：精緻石造城門 (Top-Left [0,0])
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
+
     ctx.save();
     ctx.translate(entry.x, entry.y);
-    ctx.fillStyle = '#8b5a2b';
-    ctx.fillRect(-18, -26, 36, 52);
-    ctx.beginPath(); ctx.arc(0, -26, 18, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#6b4226';
-    ctx.fillRect(-14, -22, 28, 48);
-    ctx.beginPath(); ctx.arc(0, -22, 14, Math.PI, 0); ctx.fill();
-    ctx.fillStyle = '#ffd700';
-    ctx.beginPath(); ctx.arc(9, 0, 3, 0, Math.PI*2); ctx.fill();
+    // 陰影
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(0, 22, 24, 10, 0, 0, Math.PI * 2); ctx.fill();
+    // 石門外框
+    ctx.fillStyle = '#78909c';
+    ctx.fillRect(-22, -26, 44, 48);
+    ctx.beginPath(); ctx.arc(0, -26, 22, Math.PI, 0); ctx.fill();
+    // 石磚刻痕
+    ctx.fillStyle = '#546e7a';
+    ctx.fillRect(-20, -24, 40, 4);
+    ctx.fillRect(-20, -10, 40, 3);
+    // 門洞深處（暗紅色惡魔傳送門）
+    ctx.fillStyle = '#263238';
+    ctx.fillRect(-14, -18, 28, 40);
+    ctx.beginPath(); ctx.arc(0, -18, 14, Math.PI, 0); ctx.fill();
+    // 傳送門旋渦微光
+    ctx.fillStyle = '#e91e63';
+    ctx.beginPath(); ctx.arc(0, -6, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff80ab';
+    ctx.beginPath(); ctx.arc(0, -6, 4, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
 
-    // Exit (Cute Target House at top-right [5,0])
+    // 6. 終點：精緻保衛守護小屋 (Top-Right [5,0])
     ctx.save();
     ctx.translate(exit.x, exit.y);
-    ctx.fillStyle = '#f5deb3';
-    ctx.fillRect(-22, -14, 44, 34);
-    ctx.fillStyle = '#fa8072';
-    ctx.beginPath(); ctx.moveTo(-28, -14); ctx.lineTo(0, -34); ctx.lineTo(28, -14); ctx.fill();
-    ctx.fillStyle = '#8b4513';
-    ctx.fillRect(-7, 0, 14, 20);
-    ctx.fillStyle = '#87ceeb';
-    ctx.fillRect(-16, -8, 10, 10);
-    ctx.fillRect(6, -8, 10, 10);
+    // 房屋陰影
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.beginPath(); ctx.ellipse(0, 20, 26, 10, 0, 0, Math.PI * 2); ctx.fill();
+    // 主牆體
+    ctx.fillStyle = '#fff8e1';
+    ctx.fillRect(-24, -10, 48, 32);
+    ctx.strokeStyle = '#ffe082';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-24, -10, 48, 32);
+    // 紅色三角瓦片屋頂
+    ctx.fillStyle = '#e53935';
+    ctx.beginPath();
+    ctx.moveTo(-30, -10);
+    ctx.lineTo(0, -32);
+    ctx.lineTo(30, -10);
+    ctx.closePath();
+    ctx.fill();
+    // 屋頂陰影與紋路
+    ctx.strokeStyle = '#b71c1c';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // 煙囪
+    ctx.fillStyle = '#8d6e63';
+    ctx.fillRect(12, -28, 7, 12);
+    // 門
+    ctx.fillStyle = '#5d4037';
+    ctx.fillRect(-7, 4, 14, 18);
+    ctx.fillStyle = '#ffd54f';
+    ctx.beginPath(); ctx.arc(3, 13, 2, 0, Math.PI * 2); ctx.fill();
+    // 玻璃窗戶（發光藍）
+    ctx.fillStyle = '#81d4fa';
+    ctx.fillRect(-18, -2, 8, 8);
+    ctx.fillRect(10, -2, 8, 8);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-18, -2, 8, 8);
+    ctx.strokeRect(10, -2, 8, 8);
     ctx.restore();
   }
 
