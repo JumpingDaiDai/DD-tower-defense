@@ -364,13 +364,12 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 240, 243, 0.95);
-  backdrop-filter: blur(12px);
+  background: #fff0f3;
   border-radius: 14px;
 }
 
 .screen.hidden {
-  display: none;
+  display: none !important;
 }
 
 .screen-content {
@@ -378,6 +377,7 @@ html, body {
   padding: 20px;
   max-width: 380px;
   position: relative;
+  z-index: 101;
 }
 
 .menu-version-badge {
@@ -428,19 +428,19 @@ html, body {
 }
 
 .btn-primary {
-  padding: 12px 30px;
+  padding: 14px 36px;
   border: none;
   border-radius: 14px;
+  background: #ff69b4;
   background: linear-gradient(135deg, #ffb6c1, #ff69b4);
   color: white;
   font-family: inherit;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
   margin-top: 10px;
-  pointer-events: auto;
-  touch-action: manipulation;
+  display: inline-block;
   position: relative;
   z-index: 105;
 }
