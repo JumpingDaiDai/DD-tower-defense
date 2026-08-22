@@ -23,7 +23,7 @@ html, body {
   padding: 0;
   overflow: hidden;
   font-family: 'Zen Maru Gothic', 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #fce4ec 0%, #e8f5e9 50%, #e3f2fd 100%);
+  background: #d3f9d8;
   display: flex;
   justify-content: center;
   align-items: center;
