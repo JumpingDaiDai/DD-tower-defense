@@ -1644,18 +1644,23 @@ class Game {
       }
     }
 
-    // Buttons
+    // Buttons (使用 pointer/click 防重複觸發機制)
     const bindTap = (btnId, handler) => {
       const btn = document.getElementById(btnId);
       if (!btn) return;
-      btn.onclick = (e) => {
-        dbgLog('🎯 Button click: #' + btnId);
+      let lastTrigger = 0;
+      const trigger = (e) => {
+        const now = Date.now();
+        if (now - lastTrigger < 350) return; // 防短時間內 click 與 touchend 連續觸發
+        lastTrigger = now;
+        dbgLog('🎯 Button triggered: #' + btnId);
         handler();
       };
-      btn.ontouchend = (e) => {
-        dbgLog('📱 Button touchend: #' + btnId);
-        handler();
-      };
+      btn.addEventListener('click', trigger);
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault(); // 阻止緊隨其後的 300ms 模擬 click
+        trigger(e);
+      }, { passive: false });
     };
 
     bindTap('start-btn', () => this.startGame());
@@ -1839,7 +1844,6 @@ class Game {
     }
     this.selectedTowerType = typeKey;
     this.deselectTower();
-    this.showTowerPreviewInfo(typeKey);
     this.updateTowerPanel();
     this.canvas.style.cursor = 'cell';
   }
