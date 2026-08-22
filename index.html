@@ -104,6 +104,29 @@
   </div>
 
   <script>
+    // 全域直接監聽，確認手指點擊了畫面上哪個元素
+    window.addEventListener('click', function(e) {
+      const dbg = document.getElementById('debug-log');
+      if (dbg) {
+        dbg.style.display = 'block';
+        const d = document.createElement('div');
+        d.textContent = `🎯 Tap target: <${e.target.tagName} class="${e.target.className}" id="${e.target.id}">`;
+        dbg.appendChild(d);
+        dbg.scrollTop = dbg.scrollHeight;
+      }
+    }, true);
+
+    window.addEventListener('touchstart', function(e) {
+      const dbg = document.getElementById('debug-log');
+      if (dbg) {
+        dbg.style.display = 'block';
+        const d = document.createElement('div');
+        d.textContent = `📱 Touch target: <${e.target.tagName} id="${e.target.id}">`;
+        dbg.appendChild(d);
+        dbg.scrollTop = dbg.scrollHeight;
+      }
+    }, true);
+
     // 動態載入帶有即時時間戳記的 game.js，完全繞過任何快取
     const script = document.createElement('script');
     script.src = 'game.js?t=' + Date.now();
