@@ -1798,18 +1798,25 @@ class Game {
       e.preventDefault();
     }, { passive: false });
 
-    // 防止 iOS 快速雙擊或連續點擊畫面觸發 Double Tap Zoom
-    let lastTouchTime = 0;
-    document.addEventListener('touchend', (e) => {
+    // 防止 iOS 快速雙擊或連續點擊畫面觸發 Double Tap Zoom（於 touchstart 階段徹底阻斷）
+    let lastTouchStart = 0;
+    document.addEventListener('touchstart', (e) => {
       const now = Date.now();
-      if (now - lastTouchTime <= 300) {
-        // 如果是點擊在正常按鈕或塔項目上，不阻斷 touchend，其他空白區域防止預設放大
-        const isControl = e.target.closest('button, .tower-item, .map-select-card');
-        if (!isControl) {
-          e.preventDefault();
+      if (now - lastTouchStart <= 350) {
+        e.preventDefault();
+        // 重新觸發點擊目標上的常規點擊邏輯，但杜絕 Safari Viewport Zoom
+        if (e.target) {
+          e.target.click();
         }
       }
-      lastTouchTime = now;
+      lastTouchStart = now;
+    }, { passive: false });
+
+    // 防止多指縮放手勢 (Pinch to zoom)
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+      }
     }, { passive: false });
 
     // Keyboard shortcuts
