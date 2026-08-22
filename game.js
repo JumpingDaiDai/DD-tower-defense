@@ -1297,6 +1297,9 @@ class Game {
     this.hoverCell = null;
     this.mouseX = -1;
     this.mouseY = -1;
+    this.draggingTowerType = null;
+    this.dragPos = null; // { x, y } in canvas coords
+    this.isDragging = false;
 
     // Timing
     this.lastTime = 0;
@@ -1470,7 +1473,155 @@ class Game {
           <div class="tower-desc">${data.description}</div>
         </div>
       `;
-      item.addEventListener('click', () => this.selectTowerType(key));
+
+      // 支援長按顯示資訊、拖曳建立防禦塔
+      let pressTimer = null;
+      let isLongPressed = false;
+      let startX = 0, startY = 0;
+      let isItemDragging = false;
+
+      const clearPress = () => {
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
+        }
+      };
+
+      const startPress = (clientX, clientY) => {
+        if (this.state !== 'planning' && this.state !== 'wave') return;
+        startX = clientX;
+        startY = clientY;
+        isLongPressed = false;
+        isItemDragging = false;
+
+        pressTimer = setTimeout(() => {
+          isLongPressed = true;
+          this.deselectTower();
+          this.showTowerPreviewInfo(key);
+          if (navigator.vibrate) navigator.vibrate(40);
+        }, 350); // 350ms 觸發長按資訊
+      };
+
+      const movePress = (clientX, clientY) => {
+        const distMoved = Math.hypot(clientX - startX, clientY - startY);
+        if (distMoved > 8) {
+          // 移動超過閾值，代表開始拖曳，取消長按計時並關閉資訊
+          clearPress();
+          if (isLongPressed) {
+            isLongPressed = false;
+            document.getElementById('tower-info').classList.add('hidden');
+          }
+          if (!isItemDragging) {
+            if (this.gold < data.cost) {
+              this.showToast(`💰 金幣不足！需要 ${data.cost}`);
+              this.sfx.play('error');
+              return;
+            }
+            isItemDragging = true;
+            this.draggingTowerType = key;
+            this.isDragging = true;
+            item.classList.add('is-dragging');
+            document.getElementById('tower-info').classList.add('hidden');
+          }
+          // 計算 Canvas 內座標
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          const cx = (clientX - rect.left) * scaleX;
+          const cy = (clientY - rect.top) * scaleY;
+          this.dragPos = { x: cx, y: cy };
+          const { col, row } = pixelToGrid(cx, cy);
+          if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
+            this.hoverCell = { col, row };
+          } else {
+            this.hoverCell = null;
+          }
+        }
+      };
+
+      const endPress = (clientX, clientY) => {
+        clearPress();
+        if (isItemDragging) {
+          item.classList.remove('is-dragging');
+          // 嘗試在目標位置放置防禦塔
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          const cx = (clientX - rect.left) * scaleX;
+          const cy = (clientY - rect.top) * scaleY;
+          const { col, row } = pixelToGrid(cx, cy);
+          if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
+            this.selectedTowerType = key;
+            this.placeTower(col, row);
+            this.selectedTowerType = null;
+          }
+          this.draggingTowerType = null;
+          this.dragPos = null;
+          this.isDragging = false;
+          this.hoverCell = null;
+          this.updateTowerPanel();
+        } else if (isLongPressed) {
+          // 長按後放開 -> 關閉資訊
+          isLongPressed = false;
+          document.getElementById('tower-info').classList.add('hidden');
+        } else {
+          // 短按點擊（未達長按且未拖曳）
+          this.selectTowerType(key);
+        }
+      };
+
+      // Touch 事件
+      item.addEventListener('touchstart', (e) => {
+        this.sfx.init();
+        this.sfx.resume();
+        if (e.touches.length > 0) {
+          startPress(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      item.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+          movePress(e.touches[0].clientX, e.touches[0].clientY);
+          if (isItemDragging) {
+            e.preventDefault();
+          }
+        }
+      }, { passive: false });
+
+      item.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        endPress(touch.clientX, touch.clientY);
+      }, { passive: true });
+
+      item.addEventListener('touchcancel', () => {
+        clearPress();
+        if (isItemDragging) {
+          item.classList.remove('is-dragging');
+          this.draggingTowerType = null;
+          this.dragPos = null;
+          this.isDragging = false;
+          this.hoverCell = null;
+        }
+        document.getElementById('tower-info').classList.add('hidden');
+      });
+
+      // Mouse 事件（桌機相容）
+      item.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startPress(e.clientX, e.clientY);
+
+        const onMouseMove = (ev) => {
+          movePress(ev.clientX, ev.clientY);
+        };
+        const onMouseUp = (ev) => {
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+          endPress(ev.clientX, ev.clientY);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+
       list.appendChild(item);
     }
 
@@ -2306,6 +2457,57 @@ class Game {
     // Projectiles
     for (const proj of this.projectiles) {
       proj.render(ctx);
+    }
+
+    // Dragging Tower Preview (Range & Emoji following cursor/finger)
+    if (this.isDragging && this.draggingTowerType && this.dragPos) {
+      const data = TOWER_DATA[this.draggingTowerType];
+      const { x, y } = this.dragPos;
+
+      // 1. 如果在有效格子內，高亮格子
+      if (this.hoverCell) {
+        const { col, row } = this.hoverCell;
+        const cs = CONFIG.CELL_SIZE;
+        const canBuild = this.map.isBuildable(col, row) && !this.towerGrid[`${col},${row}`];
+        ctx.fillStyle = canBuild ? 'rgba(136, 216, 176, 0.4)' : 'rgba(255, 107, 107, 0.4)';
+        ctx.fillRect(col * cs, row * cs, cs, cs);
+      }
+
+      // 2. 射程圈跟著拖曳位置（若在可建格子上則對齊格子中心，否則跟著手指/滑鼠）
+      let rangeCenterX = x;
+      let rangeCenterY = y;
+      if (this.hoverCell && this.map.isBuildable(this.hoverCell.col, this.hoverCell.row) && !this.towerGrid[`${this.hoverCell.col},${this.hoverCell.row}`]) {
+        const center = gridToPixel(this.hoverCell.col, this.hoverCell.row);
+        rangeCenterX = center.x;
+        rangeCenterY = center.y;
+      }
+
+      if (data.range > 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = data.color;
+        ctx.beginPath();
+        ctx.arc(rangeCenterX, rangeCenterY, data.range, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.globalAlpha = 0.4;
+        ctx.strokeStyle = data.color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.arc(rangeCenterX, rangeCenterY, data.range, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. 繪製跟隨手指/滑鼠的塔圖示
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.font = '32px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(data.emoji, x, y - 10);
+      ctx.restore();
     }
 
     // Particles
