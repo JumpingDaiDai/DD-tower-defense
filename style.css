@@ -483,14 +483,14 @@ html, body {
   to { opacity: 0; transform: translateY(-8px); }
 }
 
-/* --- Desktop Layout Enhancements --- */
+/* --- Desktop Layout (Maximized centered portrait container) --- */
 @media (min-width: 1024px) {
   #game-container {
     flex-direction: row;
     align-items: flex-start;
     justify-content: center;
     height: auto;
-    max-height: 90vh;
+    max-height: 94vh;
     padding: 0;
     gap: 0;
   }
@@ -517,8 +517,9 @@ html, body {
   }
 
   #tower-panel {
-    width: 190px;
-    height: 550px;
+    width: 200px;
+    height: 700px;
+    max-height: calc(94vh - 42px);
     margin-top: 42px;
     border-radius: 0 0 14px 0;
     border-left: 2px solid rgba(255, 215, 0, 0.4);

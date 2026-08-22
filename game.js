@@ -5,8 +5,8 @@
 
 // ─── 1. 遊戲設定 ─────────────────────────────
 const CONFIG = {
-  COLS: 18,
-  ROWS: 11,
+  COLS: 10,
+  ROWS: 14,
   CELL_SIZE: 50,
   STARTING_GOLD: 200,
   STARTING_LIVES: 20,
@@ -16,21 +16,21 @@ const CONFIG = {
   LS_KEY: 'dd_tower_defense_best',
 };
 
-const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 900
-const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 550
+const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 500
+const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 700
 
-// ─── 2. 路徑定義 (格子座標) ──────────────────
+// ─── 2. 路徑定義 (直向手機地圖：由上往下蜿蜒穿梭) ──
 const PATH_WAYPOINTS = [
-  [-1, 1],
-  [4, 1],
-  [4, 5],
-  [1, 5],
-  [1, 9],
-  [8, 9],
+  [1, -1],  // 上方入口
+  [1, 2],
+  [8, 2],
   [8, 5],
-  [13, 5],
-  [13, 9],
-  [18, 9],
+  [1, 5],
+  [1, 8],
+  [8, 8],
+  [8, 11],
+  [2, 11],
+  [2, 14],  // 下方城堡終點
 ];
 
 // ─── 3. 防禦塔數據 ──────────────────────────
@@ -1270,11 +1270,11 @@ class Game {
       ctx.restore();
     }
 
-    // Entry (Cute Doorway)
+    // Entry (Cute Doorway at top)
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
     ctx.save();
-    ctx.translate(Math.max(20, entry.x), entry.y);
+    ctx.translate(entry.x, Math.max(16, entry.y + 25));
     ctx.fillStyle = '#8b5a2b';
     ctx.fillRect(-12, -18, 24, 36);
     ctx.beginPath(); ctx.arc(0, -18, 12, Math.PI, 0); ctx.fill();
@@ -1285,9 +1285,9 @@ class Game {
     ctx.beginPath(); ctx.arc(6, 0, 2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
-    // Exit (Cute House)
+    // Exit (Cute House at bottom)
     ctx.save();
-    ctx.translate(Math.min(CANVAS_W - 20, exit.x), exit.y);
+    ctx.translate(exit.x, Math.min(CANVAS_H - 16, exit.y - 25));
     ctx.fillStyle = '#f5deb3';
     ctx.fillRect(-14, -10, 28, 20);
     ctx.fillStyle = '#fa8072';
