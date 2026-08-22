@@ -9,12 +9,12 @@
   <meta name="theme-color" content="#fce4ec">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.0.3">
+  <link rel="stylesheet" href="style.css?v=1.0.4">
 </head>
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v1.0.3 (iOS Touch Fix)</div>
+    <div id="app-version">v1.0.4 (Full Width Scaling)</div>
 
     <!-- 頂部狀態列 -->
     <div id="top-bar">
@@ -30,8 +30,10 @@
       </div>
     </div>
 
-    <!-- 遊戲畫布 -->
-    <canvas id="game-canvas"></canvas>
+    <!-- 遊戲畫布視區 -->
+    <div id="game-viewport">
+      <canvas id="game-canvas"></canvas>
+    </div>
 
     <!-- 右側塔選擇面板 -->
     <div id="tower-panel">
@@ -94,6 +96,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.0.3"></script>
+  <script src="game.js?v=1.0.4"></script>
 </body>
 </html>

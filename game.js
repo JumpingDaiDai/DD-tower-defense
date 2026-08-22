@@ -1745,19 +1745,24 @@ class Game {
   }
 
   resizeCanvas() {
-    // 取得視窗與上下欄位高度動態扣除
-    const topBar = document.getElementById('top-bar');
-    const bottomBar = document.getElementById('tower-panel');
-    const topH = topBar ? topBar.offsetHeight + 10 : 50;
-    const bottomH = (bottomBar && window.innerWidth < 1024) ? bottomBar.offsetHeight + 10 : 0;
-    const sideW = window.innerWidth >= 1024 ? 210 : 16;
-    
-    const availW = Math.max(window.innerWidth - sideW, 300);
-    const availH = Math.max(window.innerHeight - topH - bottomH - 12, 180);
-    
-    const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H, 1);
-    
-    if (this.canvas) {
+    const viewport = document.getElementById('game-viewport');
+    if (!viewport || !this.canvas) return;
+
+    if (window.innerWidth >= 1024) {
+      // 桌機模式保持原生 900x550 或適當縮放
+      const maxW = Math.min(window.innerWidth - 230, CANVAS_W);
+      const maxH = Math.min(window.innerHeight - 70, CANVAS_H);
+      const scale = Math.min(maxW / CANVAS_W, maxH / CANVAS_H, 1);
+      this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
+      this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
+    } else {
+      // 行動端模式：依據 game-viewport 實體可用空間填滿最大可能面積
+      const availW = viewport.clientWidth - 8;
+      const availH = viewport.clientHeight - 8;
+      
+      if (availW <= 0 || availH <= 0) return;
+      
+      const scale = Math.min(availW / CANVAS_W, availH / CANVAS_H);
       this.canvas.style.width = `${Math.floor(CANVAS_W * scale)}px`;
       this.canvas.style.height = `${Math.floor(CANVAS_H * scale)}px`;
     }
