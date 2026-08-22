@@ -1781,13 +1781,36 @@ class Game {
       this.sfx.resume();
     }, { once: true });
 
-    // Right click to cancel
-    this.canvas.addEventListener('contextmenu', (e) => {
+    // 全域防止 iOS Safari 放大鏡選單與雙擊放大縮小
+    document.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      this.selectedTowerType = null;
-      this.deselectTower();
-      this.updateTowerPanel();
-    });
+    }, { passive: false });
+
+    document.addEventListener('gesturestart', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gesturechange', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('gestureend', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // 防止 iOS 快速雙擊或連續點擊畫面觸發 Double Tap Zoom
+    let lastTouchTime = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchTime <= 300) {
+        // 如果是點擊在正常按鈕或塔項目上，不阻斷 touchend，其他空白區域防止預設放大
+        const isControl = e.target.closest('button, .tower-item, .map-select-card');
+        if (!isControl) {
+          e.preventDefault();
+        }
+      }
+      lastTouchTime = now;
+    }, { passive: false });
 
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
