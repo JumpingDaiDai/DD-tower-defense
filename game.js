@@ -2276,13 +2276,34 @@ class Game {
 
   quitToMenu() {
     this.state = 'menu';
-    document.getElementById('menu-screen').classList.remove('hidden');
+    const menu = document.getElementById('menu-screen');
+    if (menu) {
+      menu.classList.remove('hidden');
+      menu.style.display = 'flex';
+    }
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('settings-screen').classList.add('hidden');
+    document.getElementById('tower-info').classList.add('hidden');
+
+    // 重置遊戲進行中的單位與狀態
+    this.towers = [];
+    this.enemies = [];
+    this.projectiles = [];
+    this.particles = [];
+    this.towerGrid = {};
+    this.selectedTower = null;
+    this.selectedTowerType = null;
+    this.gold = CONFIG.STARTING_GOLD;
+    this.lives = CONFIG.STARTING_LIVES;
+    this.score = 0;
+    this.currentWave = 0;
+    this.speedMultiplier = 1;
+    this.waveManager = new WaveManager();
+
     const menuScore = document.getElementById('menu-best-score');
     if (menuScore) menuScore.textContent = this.bestScore;
-    this.showToast('🏠 已返回主選單');
+    this.showToast('🏠 已返回首頁');
   }
 
   saveBestScore() {
@@ -2320,29 +2341,41 @@ class Game {
 
   toggleSound() {
     const enabled = this.sfx.toggle();
-    document.getElementById('sound-btn').textContent = enabled ? '🔊' : '🔇';
+    const soundBtn = document.getElementById('sound-btn');
+    if (soundBtn) soundBtn.textContent = enabled ? '🔊' : '🔇';
+    const statusText = document.getElementById('sound-status-text');
+    if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
+    const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
+    if (icon) icon.textContent = enabled ? '🔊' : '🔇';
   }
 
   toggleFullscreen() {
     const docEl = document.documentElement;
-    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
     
     if (!isFullscreen) {
       if (docEl.requestFullscreen) {
-        docEl.requestFullscreen().catch(err => {
-          this.showToast('📱 可將網頁「加入主畫面」享受全螢幕體驗');
+        docEl.requestFullscreen().catch(() => {
+          this.showToast('📱 iOS 點擊「分享」>「加入主畫面」即可全螢幕遊玩');
         });
       } else if (docEl.webkitRequestFullscreen) {
         docEl.webkitRequestFullscreen();
+      } else if (docEl.mozRequestFullScreen) {
+        docEl.mozRequestFullScreen();
+      } else if (docEl.msRequestFullscreen) {
+        docEl.msRequestFullscreen();
       } else {
-        // iOS Safari 通常不支援 DOM 全螢幕 API
-        this.showToast('📱 點擊「分享」>「加入主畫面」即可全螢幕遊玩');
+        this.showToast('📱 iOS 點擊「分享」>「加入主畫面」即可全螢幕遊玩');
       }
     } else {
       if (document.exitFullscreen) {
         document.exitFullscreen().catch(err => console.log(err));
       } else if (document.webkitExitFullscreen) {
         document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
       }
     }
   }
