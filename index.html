@@ -28,7 +28,7 @@
 <body>
   <div id="game-container">
     <!-- 版本標籤 -->
-    <div id="app-version">v3.6.1 (Force Cache Bust Amber Theme)</div>
+    <div id="app-version">v1.0.0 Official Release</div>
 
     <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪) -->
     <div id="top-bar">
@@ -94,28 +94,13 @@
       </div>
     </div>
 
-    <!-- 浮動 Log 按鈕與日誌面板與截圖按鈕 -->
-    <div id="debug-container" style="position:fixed;bottom:10px;right:10px;z-index:99999;display:flex;gap:4px;align-items:center;">
-      <button id="debug-toggle-btn" style="background:#222;color:#00ff66;border:1px solid #00ff66;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);touch-action:manipulation;" onclick="const l=document.getElementById('debug-log'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
-        🐞 Log
-      </button>
-      <button id="debug-shot-btn" style="background:#222;color:#ffcc00;border:1px solid #ffcc00;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);touch-action:manipulation;" onclick="if(window.dbgUploadScreenshot) dbgUploadScreenshot();">
-        📷 截圖
-      </button>
-      <div id="debug-log" style="display:none;position:absolute;bottom:32px;right:0;width:280px;max-height:180px;background:rgba(0,0,0,0.92);color:#00ff66;font-family:monospace;font-size:10px;padding:8px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;overflow-y:auto;pointer-events:auto;">
-        <div style="border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:4px;font-weight:bold;">
-          📋 系統偵錯日誌
-        </div>
-      </div>
-    </div>
-
     <!-- 通知 Toast -->
     <div id="toast-container"></div>
 
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">v3.6.1 (Force Cache Bust Amber Theme)</div>
+        <div class="menu-version-badge">✨ 正式版 v1.0.0</div>
         <div class="title-emoji">🏰</div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
@@ -160,26 +145,6 @@
     </div>
   </div>
 
-  <script>
-    // 全域直接監聽，確認手指點擊了畫面上哪個元素（靜默記錄至 Log 面板）
-    window.addEventListener('click', function(e) {
-      const msg = `🎯 Tap: <${e.target.tagName} id="${e.target.id}">`;
-      if (window.dbgLog) {
-        window.dbgLog(msg);
-      } else {
-        const dbg = document.getElementById('debug-log');
-        if (dbg) {
-          const d = document.createElement('div');
-          d.textContent = msg;
-          dbg.appendChild(d);
-        }
-      }
-    }, true);
-
-    // 動態載入帶有即時時間戳記的 game.js，完全繞過任何快取
-    const script = document.createElement('script');
-    script.src = 'game.js?t=' + Date.now();
-    document.body.appendChild(script);
-  </script>
+  <script src="game.js"></script>
 </body>
 </html>
