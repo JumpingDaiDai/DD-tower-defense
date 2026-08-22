@@ -1064,22 +1064,24 @@ class Tower {
 
     const stats = this.getStats();
 
-    // Sunflower: generate gold
+    // Sunflower: generate gold (only when wave is active)
     if (this.typeKey === 'sunflower' && stats.goldPerSecond) {
-      this.goldTimer += dt;
-      if (this.goldTimer >= 1.0) {
-        this.goldTimer -= 1.0;
-        game.addGold(stats.goldPerSecond);
-        game.spawnParticle(this.x, this.y - 15, {
-          text: `+${stats.goldPerSecond}💰`,
-          color: '#ffa500',
-          fontSize: 12,
-          vx: (Math.random() - 0.5) * 20,
-          vy: -40,
-          gravity: 0,
-          life: 1.0,
-        });
-        game.sfx.play('gold');
+      if (game.state === 'wave') {
+        this.goldTimer += dt;
+        if (this.goldTimer >= 1.0) {
+          this.goldTimer -= 1.0;
+          game.addGold(stats.goldPerSecond);
+          game.spawnParticle(this.x, this.y - 15, {
+            text: `+${stats.goldPerSecond}💰`,
+            color: '#ffa500',
+            fontSize: 12,
+            vx: (Math.random() - 0.5) * 20,
+            vy: -40,
+            gravity: 0,
+            life: 1.0,
+          });
+          game.sfx.play('gold');
+        }
       }
       return null; // Sunflower doesn't attack
     }
@@ -1590,6 +1592,10 @@ class Game {
       if (e.touches && e.touches.length > 0) {
         const touch = e.touches[0];
         const pos = getCanvasPos(touch.clientX, touch.clientY);
+        const { col, row } = pixelToGrid(pos.x, pos.y);
+        if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
+          this.hoverCell = { col, row };
+        }
         this.handleCanvasPoint(pos.x, pos.y);
       }
     }, { passive: true });
@@ -1597,6 +1603,16 @@ class Game {
     this.canvas.addEventListener('touchmove', (e) => {
       if (e.target === this.canvas) {
         e.preventDefault();
+      }
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const pos = getCanvasPos(touch.clientX, touch.clientY);
+        const { col, row } = pixelToGrid(pos.x, pos.y);
+        if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
+          this.hoverCell = { col, row };
+        } else {
+          this.hoverCell = null;
+        }
       }
     }, { passive: false });
 
@@ -1658,6 +1674,14 @@ class Game {
   // ─── Tower management ───
   selectTowerType(typeKey) {
     if (this.state !== 'planning' && this.state !== 'wave') return;
+    if (this.selectedTowerType === typeKey) {
+      this.selectedTowerType = null;
+      this.deselectTower();
+      this.updateTowerPanel();
+      document.getElementById('tower-info').classList.add('hidden');
+      this.canvas.style.cursor = 'crosshair';
+      return;
+    }
     const data = TOWER_DATA[typeKey];
     if (this.gold < data.cost) {
       this.showToast(`💰 金幣不足！需要 ${data.cost}`);
@@ -1666,6 +1690,7 @@ class Game {
     }
     this.selectedTowerType = typeKey;
     this.deselectTower();
+    this.showTowerPreviewInfo(typeKey);
     this.updateTowerPanel();
     this.canvas.style.cursor = 'cell';
   }
@@ -1704,6 +1729,7 @@ class Game {
     // Keep type selected for multi-place (unless not enough gold)
     if (this.gold < data.cost) {
       this.selectedTowerType = null;
+      document.getElementById('tower-info').classList.add('hidden');
       this.canvas.style.cursor = 'crosshair';
       this.updateTowerPanel();
     }
@@ -1719,7 +1745,9 @@ class Game {
 
   deselectTower() {
     this.selectedTower = null;
-    document.getElementById('tower-info').classList.add('hidden');
+    if (!this.selectedTowerType) {
+      document.getElementById('tower-info').classList.add('hidden');
+    }
     this.canvas.style.cursor = 'crosshair';
   }
 
@@ -1730,12 +1758,13 @@ class Game {
 
     document.getElementById('tower-info-name').textContent = `${tower.data.emoji} ${tower.data.name}`;
     document.getElementById('tower-info-level').textContent = `等級 ${tower.level} / ${CONFIG.MAX_LEVEL}`;
+    document.getElementById('tower-info-actions').style.display = 'flex';
 
-    let statsHtml = '';
+    let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${tower.data.description}</div>`;
     if (tower.typeKey === 'sunflower') {
-      statsHtml = `💰 產金：${stats.goldPerSecond}/秒`;
+      statsHtml += `💰 產金：${stats.goldPerSecond}/秒（僅出怪時生效）`;
     } else {
-      statsHtml = `⚔️ 傷害：${stats.damage}<br>`;
+      statsHtml += `⚔️ 傷害：${stats.damage}<br>`;
       statsHtml += `📏 範圍：${stats.range}<br>`;
       statsHtml += `💫 攻速：${stats.fireRate.toFixed(1)}/秒`;
       if (stats.splashRadius) statsHtml += `<br>💥 爆炸：${stats.splashRadius}`;
@@ -1755,6 +1784,29 @@ class Game {
     }
 
     document.getElementById('sell-btn').textContent = `💰 出售 (+${tower.getSellValue()})`;
+  }
+
+  showTowerPreviewInfo(typeKey) {
+    const data = TOWER_DATA[typeKey];
+    const info = document.getElementById('tower-info');
+    info.classList.remove('hidden');
+
+    document.getElementById('tower-info-name').textContent = `${data.emoji} ${data.name} (建造預覽)`;
+    document.getElementById('tower-info-level').textContent = `造價 💰${data.cost} | 點擊地圖空地放置`;
+    document.getElementById('tower-info-actions').style.display = 'none';
+
+    let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${data.description}</div>`;
+    if (typeKey === 'sunflower') {
+      statsHtml += `💰 產金：${data.goldPerSecond}/秒 (波次進行中自動獲得)`;
+    } else {
+      statsHtml += `⚔️ 基礎傷害：${data.damage}<br>`;
+      statsHtml += `📏 攻擊範圍：${data.range}<br>`;
+      statsHtml += `💫 攻擊速度：${data.fireRate.toFixed(1)}/秒`;
+      if (data.splashRadius) statsHtml += `<br>💥 爆炸範圍：${data.splashRadius}`;
+      if (data.slowFactor) statsHtml += `<br>❄️ 減速效果：${Math.round((1 - data.slowFactor) * 100)}% (持續 ${data.slowDuration}s)`;
+      if (data.piercing) statsHtml += `<br>🌈 穿透數量：${data.piercing} 體`;
+    }
+    document.getElementById('tower-info-stats').innerHTML = statsHtml;
   }
 
   upgradeTower() {
