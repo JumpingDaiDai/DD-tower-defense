@@ -1411,33 +1411,33 @@ class Game {
       ctx.restore();
     }
 
-    // Entry (Cute Doorway at top)
+    // Entry (Cute Doorway at top-left [0,0])
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
     ctx.save();
     ctx.translate(entry.x, entry.y);
     ctx.fillStyle = '#8b5a2b';
-    ctx.fillRect(-14, -20, 28, 40);
-    ctx.beginPath(); ctx.arc(0, -20, 14, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-18, -26, 36, 52);
+    ctx.beginPath(); ctx.arc(0, -26, 18, Math.PI, 0); ctx.fill();
     ctx.fillStyle = '#6b4226';
-    ctx.fillRect(-11, -17, 22, 37);
-    ctx.beginPath(); ctx.arc(0, -17, 11, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-14, -22, 28, 48);
+    ctx.beginPath(); ctx.arc(0, -22, 14, Math.PI, 0); ctx.fill();
     ctx.fillStyle = '#ffd700';
-    ctx.beginPath(); ctx.arc(7, 0, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(9, 0, 3, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
-    // Exit (Cute House)
+    // Exit (Cute Target House at top-right [5,0])
     ctx.save();
     ctx.translate(exit.x, exit.y);
     ctx.fillStyle = '#f5deb3';
-    ctx.fillRect(-16, -10, 32, 24);
+    ctx.fillRect(-22, -14, 44, 34);
     ctx.fillStyle = '#fa8072';
-    ctx.beginPath(); ctx.moveTo(-20, -10); ctx.lineTo(0, -24); ctx.lineTo(20, -10); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-28, -14); ctx.lineTo(0, -34); ctx.lineTo(28, -14); ctx.fill();
     ctx.fillStyle = '#8b4513';
-    ctx.fillRect(-5, 0, 10, 14);
+    ctx.fillRect(-7, 0, 14, 20);
     ctx.fillStyle = '#87ceeb';
-    ctx.fillRect(-12, -6, 7, 7);
-    ctx.fillRect(5, -6, 7, 7);
+    ctx.fillRect(-16, -8, 10, 10);
+    ctx.fillRect(6, -8, 10, 10);
     ctx.restore();
   }
 
