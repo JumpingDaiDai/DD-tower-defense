@@ -44,7 +44,7 @@ const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 700
 
 // ─── 2. 路徑定義 (直向手機地圖：由上往下蜿蜒穿梭) ──
 const PATH_WAYPOINTS = [
-  [1, -1],  // 上方入口
+  [1, 0],   // 上方入口
   [1, 2],
   [8, 2],
   [8, 5],
@@ -53,7 +53,7 @@ const PATH_WAYPOINTS = [
   [8, 8],
   [8, 11],
   [2, 11],
-  [2, 14],  // 下方城堡終點
+  [2, 13],  // 下方城堡終點
 ];
 
 // ─── 3. 防禦塔數據 ──────────────────────────
@@ -540,22 +540,24 @@ class GameMap {
         this.grid[r][c] = 0; // 0 = grass (buildable)
       }
     }
-    // Mark path cells
+    // Mark path cells safely
     for (let i = 0; i < PATH_WAYPOINTS.length - 1; i++) {
       const [c1, r1] = PATH_WAYPOINTS[i];
       const [c2, r2] = PATH_WAYPOINTS[i + 1];
       if (r1 === r2) {
         // Horizontal segment
-        const minC = Math.max(0, Math.min(c1, c2));
-        const maxC = Math.min(CONFIG.COLS - 1, Math.max(c1, c2));
-        for (let c = Math.ceil(minC); c <= Math.floor(maxC); c++) {
-          this.grid[r1][c] = 1;
-          this.pathCells.add(`${c},${r1}`);
+        if (r1 >= 0 && r1 < CONFIG.ROWS) {
+          const minC = Math.max(0, Math.min(c1, c2));
+          const maxC = Math.min(CONFIG.COLS - 1, Math.max(c1, c2));
+          for (let c = Math.ceil(minC); c <= Math.floor(maxC); c++) {
+            this.grid[r1][c] = 1;
+            this.pathCells.add(`${c},${r1}`);
+          }
         }
       } else {
         // Vertical segment
-        const minR = Math.min(r1, r2);
-        const maxR = Math.max(r1, r2);
+        const minR = Math.max(0, Math.min(r1, r2));
+        const maxR = Math.min(CONFIG.ROWS - 1, Math.max(r1, r2));
         for (let r = minR; r <= maxR; r++) {
           if (c1 >= 0 && c1 < CONFIG.COLS) {
             this.grid[r][c1] = 1;
