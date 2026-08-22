@@ -1784,7 +1784,7 @@ class Game {
       this.sfx.resume();
     }, { once: true });
 
-    // 全域防止 iOS Safari 放大鏡選單與雙擊放大縮小
+    // 全域防止 iOS Safari 長按呼叫選單、雙擊放大與手勢縮放
     document.addEventListener('contextmenu', (e) => {
       e.preventDefault();
     }, { passive: false });
@@ -1801,18 +1801,16 @@ class Game {
       e.preventDefault();
     }, { passive: false });
 
-    // 防止 iOS 快速雙擊或連續點擊畫面觸發 Double Tap Zoom（於 touchstart 階段徹底阻斷）
-    let lastTouchStart = 0;
-    document.addEventListener('touchstart', (e) => {
+    // 阻斷 iOS 快速雙擊觸發 Viewport Zoom（不再呼叫 e.target.click() 避免二次觸發 iOS 系統長按）
+    let lastTouchTime = 0;
+    document.addEventListener('touchend', (e) => {
       const now = Date.now();
-      if (now - lastTouchStart <= 350) {
-        e.preventDefault();
-        // 重新觸發點擊目標上的常規點擊邏輯，但杜絕 Safari Viewport Zoom
-        if (e.target) {
-          e.target.click();
+      if (now - lastTouchTime <= 300) {
+        if (e.cancelable) {
+          e.preventDefault();
         }
       }
-      lastTouchStart = now;
+      lastTouchTime = now;
     }, { passive: false });
 
     // 防止多指縮放手勢 (Pinch to zoom)
