@@ -13,10 +13,12 @@
 html, body {
   width: 100%;
   height: 100%;
+  height: -webkit-fill-available;
   height: 100dvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: fixed;
   font-family: 'Zen Maru Gothic', 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #fce4ec 0%, #e8f5e9 50%, #e3f2fd 100%);
   display: flex;
@@ -24,6 +26,7 @@ html, body {
   align-items: center;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
   touch-action: manipulation;
 }
 
@@ -36,14 +39,16 @@ html, body {
 #game-container {
   position: relative;
   width: 100vw;
+  height: 100%;
+  height: -webkit-fill-available;
   height: 100dvh;
   max-width: 1200px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 8px;
-  gap: 6px;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) calc(8px + env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) calc(8px + env(safe-area-inset-left, 0px));
+  gap: 4px;
 }
 
 /* --- Top Bar --- */
@@ -54,8 +59,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 6px 10px;
   background: rgba(255, 240, 243, 0.95);
   backdrop-filter: blur(8px);
   border: 2px solid rgba(255, 182, 193, 0.5);

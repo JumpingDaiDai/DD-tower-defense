@@ -1346,26 +1346,65 @@ class Game {
   }
 
   setupEvents() {
-    // Canvas click
-    this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-    this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
+    // 統一座標轉換輔助函式（完美相容 iOS Safari 與 Android Touch/Mouse）
+    const getCanvasPos = (clientX, clientY) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = this.canvas.width / rect.width;
+      const scaleY = this.canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+      };
+    };
+
+    // Mouse events
+    this.canvas.addEventListener('click', (e) => {
+      const pos = getCanvasPos(e.clientX, e.clientY);
+      this.handleCanvasPoint(pos.x, pos.y);
+    });
+
+    this.canvas.addEventListener('mousemove', (e) => {
+      const pos = getCanvasPos(e.clientX, e.clientY);
+      this.mouseX = pos.x;
+      this.mouseY = pos.y;
+      const { col, row } = pixelToGrid(pos.x, pos.y);
+      if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
+        this.hoverCell = { col, row };
+      } else {
+        this.hoverCell = null;
+      }
+    });
+
     this.canvas.addEventListener('mouseleave', () => {
       this.hoverCell = null;
     });
 
-    // Touch support
+    // Touch support (iOS Safari & Android)
     this.canvas.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      const touch = e.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = this.canvas.width / rect.width;
-      const scaleY = this.canvas.height / rect.height;
-      const fakeEvent = {
-        offsetX: (touch.clientX - rect.left) * scaleX,
-        offsetY: (touch.clientY - rect.top) * scaleY,
-      };
-      this.handleCanvasClick(fakeEvent);
-    });
+      this.sfx.init();
+      this.sfx.resume();
+      if (e.touches && e.touches.length > 0) {
+        const touch = e.touches[0];
+        const pos = getCanvasPos(touch.clientX, touch.clientY);
+        this.handleCanvasPoint(pos.x, pos.y);
+      }
+    }, { passive: false });
+
+    this.canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // 全域解鎖 iOS AudioContext
+    window.addEventListener('touchstart', () => {
+      this.sfx.init();
+      this.sfx.resume();
+    }, { once: true });
+
+    window.addEventListener('click', () => {
+      this.sfx.init();
+      this.sfx.resume();
+    }, { once: true });
 
     // Right click to cancel
     this.canvas.addEventListener('contextmenu', (e) => {
@@ -1390,9 +1429,7 @@ class Game {
   }
 
   // ─── Canvas interaction ───
-  handleCanvasClick(e) {
-    const px = e.offsetX;
-    const py = e.offsetY;
+  handleCanvasPoint(px, py) {
     const { col, row } = pixelToGrid(px, py);
 
     if (this.state !== 'planning' && this.state !== 'wave') return;
@@ -1410,20 +1447,6 @@ class Game {
       this.selectTower(existingTower);
     } else {
       this.deselectTower();
-    }
-  }
-
-  handleCanvasHover(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const scaleX = this.canvas.width / rect.width;
-    const scaleY = this.canvas.height / rect.height;
-    this.mouseX = e.offsetX;
-    this.mouseY = e.offsetY;
-    const { col, row } = pixelToGrid(e.offsetX, e.offsetY);
-    if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
-      this.hoverCell = { col, row };
-    } else {
-      this.hoverCell = null;
     }
   }
 
@@ -1688,12 +1711,19 @@ class Game {
   }
 
   toggleFullscreen() {
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      const container = document.documentElement;
-      if (container.requestFullscreen) {
-        container.requestFullscreen().catch(err => console.log(err));
-      } else if (container.webkitRequestFullscreen) {
-        container.webkitRequestFullscreen();
+    const docEl = document.documentElement;
+    const isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    
+    if (!isFullscreen) {
+      if (docEl.requestFullscreen) {
+        docEl.requestFullscreen().catch(err => {
+          this.showToast('📱 可將網頁「加入主畫面」享受全螢幕體驗');
+        });
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      } else {
+        // iOS Safari 通常不支援 DOM 全螢幕 API
+        this.showToast('📱 點擊「分享」>「加入主畫面」即可全螢幕遊玩');
       }
     } else {
       if (document.exitFullscreen) {
