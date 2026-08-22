@@ -68,7 +68,7 @@ html, body {
   z-index: 99;
 }
 
-/* --- Top Bar (頂部整合狀態列：極簡單行排列) --- */
+/* --- Top Bar (頂部整合狀態列：極簡單行排列，無多餘空白) --- */
 #top-bar {
   position: relative;
   z-index: 10;
@@ -77,8 +77,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 4px 6px;
   background: rgba(20, 35, 20, 0.55);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -92,6 +92,7 @@ html, body {
 .top-bar-left {
   display: flex;
   align-items: center;
+  justify-content: space-around;
   gap: 4px;
   flex: 1;
 }
@@ -106,8 +107,10 @@ html, body {
 #top-bar .stat {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1;
   gap: 2px;
-  padding: 3px 6px;
+  padding: 4px 6px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
