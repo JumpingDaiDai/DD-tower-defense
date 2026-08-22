@@ -75,9 +75,9 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 ─────────────────────────────
 const CONFIG = {
-  COLS: 10,
-  ROWS: 14,
-  CELL_SIZE: 50,
+  COLS: 8,
+  ROWS: 12,
+  CELL_SIZE: 60, // 格子放大 (480x720 完美適配手機滿版)
   STARTING_GOLD: 200,
   STARTING_LIVES: 20,
   SELL_RATIO: 0.7,
@@ -86,76 +86,62 @@ const CONFIG = {
   LS_KEY: 'dd_tower_defense_best',
 };
 
-const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 500
-const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 700
+const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 480
+const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 720
 
-// ─── 2. 多地圖配置數據 ──────────────────────
+// ─── 2. 多地圖配置數據 (純 8×12 規格) ──────────
 const MAP_CONFIGS = {
+  outer_ring: {
+    id: 'outer_ring',
+    name: '🏰 城堡外廊 (8×12 環形)',
+    desc: '左上 [0,0] 出發繞最外圍一整圈至右上 [7,0] 終點',
+    icon: '🔲',
+    cols: 8,
+    rows: 12,
+    // 怪物緊貼畫布最外圍邊界：左上 -> 左下 -> 右下 -> 右上
+    waypoints: [
+      [0, 0],
+      [0, 11],
+      [7, 11],
+      [7, 0],
+    ],
+  },
   serpentine: {
     id: 'serpentine',
     name: '🌸 花園小徑 (蛇形)',
     desc: '經典蜿蜒路線，適合均衡佈局',
     icon: '〰️',
-    cols: 10,
-    rows: 14,
+    cols: 8,
+    rows: 12,
     waypoints: [
-      [1, 0],
-      [1, 2],
-      [8, 2],
-      [8, 5],
-      [1, 5],
-      [1, 8],
-      [8, 8],
-      [8, 11],
-      [2, 11],
-      [2, 13],
+      [0, 0],
+      [0, 2],
+      [7, 2],
+      [7, 5],
+      [0, 5],
+      [0, 8],
+      [7, 8],
+      [7, 11],
     ],
   },
   ring: {
     id: 'ring',
-    name: '🎯 競技之環 (外圍環繞)',
-    desc: '外圍一整圈路線，中央為建造平台',
+    name: '🎯 競技之環 (中央競技)',
+    desc: '外圍環繞一圈，中央為建造平台',
     icon: '⭕',
-    cols: 10,
-    rows: 14,
-    // 怪物從左上進場，順時針沿著邊界繞外圍一大圈，最後到左側門
+    cols: 8,
+    rows: 12,
     waypoints: [
-      [1, 0],
-      [1, 1],
-      [8, 1],
-      [8, 12],
-      [1, 12],
-      [1, 3],
-      [2, 3], // 進入終點
+      [0, 0],
+      [0, 11],
+      [7, 11],
+      [7, 2],
+      [1, 2],
     ],
-    // 特別限制：只有中間 3~6 欄、3~10 列可以建造，更貼合中央競技場
-    customBuildable: (col, row) => {
-      // 僅中央核心區域可建造
-      return col >= 2 && col <= 7 && row >= 3 && row <= 10;
-    },
-  },
-  outer_ring: {
-    id: 'outer_ring',
-    name: '🏰 城堡外廊 (8×12 環形)',
-    desc: '左上出發繞外圍一圈至右上終點，中央核心建造',
-    icon: '🔲',
-    cols: 10,
-    rows: 14,
-    // 怪物從左上 [1, 0] 進場 -> 左側直下 [1, 12] -> 底部橫移 [8, 12] -> 右側直上 [8, 0] 離開
-    waypoints: [
-      [1, 0],
-      [1, 12],
-      [8, 12],
-      [8, 0],
-    ],
-    // 限制在 8x12 區域內建造（中間 2~7 欄、1~11 列均為建造區）
-    customBuildable: (col, row) => {
-      return col >= 1 && col <= 8 && row >= 1 && row <= 12;
-    },
   },
 };
 
-let CURRENT_MAP_ID = 'serpentine';
+let CURRENT_MAP_ID = 'outer_ring';
 let PATH_WAYPOINTS = MAP_CONFIGS[CURRENT_MAP_ID].waypoints;
 
 // ─── 3. 防禦塔數據 ──────────────────────────
@@ -1430,30 +1416,29 @@ class Game {
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
     ctx.save();
-    ctx.translate(entry.x, Math.max(16, entry.y + 25));
+    ctx.translate(entry.x, entry.y);
     ctx.fillStyle = '#8b5a2b';
-    ctx.fillRect(-12, -18, 24, 36);
-    ctx.beginPath(); ctx.arc(0, -18, 12, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-14, -20, 28, 40);
+    ctx.beginPath(); ctx.arc(0, -20, 14, Math.PI, 0); ctx.fill();
     ctx.fillStyle = '#6b4226';
-    ctx.fillRect(-10, -16, 20, 34);
-    ctx.beginPath(); ctx.arc(0, -16, 10, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-11, -17, 22, 37);
+    ctx.beginPath(); ctx.arc(0, -17, 11, Math.PI, 0); ctx.fill();
     ctx.fillStyle = '#ffd700';
-    ctx.beginPath(); ctx.arc(6, 0, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(7, 0, 2.5, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
     // Exit (Cute House)
     ctx.save();
-    const exitY = exit.y <= 50 ? Math.max(20, exit.y + 25) : Math.min(CANVAS_H - 16, exit.y - 25);
-    ctx.translate(exit.x, exitY);
+    ctx.translate(exit.x, exit.y);
     ctx.fillStyle = '#f5deb3';
-    ctx.fillRect(-14, -10, 28, 20);
+    ctx.fillRect(-16, -10, 32, 24);
     ctx.fillStyle = '#fa8072';
-    ctx.beginPath(); ctx.moveTo(-18, -10); ctx.lineTo(0, -22); ctx.lineTo(18, -10); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-20, -10); ctx.lineTo(0, -24); ctx.lineTo(20, -10); ctx.fill();
     ctx.fillStyle = '#8b4513';
-    ctx.fillRect(-4, -2, 8, 12);
+    ctx.fillRect(-5, 0, 10, 14);
     ctx.fillStyle = '#87ceeb';
-    ctx.fillRect(-10, -6, 6, 6);
-    ctx.fillRect(4, -6, 6, 6);
+    ctx.fillRect(-12, -6, 7, 7);
+    ctx.fillRect(5, -6, 7, 7);
     ctx.restore();
   }
 
