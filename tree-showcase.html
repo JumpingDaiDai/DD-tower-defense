@@ -1,0 +1,561 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>世界樹神殿 - 10 款極致手繪設計挑選展示</title>
+  <style>
+    :root {
+      --bg: #12131c;
+      --card-bg: #1e1f2e;
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #ff4081;
+      --accent-gold: #ffd54f;
+      --text: #ffffff;
+      --text-dim: #9e9eb4;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 30px 20px;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto 30px auto;
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(255, 64, 129, 0.15), rgba(255, 213, 79, 0.15));
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 15px;
+      color: var(--text-dim);
+    }
+
+    .grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent-gold);
+      box-shadow: 0 10px 30px rgba(255, 213, 79, 0.25);
+    }
+
+    .badge-num {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 900;
+      font-size: 13px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(233, 30, 99, 0.5);
+    }
+
+    canvas {
+      display: block;
+      margin: 10px 0 16px 0;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+    }
+
+    .title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 12.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .nav-bar {
+      max-width: 1200px;
+      margin: 30px auto 0 auto;
+      text-align: center;
+    }
+
+    .nav-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 800;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(233, 30, 99, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🌳 世界樹終點神殿 - 10 款專屬手繪風格展示提案</h1>
+    <p>完全去除煙霧與厚重方磚，專注於「童話唯美、守護神聖、奇幻自然」三位一體設計，請點評挑選最心儀的編號！</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- 1. 櫻花精靈樹 -->
+    <div class="card">
+      <span class="badge-num">1</span>
+      <canvas id="cv-tree-1" width="130" height="130"></canvas>
+      <div class="title">粉櫻花靈神木</div>
+      <div class="tag">唯美粉嫩 · 雙分叉精靈木</div>
+      <div class="desc">優雅弧線雙樹幹、層次漸層粉櫻花團與白石蓮花底座，頂部懸浮翡翠生命晶石。</div>
+    </div>
+
+    <!-- 2. 黃金聖樹 (精靈之光) -->
+    <div class="card">
+      <span class="badge-num">2</span>
+      <canvas id="cv-tree-2" width="130" height="130"></canvas>
+      <div class="title">黃金聖域世界樹</div>
+      <div class="tag">神聖光芒 · 金葉輝煌</div>
+      <div class="desc">白金雕花大理石座、扭曲古木金紋、三層金黃漸層冠層與頂部懸浮日光寶石。</div>
+    </div>
+
+    <!-- 3. 星月紫晶神木 -->
+    <div class="card">
+      <span class="badge-num">3</span>
+      <canvas id="cv-tree-3" width="130" height="130"></canvas>
+      <div class="title">星月夜光紫晶樹</div>
+      <div class="tag">夜空神秘 · 螢光紫藍</div>
+      <div class="desc">深藍黑曜基座、夢幻紫藍漸層夜光樹冠，樹頂嵌有彎月發光符文與星光微粒。</div>
+    </div>
+
+    <!-- 4. 翡翠生命古樹 -->
+    <div class="card">
+      <span class="badge-num">4</span>
+      <canvas id="cv-tree-4" width="130" height="130"></canvas>
+      <div class="title">翡翠森之守護者</div>
+      <div class="tag">古典奇幻 · 繁茂森林</div>
+      <div class="desc">粗壯老樹盤根錯節、茂密深淺翠綠雲朵樹冠，中央生長著發光精靈樹洞。</div>
+    </div>
+
+    <!-- 5. 琉璃水晶樹 -->
+    <div class="card">
+      <span class="badge-num">5</span>
+      <canvas id="cv-tree-5" width="130" height="130"></canvas>
+      <div class="title">極光琉璃水晶樹</div>
+      <div class="tag">冰透純淨 · 棱鏡晶芒</div>
+      <div class="desc">通體由藍白漸層切面水晶生長而成，折射彩虹光芒，高貴聖潔無雜質。</div>
+    </div>
+
+    <!-- 6. 蘑菇精靈神殿樹 -->
+    <div class="card">
+      <span class="badge-num">6</span>
+      <canvas id="cv-tree-6" width="130" height="130"></canvas>
+      <div class="title">童話花菇精靈樹屋</div>
+      <div class="tag">童趣可愛 · 花園小天地</div>
+      <div class="desc">古樹頂端生長著巨型紅斑蘑菇屋頂與圓形木窗，四周環繞彩色小花。</div>
+    </div>
+
+    <!-- 7. 守護天使神木 -->
+    <div class="card">
+      <span class="badge-num">7</span>
+      <canvas id="cv-tree-7" width="130" height="130"></canvas>
+      <div class="title">雙翼守護天使神木</div>
+      <div class="tag">莊嚴神聖 · 守護天翼</div>
+      <div class="desc">古樹兩側展開白金雕塑的精靈光之雙翼，中央核心懸浮著高光心靈徽記。</div>
+    </div>
+
+    <!-- 8. 糖果彩虹魔法樹 -->
+    <div class="card">
+      <span class="badge-num">8</span>
+      <canvas id="cv-tree-8" width="130" height="130"></canvas>
+      <div class="title">糖果彩虹世界樹</div>
+      <div class="tag">甜美活潑 · 糖霜夢境</div>
+      <div class="desc">拐杖糖螺旋樹幹、彩色泡泡糖果球樹冠與晶亮糖霜光斑，與可愛防禦塔相呼應。</div>
+    </div>
+
+    <!-- 9. 浮空浮島世界之樹 -->
+    <div class="card">
+      <span class="badge-num">9</span>
+      <canvas id="cv-tree-9" width="130" height="130"></canvas>
+      <div class="title">浮空神石精靈浮島</div>
+      <div class="tag">懸空島嶼 · 天空秘境</div>
+      <div class="desc">古樹紮根於懸浮的長青石空島上，下方垂掛飄渺藤蔓與向下滴落的光之水滴。</div>
+    </div>
+
+    <!-- 10. 符文永恆神樹 -->
+    <div class="card">
+      <span class="badge-num">10</span>
+      <canvas id="cv-tree-10" width="130" height="130"></canvas>
+      <div class="title">古代符文永恆神樹</div>
+      <div class="tag">古老智慧 · 旋轉魔法環</div>
+      <div class="desc">古老扭曲樹幹周圍懸浮著雙層旋轉古代金光符文軌道，散發磅礡守護力場。</div>
+    </div>
+
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn">🎮 返回遊戲 (index.html)</a>
+  </div>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // 共通底盤陰影繪製
+      const drawBaseShadow = (ctx) => {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.beginPath();
+        ctx.ellipse(0, 24, 32, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      // 1. 粉櫻花靈神木
+      (() => {
+        const ctx = document.getElementById('cv-tree-1').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 蓮花座
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#e0d0c0';
+        ctx.lineWidth = 1.5;
+        for (let i = 0; i < 6; i++) {
+          const ang = (i * Math.PI) / 3;
+          ctx.beginPath(); ctx.ellipse(Math.cos(ang) * 16, 18 + Math.sin(ang) * 6, 9, 4.5, ang, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        }
+
+        // 雙分叉樹幹
+        const tg = ctx.createLinearGradient(-10, 0, 10, 0);
+        tg.addColorStop(0, '#8d6e63'); tg.addColorStop(0.5, '#a1887f'); tg.addColorStop(1, '#5d4037');
+        ctx.fillStyle = tg;
+        ctx.beginPath();
+        ctx.moveTo(-10, 18); ctx.quadraticCurveTo(-14, 0, -20, -16); ctx.quadraticCurveTo(-16, -20, -10, -12);
+        ctx.lineTo(0, -7); ctx.lineTo(10, -12); ctx.quadraticCurveTo(16, -20, 20, -16); ctx.quadraticCurveTo(14, 0, 10, 18);
+        ctx.closePath(); ctx.fill();
+
+        // 蓬鬆粉櫻
+        const fol = [
+          { x: -16, y: -24, r: 18, c: '#81c784' }, { x: 16, y: -24, r: 18, c: '#81c784' },
+          { x: 0, y: -30, r: 21, c: '#a5d6a7' }, { x: -10, y: -18, r: 14, c: '#ff80ab' },
+          { x: 10, y: -18, r: 14, c: '#ff4081' }, { x: 0, y: -14, r: 16, c: '#ff80ab' }
+        ];
+        for (let f of fol) {
+          ctx.fillStyle = f.c; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 水晶
+        ctx.shadowColor = '#69f0ae'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#00e676';
+        ctx.beginPath(); ctx.moveTo(0, -48); ctx.lineTo(7, -39); ctx.lineTo(0, -30); ctx.lineTo(-7, -39); ctx.closePath(); ctx.fill();
+      })();
+
+      // 2. 黃金聖域世界樹
+      (() => {
+        const ctx = document.getElementById('cv-tree-2').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 白金雕花基壇
+        ctx.fillStyle = '#fff8e1'; ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-28, 10, 56, 16, 6); ctx.fill(); ctx.stroke();
+
+        // 金色古樹幹
+        const tg = ctx.createLinearGradient(0, -20, 0, 20);
+        tg.addColorStop(0, '#ffd54f'); tg.addColorStop(1, '#ff8f00');
+        ctx.fillStyle = tg;
+        ctx.beginPath(); ctx.moveTo(-12, 10); ctx.lineTo(-5, -20); ctx.lineTo(5, -20); ctx.lineTo(12, 10); ctx.closePath(); ctx.fill();
+
+        // 金色三層樹冠
+        const goldLayers = [
+          { y: -16, r: 24, c: '#ffe082' }, { y: -28, r: 20, c: '#ffd54f' }, { y: -38, r: 15, c: '#fff59d' }
+        ];
+        for (let l of goldLayers) {
+          ctx.fillStyle = l.c;
+          ctx.beginPath(); ctx.arc(0, l.y, l.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 頂部日光寶石
+        ctx.shadowColor = '#ffd54f'; ctx.shadowBlur = 14;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(0, -52, 6, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 3. 星月夜光紫晶樹
+      (() => {
+        const ctx = document.getElementById('cv-tree-3').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 黑曜石基壇
+        ctx.fillStyle = '#1a237e'; ctx.strokeStyle = '#7c4dff'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 16, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+        // 幽紫樹幹
+        ctx.fillStyle = '#311b92';
+        ctx.beginPath(); ctx.moveTo(-9, 16); ctx.lineTo(-4, -18); ctx.lineTo(4, -18); ctx.lineTo(9, 16); ctx.closePath(); ctx.fill();
+
+        // 夜光紫藍雲冠
+        const pFol = [
+          { x: -14, y: -22, r: 17, c: '#5c6bc0' }, { x: 14, y: -22, r: 17, c: '#7e57c2' },
+          { x: 0, y: -28, r: 20, c: '#ab47bc' }, { x: 0, y: -16, r: 14, c: '#ba68c8' }
+        ];
+        for (let p of pFol) {
+          ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 樹頂發光彎月
+        ctx.shadowColor = '#ea80fc'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(0, -46, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1e1f2e';
+        ctx.beginPath(); ctx.arc(3, -48, 7, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 4. 翡翠森之守護者
+      (() => {
+        const ctx = document.getElementById('cv-tree-4').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 樹根盤錯
+        ctx.fillStyle = '#4e342e';
+        ctx.beginPath();
+        ctx.moveTo(-18, 20); ctx.quadraticCurveTo(-10, 10, -7, -15);
+        ctx.lineTo(7, -15); ctx.quadraticCurveTo(10, 10, 18, 20);
+        ctx.closePath(); ctx.fill();
+
+        // 翠綠蓬鬆樹冠
+        const gFol = [
+          { x: -16, y: -20, r: 18, c: '#2e7d32' }, { x: 16, y: -20, r: 18, c: '#2e7d32' },
+          { x: 0, y: -30, r: 22, c: '#43a047' }, { x: -8, y: -14, r: 15, c: '#66bb6a' },
+          { x: 8, y: -14, r: 15, c: '#81c784' }
+        ];
+        for (let g of gFol) {
+          ctx.fillStyle = g.c; ctx.beginPath(); ctx.arc(g.x, g.y, g.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 精靈樹洞
+        ctx.fillStyle = '#ffe082';
+        ctx.beginPath(); ctx.ellipse(0, 0, 5, 8, 0, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 5. 極光琉璃水晶樹
+      (() => {
+        const ctx = document.getElementById('cv-tree-5').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 晶體基座
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.4)'; ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(-24, 12, 48, 12, 4); ctx.fill(); ctx.stroke();
+
+        // 水晶柱幹
+        const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
+        cGrad.addColorStop(0, '#80d8ff'); cGrad.addColorStop(0.5, '#ffffff'); cGrad.addColorStop(1, '#00b0ff');
+        ctx.fillStyle = cGrad;
+        ctx.beginPath(); ctx.moveTo(-8, 12); ctx.lineTo(-18, -25); ctx.lineTo(0, -35); ctx.lineTo(18, -25); ctx.lineTo(8, 12); ctx.closePath(); ctx.fill();
+
+        // 晶芒切面
+        const facets = [
+          { p: [[0, -35], [-18, -25], [-10, -10], [0, -18]], c: '#e1f5fe' },
+          { p: [[0, -35], [18, -25], [10, -10], [0, -18]], c: '#b3e5fc' },
+          { p: [[0, -18], [-10, -10], [0, 8]], c: '#4fc3f7' },
+          { p: [[0, -18], [10, -10], [0, 8]], c: '#29b6f6' }
+        ];
+        for (let f of facets) {
+          ctx.fillStyle = f.c;
+          ctx.beginPath();
+          f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+          ctx.closePath(); ctx.fill();
+        }
+
+        // 頂端晶核
+        ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(0, -44, 5, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 6. 童話花菇精靈樹屋
+      (() => {
+        const ctx = document.getElementById('cv-tree-6').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 圓圓樹幹屋
+        ctx.fillStyle = '#d7ccc8'; ctx.strokeStyle = '#8d6e63'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-16, -5, 32, 24, 8); ctx.fill(); ctx.stroke();
+
+        // 蘑菇大屋頂
+        ctx.fillStyle = '#ff5252';
+        ctx.beginPath(); ctx.arc(0, -8, 26, Math.PI, 0); ctx.fill();
+        // 蘑菇白斑
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(-12, -18, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(12, -18, 4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -26, 5, 0, Math.PI * 2); ctx.fill();
+
+        // 木門與黃光小窗
+        ctx.fillStyle = '#5d4037'; ctx.fillRect(-5, 6, 10, 13);
+        ctx.fillStyle = '#ffd54f'; ctx.beginPath(); ctx.arc(8, 4, 3.5, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 7. 雙翼守護天使神木
+      (() => {
+        const ctx = document.getElementById('cv-tree-7').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 天使雙翼
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'; ctx.strokeStyle = '#ffe082'; ctx.lineWidth = 1.5;
+        // 左翼
+        ctx.beginPath(); ctx.moveTo(-6, 0); ctx.quadraticCurveTo(-30, -15, -28, -35); ctx.quadraticCurveTo(-15, -28, -4, -12); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 右翼
+        ctx.beginPath(); ctx.moveTo(6, 0); ctx.quadraticCurveTo(30, -15, 28, -35); ctx.quadraticCurveTo(15, -28, 4, -12); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+        // 神聖生命樹主幹
+        ctx.fillStyle = '#8d6e63';
+        ctx.beginPath(); ctx.roundRect(-7, -15, 14, 30, 4); ctx.fill();
+
+        // 中央守護晶心
+        ctx.shadowColor = '#ffd54f'; ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff4081';
+        ctx.beginPath(); ctx.arc(0, -5, 6, 0, Math.PI * 2); ctx.fill();
+
+        // 頂部天使光環
+        ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.ellipse(0, -32, 12, 4, 0, 0, Math.PI * 2); ctx.stroke();
+      })();
+
+      // 8. 糖果彩虹魔法樹
+      (() => {
+        const ctx = document.getElementById('cv-tree-8').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 拐杖糖樹幹
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ff4081'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.roundRect(-8, -10, 16, 28, 4); ctx.fill(); ctx.stroke();
+        // 紅斜紋
+        ctx.fillStyle = '#ff4081';
+        ctx.fillRect(-8, 8, 16, 4); ctx.fillRect(-8, -2, 16, 4);
+
+        // 彩虹泡泡糖果球樹冠
+        const cBalls = [
+          { x: -14, y: -20, r: 13, c: '#ff80ab' }, { x: 14, y: -20, r: 13, c: '#80d8ff' },
+          { x: 0, y: -28, r: 15, c: '#ffd54f' }, { x: -8, y: -12, r: 11, c: '#b9f6ca' },
+          { x: 8, y: -12, r: 11, c: '#ea80fc' }
+        ];
+        for (let b of cBalls) {
+          ctx.fillStyle = b.c; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 頂部棒棒糖星星
+        ctx.fillStyle = '#ffeb3b';
+        ctx.beginPath(); ctx.arc(0, -42, 6, 0, Math.PI * 2); ctx.fill();
+      })();
+
+      // 9. 浮空神石精靈浮島
+      (() => {
+        const ctx = document.getElementById('cv-tree-9').getContext('2d');
+        ctx.translate(65, 68);
+
+        // 浮空投影
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        ctx.beginPath(); ctx.ellipse(0, 32, 22, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+        // 浮島倒錐岩石
+        ctx.fillStyle = '#616161';
+        ctx.beginPath(); ctx.moveTo(-24, 8); ctx.lineTo(0, 26); ctx.lineTo(24, 8); ctx.closePath(); ctx.fill();
+        // 浮島綠草層
+        ctx.fillStyle = '#66bb6a';
+        ctx.beginPath(); ctx.roundRect(-26, 2, 52, 8, 4); ctx.fill();
+
+        // 島上神木
+        ctx.fillStyle = '#795548';
+        ctx.beginPath(); ctx.moveTo(-6, 4); ctx.lineTo(-3, -14); ctx.lineTo(3, -14); ctx.lineTo(6, 4); ctx.closePath(); ctx.fill();
+
+        // 蒼翠樹冠
+        ctx.fillStyle = '#81c784'; ctx.beginPath(); ctx.arc(0, -22, 16, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#4caf50'; ctx.beginPath(); ctx.arc(-8, -18, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#388e3c'; ctx.beginPath(); ctx.arc(8, -18, 12, 0, Math.PI * 2); ctx.fill();
+
+        // 懸垂藤蔓
+        ctx.strokeStyle = '#81c784'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(-15, 10); ctx.lineTo(-18, 22); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(12, 10); ctx.lineTo(14, 20); ctx.stroke();
+      })();
+
+      // 10. 古代符文永恆神樹
+      (() => {
+        const ctx = document.getElementById('cv-tree-10').getContext('2d');
+        ctx.translate(65, 68);
+        drawBaseShadow(ctx);
+
+        // 雙層旋轉古代金光符文環
+        ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.ellipse(0, -10, 32, 10, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(0, -24, 24, 8, 0, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 永恆古木扭曲主幹
+        ctx.fillStyle = '#4e342e';
+        ctx.beginPath(); ctx.moveTo(-8, 18); ctx.quadraticCurveTo(8, 0, -5, -20); ctx.lineTo(5, -20); ctx.quadraticCurveTo(-6, 0, 8, 18); ctx.closePath(); ctx.fill();
+
+        // 符文青金樹冠
+        const aFol = [
+          { x: -14, y: -24, r: 15, c: '#00897b' }, { x: 14, y: -24, r: 15, c: '#00897b' },
+          { x: 0, y: -30, r: 18, c: '#26a69a' }, { x: 0, y: -16, r: 13, c: '#80cbc4' }
+        ];
+        for (let a of aFol) {
+          ctx.fillStyle = a.c; ctx.beginPath(); ctx.arc(a.x, a.y, a.r, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // 頂部古代永恆晶石
+        ctx.shadowColor = '#00e5ff'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#e0f7fa';
+        ctx.beginPath(); ctx.moveTo(0, -48); ctx.lineTo(6, -40); ctx.lineTo(0, -32); ctx.lineTo(-6, -40); ctx.closePath(); ctx.fill();
+      })();
+    });
+  </script>
+</body>
+</html>

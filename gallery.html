@@ -1,0 +1,656 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可愛塔防 - 全 UI / 角色 / 防禦塔 / 建築 / 技能圖鑑設計展示</title>
+  <style>
+    :root {
+      --bg-dark: #1a1a2e;
+      --card-bg: #232338;
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent: #ff4081;
+      --accent-gold: #ffd54f;
+      --text: #ffffff;
+      --text-dim: #a0a0b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      padding: 24px 16px;
+      line-height: 1.6;
+    }
+
+    header {
+      max-width: 1100px;
+      margin: 0 auto 30px auto;
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(255, 64, 129, 0.18), rgba(255, 213, 79, 0.18));
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .card canvas {
+      display: block;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--accent-gold);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* UI Component Showcase */
+    .ui-showcase-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      justify-content: flex-start;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .ui-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ui-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    /* Buttons from Game */
+    .btn-primary {
+      padding: 12px 28px;
+      border: 1.5px solid rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ff77a9 0%, #ff4081 50%, #e91e63 100%);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #ad1457, 0 8px 20px rgba(233, 30, 99, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      border: 1.5px solid #d7ccc8;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
+      color: #5d4037;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #bcaaa4, 0 6px 16px rgba(0, 0, 0, 0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-speed {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-gear {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Skill Button Prototype */
+    .skill-btn-preview {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: rgba(30, 20, 45, 0.85);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Top-bar Mockup */
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .nav-back {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 0.2s;
+    }
+
+    .nav-back:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>可愛塔防 (Cute TD) - 視覺元件與圖形全景圖鑑 (v1.0.15)</h1>
+    <p>全系統 100% 純代碼手繪 (Zero-Emoji)，涵蓋 7 大防禦塔、6 大怪物角色、2 大主題出入口建築、主動技能與 UI 向量圖標</p>
+    <a href="index.html" class="nav-back">🎮 返回遊戲本體 (index.html)</a>
+  </header>
+
+  <div class="container">
+
+    <!-- 1. 主題出入口建築 -->
+    <section>
+      <div class="section-title">戰場核心主題建築 (出入口基座)</div>
+      <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        <div class="card">
+          <canvas id="cv-entry" width="120" height="120"></canvas>
+          <div class="card-title">起點：深淵召喚符文傳送門</div>
+          <div class="card-subtitle">Void Rift Portal</div>
+          <div class="card-desc">黑曜石雙尖碑、懸浮紫晶核心、八角古代石陣與動態旋轉星雲漩渦。怪物自深淵裂隙入侵。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-exit" width="120" height="120"></canvas>
+          <div class="card-title">終點：精靈世界之樹·花靈神殿</div>
+          <div class="card-subtitle">Sacred Fairy Tree</div>
+          <div class="card-desc">白石蓮花底座、柔美古木雙分叉樹幹、層次粉櫻與嫩綠雲朵樹冠，頂端懸浮翡翠生命守護水晶。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 防禦塔圖鑑 (7 大防禦塔) -->
+    <section>
+      <div class="section-title">7 大防禦塔 3D 手繪模型 (Towers)</div>
+      <div class="grid-cards">
+        <div class="card">
+          <canvas id="cv-tower-petal" width="90" height="90"></canvas>
+          <div class="card-title">花瓣炮塔</div>
+          <div class="card-subtitle">造價 100 | 單體物理</div>
+          <div class="card-desc">粉紅層次花瓣與立體嫩綠葉片，射速均勻的基礎防線。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-ice" width="90" height="90"></canvas>
+          <div class="card-title">冰淇淋塔</div>
+          <div class="card-subtitle">造價 150 | 群體減速</div>
+          <div class="card-desc">雙球薄荷與草莓冰淇淋、立體甜筒紋與櫻桃裝飾，緩速敵人。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-sunflower" width="90" height="90"></canvas>
+          <div class="card-title">向日葵</div>
+          <div class="card-subtitle">造價 75 | 自動產金</div>
+          <div class="card-desc">向陽金黃花盤與圓潤咖啡核心，波次進行中源源不絕產出金幣。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-candy" width="90" height="90"></canvas>
+          <div class="card-title">糖果炮</div>
+          <div class="card-subtitle">造價 200 | 範圍爆炸</div>
+          <div class="card-desc">條紋拐杖糖加農炮管與旋轉波浪棒棒糖輪座，重創聚集怪群。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-rainbow" width="90" height="90"></canvas>
+          <div class="card-title">彩虹塔</div>
+          <div class="card-subtitle">造價 300 | 直線穿透</div>
+          <div class="card-desc">七彩同心弧光拱門與雙側白雲底座，發射多體貫穿光束。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-thunder" width="90" height="90"></canvas>
+          <div class="card-title">雷電蘑菇</div>
+          <div class="card-subtitle">造價 250 | 連鎖彈射</div>
+          <div class="card-desc">青藍發光毒蕈傘蓋與電漿閃爍微粒，彈射跳躍多個目標。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-tower-poison" width="90" height="90"></canvas>
+          <div class="card-title">毒霧孢子</div>
+          <div class="card-subtitle">造價 180 | 持續劇毒</div>
+          <div class="card-desc">螢光綠斑點毒囊與瀰漫毒氣微粒，對高血量重甲單位持續腐蝕。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 怪物角色圖鑑 (6 大怪物) -->
+    <section>
+      <div class="section-title">6 大入侵怪物角色 (Monsters)</div>
+      <div class="grid-cards">
+        <div class="card">
+          <canvas id="cv-enemy-caterpillar" width="90" height="90"></canvas>
+          <div class="card-title">毛毛蟲</div>
+          <div class="card-subtitle">HP: 50 | 基礎型</div>
+          <div class="card-desc">三節圓滾滾青蘋果綠身軀與萌系大眼，初期標準部隊。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-bee" width="90" height="90"></canvas>
+          <div class="card-title">蜜蜂</div>
+          <div class="card-subtitle">HP: 35 | 高速 & 狂暴</div>
+          <div class="card-desc">黃黑條紋立體球型、半透明拍動翅膀，低血量觸發 1.8x 狂暴衝刺。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-snail" width="90" height="90"></canvas>
+          <div class="card-title">蝸牛</div>
+          <div class="card-subtitle">HP: 160 | 高生命型</div>
+          <div class="card-desc">螺旋漸層粉紅硬殼與萌系肉身觸角，耐打的肉盾先鋒。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-beetle" width="90" height="90"></canvas>
+          <div class="card-title">鐵甲甲蟲</div>
+          <div class="card-subtitle">HP: 280 | 50% 物理減傷盾</div>
+          <div class="card-desc">金屬黑曜反光重甲與雙角，免疫半數物理傷害，需法術/毒素克制。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-butterfly" width="90" height="90"></canvas>
+          <div class="card-title">蝴蝶</div>
+          <div class="card-subtitle">HP: 80 | 拍翅狂暴</div>
+          <div class="card-desc">漸層粉藍大羽翼與撲翼動態，靈動敏捷且低血觸發狂暴加速。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-dragon" width="90" height="90"></canvas>
+          <div class="card-title">小龍 (Boss)</div>
+          <div class="card-subtitle">HP: 650 | 階段召喚蜜蜂</div>
+          <div class="card-desc">赤紅龍鱗、金黃龍角與腹甲，血量低於 75%/50%/25% 召喚護衛。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 主動技能手繪圖標 -->
+    <section>
+      <div class="section-title">玩家主動魔法技能 (Active Skills)</div>
+      <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+        <div class="card">
+          <div class="skill-btn-preview" style="margin-bottom: 12px;">
+            <canvas id="cv-skill-meteor" width="36" height="36"></canvas>
+          </div>
+          <div class="card-title">流星轟炸 (Meteor Strike)</div>
+          <div class="card-subtitle">CD: 30s | 範圍 150 點傷害</div>
+          <div class="card-desc">高熱燃燒烈焰火尾、高光核心與隕石坑紋。點擊後呼出發光瞄準準心。</div>
+        </div>
+
+        <div class="card">
+          <div class="skill-btn-preview" style="margin-bottom: 12px;">
+            <canvas id="cv-skill-freeze" width="36" height="36"></canvas>
+          </div>
+          <div class="card-title">絕對零度 (Blizzard Freeze)</div>
+          <div class="card-subtitle">CD: 45s | 全場怪物冰凍 3.5 秒</div>
+          <div class="card-desc">六角冰晶光芒、分叉冰刺與水晶核心。瞬間控場扭轉劣勢。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 全站 UI 向量圖標與按鈕組件 -->
+    <section>
+      <div class="section-title">UI 向量圖標與按鈕設計 (Components & Icons)</div>
+      <div class="ui-showcase-row">
+        <!-- 金幣 -->
+        <div class="ui-item">
+          <div class="stat-chip">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#ffd54f" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-1.1c-1.3-.25-2.3-1.15-2.4-2.4h1.7c.1.6.5 1 1.2 1 .7 0 1.2-.4 1.2-1 0-.6-.4-.9-1.5-1.2-1.4-.4-2.5-.9-2.5-2.3 0-1.1.9-2 2.3-2.2V6.5h2v1.1c1.1.2 1.9.9 2.1 2h-1.7c-.1-.5-.5-.8-1-.8-.6 0-1.1.3-1.1.8 0 .5.4.8 1.4 1.1 1.6.4 2.6 1 2.6 2.4 0 1.2-.9 2.1-2.4 2.4v1.1z"/></svg>
+            <span>200</span>
+          </div>
+          <span class="ui-label">金幣狀態</span>
+        </div>
+
+        <!-- 生命 -->
+        <div class="ui-item">
+          <div class="stat-chip">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#ff5252" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            <span>20</span>
+          </div>
+          <span class="ui-label">生命狀態</span>
+        </div>
+
+        <!-- 分數 -->
+        <div class="ui-item">
+          <div class="stat-chip">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="#ffca28" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            <span>1,250</span>
+          </div>
+          <span class="ui-label">得分狀態</span>
+        </div>
+
+        <!-- 齒輪設定按鈕 -->
+        <div class="ui-item">
+          <button class="btn-gear">
+            <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#ffffff" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </button>
+          <span class="ui-label">設定齒輪</span>
+        </div>
+
+        <!-- 加速鈕 -->
+        <div class="ui-item">
+          <div class="btn-speed">2x</div>
+          <span class="ui-label">遊戲加速</span>
+        </div>
+
+        <!-- 主按鈕 -->
+        <div class="ui-item">
+          <button class="btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>再試一次</span>
+          </button>
+          <span class="ui-label">主操作按鈕</span>
+        </div>
+
+        <!-- 次按鈕 -->
+        <div class="ui-item">
+          <button class="btn-secondary">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>返回首頁</span>
+          </button>
+          <span class="ui-label">次操作按鈕</span>
+        </div>
+
+        <!-- 榮譽獎盃 -->
+        <div class="ui-item">
+          <svg viewBox="0 0 24 24" width="28" height="28"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+          <span class="ui-label">英雄榜勳章</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 引用遊戲核心 Sprite 腳本動態渲染 -->
+  <script src="game.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. 渲染出入口
+      // 1.1 起點 (傳送門)
+      const ecv = document.getElementById('cv-entry');
+      if (ecv) {
+        const ectx = ecv.getContext('2d');
+        ectx.translate(60, 65);
+        ectx.scale(1.3, 1.3);
+
+        // 陰影
+        ectx.fillStyle = 'rgba(0,0,0,0.4)';
+        ectx.beginPath(); ectx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ectx.fill();
+
+        // 底座
+        const riftBase = ectx.createRadialGradient(0, 0, 2, 0, 0, 24);
+        riftBase.addColorStop(0, '#4a148c'); riftBase.addColorStop(0.5, '#311b92'); riftBase.addColorStop(1, '#1a237e');
+        ectx.fillStyle = riftBase;
+        ectx.beginPath(); ectx.arc(0, 0, 24, 0, Math.PI * 2); ectx.fill();
+        ectx.strokeStyle = '#b388ff'; ectx.lineWidth = 2; ectx.stroke();
+
+        // 符文環
+        ectx.strokeStyle = '#ea80fc'; ectx.lineWidth = 1.2; ectx.setLineDash([4, 4]);
+        ectx.beginPath(); ectx.arc(0, 0, 17, 0, Math.PI * 2); ectx.stroke(); ectx.setLineDash([]);
+
+        // 雙尖碑
+        for (let side of [-1, 1]) {
+          ectx.fillStyle = '#212121';
+          ectx.beginPath(); ectx.moveTo(side * 18, 14); ectx.lineTo(side * 22, -18); ectx.lineTo(side * 16, -26); ectx.lineTo(side * 12, -16); ectx.lineTo(side * 14, 14); ectx.closePath(); ectx.fill();
+          ectx.strokeStyle = '#7c4dff'; ectx.lineWidth = 1; ectx.stroke();
+          ectx.fillStyle = '#e040fb';
+          ectx.beginPath(); ectx.moveTo(side * 16, -28); ectx.lineTo(side * 18, -34); ectx.lineTo(side * 16, -40); ectx.lineTo(side * 14, -34); ectx.closePath(); ectx.fill();
+        }
+
+        // 核心漩渦
+        const vortGrad = ectx.createRadialGradient(0, 0, 1, 0, 0, 12);
+        vortGrad.addColorStop(0, '#ff4081'); vortGrad.addColorStop(0.5, '#7c4dff'); vortGrad.addColorStop(0.85, '#311b92'); vortGrad.addColorStop(1, 'transparent');
+        ectx.fillStyle = vortGrad;
+        ectx.beginPath(); ectx.arc(0, -6, 12, 0, Math.PI * 2); ectx.fill();
+      }
+
+      // 1.2 終點 (全新花靈精靈樹神殿 - 同步最新美化)
+      const xcv = document.getElementById('cv-exit');
+      if (xcv) {
+        const xctx = xcv.getContext('2d');
+        xctx.translate(60, 65);
+        xctx.scale(1.3, 1.3);
+
+        // 地面柔和陰影
+        xctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        xctx.beginPath(); xctx.ellipse(0, 18, 26, 10, 0, 0, Math.PI * 2); xctx.fill();
+
+        // 典雅白石蓮花底座
+        xctx.fillStyle = '#ffffff';
+        xctx.strokeStyle = '#e0d0c0';
+        xctx.lineWidth = 1.5;
+        for (let i = 0; i < 6; i++) {
+          const ang = (i * Math.PI) / 3;
+          xctx.beginPath();
+          xctx.ellipse(Math.cos(ang) * 14, 14 + Math.sin(ang) * 5, 8, 4, ang, 0, Math.PI * 2);
+          xctx.fill();
+          xctx.stroke();
+        }
+
+        // 柔美古木雙分叉樹幹
+        const trunkGrad = xctx.createLinearGradient(-10, 0, 10, 0);
+        trunkGrad.addColorStop(0, '#8d6e63');
+        trunkGrad.addColorStop(0.5, '#a1887f');
+        trunkGrad.addColorStop(1, '#5d4037');
+        xctx.fillStyle = trunkGrad;
+        xctx.beginPath();
+        xctx.moveTo(-9, 15);
+        xctx.quadraticCurveTo(-12, 0, -18, -14);
+        xctx.quadraticCurveTo(-14, -18, -8, -10);
+        xctx.lineTo(0, -6);
+        xctx.lineTo(8, -10);
+        xctx.quadraticCurveTo(14, -18, 18, -14);
+        xctx.quadraticCurveTo(12, 0, 9, 15);
+        xctx.closePath();
+        xctx.fill();
+
+        // 茂密精靈花樹冠 (粉櫻 + 嫩綠)
+        const foliage = [
+          { x: -14, y: -20, r: 15, col: '#81c784' },
+          { x: 14, y: -20, r: 15, col: '#81c784' },
+          { x: 0, y: -26, r: 18, col: '#a5d6a7' },
+          { x: -8, y: -16, r: 11, col: '#ff80ab' },
+          { x: 8, y: -16, r: 11, col: '#ff4081' },
+          { x: 0, y: -12, r: 13, col: '#ff80ab' },
+        ];
+        for (let f of foliage) {
+          xctx.fillStyle = f.col;
+          xctx.beginPath();
+          xctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          xctx.fill();
+        }
+
+        // 生命核心金環
+        xctx.strokeStyle = '#ffd54f';
+        xctx.lineWidth = 1.5;
+        xctx.beginPath();
+        xctx.arc(0, -16, 7, 0, Math.PI * 2);
+        xctx.stroke();
+
+        // 頂部懸浮守護水晶
+        xctx.shadowColor = '#69f0ae'; xctx.shadowBlur = 10;
+        const cGrad = xctx.createLinearGradient(-6, -8, 6, 8);
+        cGrad.addColorStop(0, '#ffffff'); cGrad.addColorStop(0.4, '#b9f6ca'); cGrad.addColorStop(0.8, '#00e676'); cGrad.addColorStop(1, '#00c853');
+        xctx.fillStyle = cGrad;
+        xctx.beginPath(); xctx.moveTo(0, -42); xctx.lineTo(6.5, -34); xctx.lineTo(0, -26); xctx.lineTo(-6.5, -34); xctx.closePath(); xctx.fill();
+      }
+
+      // 2. 渲染防禦塔
+      const towerTypes = ['petal', 'ice', 'sunflower', 'candy', 'rainbow', 'thunder', 'poison'];
+      towerTypes.forEach(t => {
+        const cv = document.getElementById('cv-tower-' + t);
+        if (cv && Sprites['drawTower_' + t]) {
+          const ctx = cv.getContext('2d');
+          ctx.translate(45, 52);
+          ctx.scale(1.4, 1.4);
+          Sprites['drawTower_' + t].call(Sprites, ctx, 0, 1);
+        }
+      });
+
+      // 3. 渲染怪物角色
+      const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'dragon'];
+      enemyTypes.forEach(e => {
+        const cv = document.getElementById('cv-enemy-' + e);
+        if (cv && Sprites['drawEnemy_' + e]) {
+          const ctx = cv.getContext('2d');
+          ctx.translate(45, 48);
+          ctx.scale(1.4, 1.4);
+          Sprites['drawEnemy_' + e].call(Sprites, ctx, 0, false, 0);
+        }
+      });
+
+      // 4. 渲染技能圖標
+      const mcv = document.getElementById('cv-skill-meteor');
+      if (mcv) {
+        const mctx = mcv.getContext('2d');
+        mctx.translate(18, 18);
+        const flameGrad = mctx.createRadialGradient(0, 0, 2, 0, 0, 14);
+        flameGrad.addColorStop(0, '#fff59d'); flameGrad.addColorStop(0.4, '#ff9800'); flameGrad.addColorStop(0.8, '#ff1744'); flameGrad.addColorStop(1, 'transparent');
+        mctx.fillStyle = flameGrad; mctx.beginPath(); mctx.arc(0, 0, 14, 0, Math.PI * 2); mctx.fill();
+        mctx.fillStyle = '#ffffff'; mctx.beginPath(); mctx.arc(-2, -2, 4, 0, Math.PI * 2); mctx.fill();
+        mctx.fillStyle = '#b71c1c'; mctx.beginPath(); mctx.arc(3, 3, 2.5, 0, Math.PI * 2); mctx.fill();
+      }
+
+      const fcv = document.getElementById('cv-skill-freeze');
+      if (fcv) {
+        const fctx = fcv.getContext('2d');
+        fctx.translate(18, 18);
+        fctx.strokeStyle = '#00e5ff'; fctx.lineWidth = 2.5; fctx.lineCap = 'round';
+        for (let i = 0; i < 6; i++) {
+          const ang = (i * Math.PI) / 3;
+          fctx.beginPath(); fctx.moveTo(0, 0); fctx.lineTo(Math.cos(ang) * 12, Math.sin(ang) * 12); fctx.stroke();
+          const bx = Math.cos(ang) * 7; const by = Math.sin(ang) * 7;
+          const pAng1 = ang + Math.PI / 4; const pAng2 = ang - Math.PI / 4;
+          fctx.beginPath();
+          fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng1) * 4, by + Math.sin(pAng1) * 4);
+          fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng2) * 4, by + Math.sin(pAng2) * 4);
+          fctx.stroke();
+        }
+        fctx.fillStyle = '#ffffff'; fctx.beginPath(); fctx.arc(0, 0, 3, 0, Math.PI * 2); fctx.fill();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -75,6 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
+  VERSION: 'v1.0.16',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -93,12 +94,11 @@ const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 640
 const MAP_CONFIGS = {
   outer_ring: {
     id: 'outer_ring',
-    name: '🏰 經典外廊 (4×6 建造)',
+    name: '經典外廊 (4×6 建造)',
     desc: '左上 [0,0] 出發繞最外圍一圈至右上 [5,0]，中央 4×6 蓋塔',
-    icon: '🔲',
+    pathType: 'outer',
     cols: 6,
     rows: 8,
-    // 怪物緊貼畫布最外圍一圈：左上 -> 左下 -> 右下 -> 右上
     waypoints: [
       [0, 0],
       [0, 7],
@@ -108,9 +108,9 @@ const MAP_CONFIGS = {
   },
   serpentine: {
     id: 'serpentine',
-    name: '🌸 花園小徑 (蛇形)',
+    name: '花園小徑 (蛇形路線)',
     desc: '經典蜿蜒路線，適合均衡佈局',
-    icon: '〰️',
+    pathType: 'snake',
     cols: 6,
     rows: 8,
     waypoints: [
@@ -125,9 +125,9 @@ const MAP_CONFIGS = {
   },
   ring: {
     id: 'ring',
-    name: '🎯 競技之環 (中央競技)',
+    name: '競技之環 (螺旋路線)',
     desc: '外圍環繞一圈，中央為建造平台',
-    icon: '⭕',
+    pathType: 'spiral',
     cols: 6,
     rows: 8,
     waypoints: [
@@ -233,15 +233,54 @@ const TOWER_DATA = {
       { damage: 60, range: 180, fireRate: 2.0, piercing: 5, upgradeCost: 400 },
     ],
   },
+  thunder: {
+    name: '雷電蘑菇',
+    emoji: '⚡',
+    cost: 250,
+    range: 140,
+    damage: 32,
+    fireRate: 1.2,
+    chainCount: 3,
+    chainRange: 95,
+    projectileSpeed: 450,
+    projectileColor: '#00e5ff',
+    description: '連鎖閃電彈射',
+    color: '#00e5ff',
+    levels: [
+      { damage: 32, range: 140, fireRate: 1.2, chainCount: 3 },
+      { damage: 50, range: 155, fireRate: 1.4, chainCount: 4, upgradeCost: 180 },
+      { damage: 75, range: 170, fireRate: 1.6, chainCount: 5, upgradeCost: 350 },
+    ],
+  },
+  poison: {
+    name: '毒霧孢子',
+    emoji: '🍄',
+    cost: 180,
+    range: 125,
+    damage: 18,
+    fireRate: 0.9,
+    poisonDps: 15,
+    poisonDuration: 4.0,
+    projectileSpeed: 240,
+    projectileColor: '#76ff03',
+    description: '持續劇毒腐蝕',
+    color: '#76ff03',
+    levels: [
+      { damage: 18, range: 125, fireRate: 0.9, poisonDps: 15, poisonDuration: 4.0 },
+      { damage: 28, range: 140, fireRate: 1.1, poisonDps: 26, poisonDuration: 5.0, upgradeCost: 140 },
+      { damage: 42, range: 155, fireRate: 1.3, poisonDps: 42, poisonDuration: 6.0, upgradeCost: 280 },
+    ],
+  },
 };
 
 // ─── 4. 敵人數據 ─────────────────────────────
 const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 50, speed: 50, reward: 10, damage: 1 },
-  bee: { name: '蜜蜂', emoji: '🐝', hp: 35, speed: 90, reward: 12, damage: 1 },
+  bee: { name: '蜜蜂', emoji: '🐝', hp: 35, speed: 90, reward: 12, damage: 1, canEnrage: true },
   snail: { name: '蝸牛', emoji: '🐌', hp: 160, speed: 28, reward: 25, damage: 2 },
-  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 80, speed: 65, reward: 18, damage: 1 },
-  dragon: { name: '小龍', emoji: '🐉', hp: 600, speed: 32, reward: 100, damage: 5 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 280, speed: 38, reward: 35, damage: 2, armor: 0.5 },
+  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 80, speed: 65, reward: 18, damage: 1, canEnrage: true },
+  dragon: { name: '小龍', emoji: '🐉', hp: 650, speed: 32, reward: 100, damage: 5, isBoss: true },
 };
 
 // ─── 5. 波次數據 (15波) ─────────────────────
@@ -251,180 +290,701 @@ const WAVE_DATA = [
   { enemies: [{ type: 'caterpillar', count: 5, interval: 1.0 }, { type: 'bee', count: 3, interval: 0.8 }], bonus: 80 },
   { enemies: [{ type: 'bee', count: 10, interval: 0.7 }], bonus: 90 },
   { enemies: [{ type: 'caterpillar', count: 6, interval: 0.8 }, { type: 'snail', count: 2, interval: 2.5 }], bonus: 120 },
-  { enemies: [{ type: 'bee', count: 8, interval: 0.5 }, { type: 'caterpillar', count: 8, interval: 0.7 }], bonus: 130 },
+  { enemies: [{ type: 'bee', count: 8, interval: 0.5 }, { type: 'beetle', count: 2, interval: 2.0 }], bonus: 130 },
   { enemies: [{ type: 'butterfly', count: 6, interval: 0.8 }, { type: 'bee', count: 5, interval: 0.6 }], bonus: 150 },
-  { enemies: [{ type: 'snail', count: 4, interval: 1.8 }, { type: 'caterpillar', count: 12, interval: 0.4 }], bonus: 170 },
+  { enemies: [{ type: 'snail', count: 4, interval: 1.8 }, { type: 'beetle', count: 3, interval: 1.5 }], bonus: 170 },
   { enemies: [{ type: 'bee', count: 15, interval: 0.35 }, { type: 'butterfly', count: 6, interval: 0.5 }], bonus: 180 },
-  { enemies: [{ type: 'dragon', count: 1, interval: 3 }, { type: 'snail', count: 4, interval: 1.2 }, { type: 'caterpillar', count: 10, interval: 0.6 }], bonus: 250 },
-  { enemies: [{ type: 'butterfly', count: 12, interval: 0.4 }, { type: 'snail', count: 5, interval: 1.0 }], bonus: 220 },
+  { enemies: [{ type: 'dragon', count: 1, interval: 3 }, { type: 'beetle', count: 3, interval: 1.2 }, { type: 'caterpillar', count: 8, interval: 0.6 }], bonus: 250 },
+  { enemies: [{ type: 'butterfly', count: 12, interval: 0.4 }, { type: 'beetle', count: 5, interval: 1.0 }], bonus: 220 },
   { enemies: [{ type: 'bee', count: 20, interval: 0.25 }, { type: 'butterfly', count: 8, interval: 0.4 }], bonus: 240 },
   { enemies: [{ type: 'snail', count: 8, interval: 0.8 }, { type: 'dragon', count: 1, interval: 4 }], bonus: 280 },
-  { enemies: [{ type: 'bee', count: 15, interval: 0.2 }, { type: 'butterfly', count: 12, interval: 0.3 }, { type: 'snail', count: 6, interval: 0.6 }], bonus: 320 },
-  { enemies: [{ type: 'dragon', count: 3, interval: 4 }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 10, interval: 0.3 }, { type: 'bee', count: 20, interval: 0.15 }], bonus: 500 },
+  { enemies: [{ type: 'beetle', count: 8, interval: 0.6 }, { type: 'butterfly', count: 12, interval: 0.3 }, { type: 'snail', count: 6, interval: 0.6 }], bonus: 320 },
+  { enemies: [{ type: 'dragon', count: 3, interval: 4 }, { type: 'beetle', count: 6, interval: 0.8 }, { type: 'butterfly', count: 10, interval: 0.3 }, { type: 'bee', count: 15, interval: 0.15 }], bonus: 500 },
 ];
 
 // ─── 5.5 Canvas 手繪角色系統 ─────────────────
 const Sprites = {
-  drawFace: function(ctx) {
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(-4, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 3, 1.5, 0, Math.PI, false); ctx.stroke();
-    ctx.fillStyle = '#ffb3ba';
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath(); ctx.arc(-6, 2, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(6, 2, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.globalAlpha = 1;
+  // 通用立體水汪汪萌系臉蛋
+  drawFace: function(ctx, eyeOffsetY = -2) {
+    ctx.save();
+    // 腮紅
+    ctx.fillStyle = 'rgba(255, 105, 180, 0.45)';
+    ctx.beginPath(); ctx.ellipse(-7, eyeOffsetY + 5, 3.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(7, eyeOffsetY + 5, 3.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 黑色大眼珠
+    ctx.fillStyle = '#1a1a24';
+    ctx.beginPath(); ctx.arc(-5, eyeOffsetY, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(5, eyeOffsetY, 2.5, 0, Math.PI * 2); ctx.fill();
+
+    // 晶亮高光小白點
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-5.8, eyeOffsetY - 0.8, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4.2, eyeOffsetY - 0.8, 1, 0, Math.PI * 2); ctx.fill();
+
+    // 可愛微笑嘴巴
+    ctx.strokeStyle = '#4a2810';
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, eyeOffsetY + 3, 2, 0.2, Math.PI - 0.2, false); ctx.stroke();
+    ctx.restore();
   },
 
+  // 1. 花瓣塔 (立體粉白雙層花瓣 + 水晶高光花蕊)
   drawTower_petal: function(ctx, time) {
     ctx.save();
-    ctx.rotate(time * 0.5);
-    ctx.fillStyle = '#ffb3ba';
-    for(let i = 0; i < 5; i++) {
+    const pulse = 1 + Math.sin(time * 3) * 0.04;
+    ctx.scale(pulse, pulse);
+
+    // 花瓣旋轉層
+    ctx.save();
+    ctx.rotate(time * 0.4);
+    for (let i = 0; i < 5; i++) {
       ctx.rotate((Math.PI * 2) / 5);
-      ctx.beginPath(); ctx.ellipse(0, -12, 6, 10, 0, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.restore();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.lineWidth = 1; ctx.strokeStyle = '#000';
-    this.drawFace(ctx);
-  },
-
-  drawTower_ice: function(ctx, time) {
-    ctx.fillStyle = '#ffdead';
-    ctx.beginPath(); ctx.moveTo(-8, -4); ctx.lineTo(8, -4); ctx.lineTo(0, 12); ctx.fill();
-    ctx.fillStyle = '#bae1ff';
-    ctx.beginPath(); ctx.arc(0, -8, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-3, -11, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.save(); ctx.translate(0, -6); this.drawFace(ctx); ctx.restore();
-  },
-
-  drawTower_sunflower: function(ctx, time) {
-    ctx.save();
-    ctx.rotate(Math.sin(time * 2) * 0.1);
-    ctx.fillStyle = '#ffffba';
-    for(let i = 0; i < 8; i++) {
-      ctx.rotate((Math.PI * 2) / 8);
-      ctx.beginPath(); ctx.ellipse(0, -12, 5, 8, 0, 0, Math.PI * 2); ctx.fill();
-    }
-    ctx.fillStyle = '#8b4513';
-    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(-3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(0, 2, 3, 0.2, Math.PI - 0.2, false); ctx.stroke();
-    ctx.restore();
-  },
-
-  drawTower_candy: function(ctx, time) {
-    ctx.fillStyle = '#ffb3ba';
-    ctx.beginPath(); ctx.moveTo(-12, -4); ctx.lineTo(-16, -8); ctx.lineTo(-16, 8); ctx.lineTo(-12, 4); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(12, -4); ctx.lineTo(16, -8); ctx.lineTo(16, 8); ctx.lineTo(12, 4); ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
-    ctx.save();
-    ctx.rotate(time);
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI, false); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 0, 10, Math.PI, Math.PI * 2, false); ctx.stroke();
-    ctx.restore();
-    ctx.fillStyle = '#ffd1dc';
-    ctx.fillRect(-3, -18, 6, 8);
-    ctx.save(); ctx.translate(0, 2); this.drawFace(ctx); ctx.restore();
-  },
-
-  drawTower_rainbow: function(ctx, time) {
-    const colors = ['#ffb3ba', '#ffffba', '#baffc9', '#bae1ff'];
-    for(let i=0; i<4; i++) {
-      ctx.strokeStyle = colors[i];
-      ctx.lineWidth = 3;
+      // 外層花瓣漸層 (桃紅 -> 柔粉)
+      const grad = ctx.createLinearGradient(0, -18, 0, 0);
+      grad.addColorStop(0, '#ff4081');
+      grad.addColorStop(0.5, '#ff80ab');
+      grad.addColorStop(1, '#ffcdd2');
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(0, 4, 12 - i*3, Math.PI, 0);
+      ctx.ellipse(0, -13, 7, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 花瓣中央脈絡微光
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(0, -18);
+      ctx.lineTo(0, -5);
       ctx.stroke();
     }
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(-10, 4, 5, 0, Math.PI*2); ctx.arc(-14, 6, 4, 0, Math.PI*2); ctx.arc(-6, 6, 4, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(10, 4, 5, 0, Math.PI*2); ctx.arc(14, 6, 4, 0, Math.PI*2); ctx.arc(6, 6, 4, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    // 花蕊基座 (立體黃金漸層球)
+    const coreGrad = ctx.createRadialGradient(-3, -3, 1, 0, 0, 10);
+    coreGrad.addColorStop(0, '#fff9c4');
+    coreGrad.addColorStop(0.6, '#ffd54f');
+    coreGrad.addColorStop(1, '#ffb300');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffa000';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    this.drawFace(ctx, -1);
+    ctx.restore();
   },
 
-  drawEnemy_caterpillar: function(ctx, time) {
-    const offset = Math.sin(time * 5) * 2;
-    ctx.fillStyle = '#baffc9';
-    ctx.beginPath(); ctx.arc(8 - offset, 0, 5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0, 0 + offset*0.5, 6, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-8 + offset, 0, 7, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(-10, -5); ctx.lineTo(-14, -10); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-6, -5); ctx.lineTo(-4, -10); ctx.stroke();
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(-10, -2, 1, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-6, -2, 1, 0, Math.PI * 2); ctx.fill();
-  },
-
-  drawEnemy_bee: function(ctx, time) {
-    const flap = Math.sin(time * 20) * 4;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.beginPath(); ctx.ellipse(-2, -6 - flap, 4, 6, Math.PI/4, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(4, -6 - flap, 4, 6, -Math.PI/4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ffffba';
-    ctx.beginPath(); ctx.ellipse(0, 0, 10, 8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.fillRect(-2, -7.5, 4, 15);
-    ctx.fillRect(4, -6, 3, 12);
-    ctx.beginPath(); ctx.arc(-6, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-  },
-
-  drawEnemy_snail: function(ctx, time) {
-    const slide = Math.sin(time * 2) * 1;
-    ctx.fillStyle = '#baffc9';
-    ctx.beginPath(); ctx.ellipse(slide, 6, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#baffc9'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-8 + slide, 4); ctx.lineTo(-12 + slide, -2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-4 + slide, 4); ctx.lineTo(-6 + slide, -4); ctx.stroke();
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(-12 + slide, -2, 1, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-6 + slide, -4, 1, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ffb347';
-    ctx.beginPath(); ctx.arc(2, 0, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#a65e2e'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.arc(2, 0, 4, 0, Math.PI*1.5); ctx.stroke();
-  },
-
-  drawEnemy_butterfly: function(ctx, time) {
-    const flap = Math.sin(time * 10);
-    const wingY = flap * 6;
-    ctx.fillStyle = '#bae1ff';
-    ctx.beginPath(); ctx.ellipse(-6, -2 + wingY/2, 8, 10, -Math.PI/6, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(6, -2 + wingY/2, 8, 10, Math.PI/6, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ffb3ba';
-    ctx.beginPath(); ctx.ellipse(0, 0, 3, 10, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(-1, -8); ctx.quadraticCurveTo(-4, -12, -6, -10); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(1, -8); ctx.quadraticCurveTo(4, -12, 6, -10); ctx.stroke();
-  },
-
-  drawEnemy_dragon: function(ctx, time) {
-    const floatY = Math.sin(time * 3) * 2;
+  // 2. 冰淇淋塔 (斜紋立體甜筒 + 雙色圓潤冰淇淋球 + 融化糖漿高光)
+  drawTower_ice: function(ctx, time) {
     ctx.save();
+    const bob = Math.sin(time * 4) * 1.2;
+
+    // 甜筒底座 (立體華夫格紋)
+    const coneGrad = ctx.createLinearGradient(-10, -2, 10, 14);
+    coneGrad.addColorStop(0, '#ffe0b2');
+    coneGrad.addColorStop(0.5, '#ffb74d');
+    coneGrad.addColorStop(1, '#f57c00');
+    ctx.fillStyle = coneGrad;
+    ctx.beginPath();
+    ctx.moveTo(-9, -2);
+    ctx.lineTo(9, -2);
+    ctx.lineTo(0, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#e65100';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 甜筒斜線刻痕
+    ctx.strokeStyle = 'rgba(120, 60, 10, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-5, 0); ctx.lineTo(3, 8);
+    ctx.moveTo(0, -2); ctx.lineTo(5, 4);
+    ctx.moveTo(5, 0); ctx.lineTo(-3, 8);
+    ctx.stroke();
+
+    // 冰淇淋主球 (天藍立體球形漸層)
+    ctx.translate(0, bob);
+    const iceGrad = ctx.createRadialGradient(-3, -11, 2, 0, -8, 11);
+    iceGrad.addColorStop(0, '#ffffff');
+    iceGrad.addColorStop(0.4, '#e1f5fe');
+    iceGrad.addColorStop(0.8, '#81d4fa');
+    iceGrad.addColorStop(1, '#29b6f6');
+    ctx.fillStyle = iceGrad;
+    ctx.beginPath();
+    ctx.arc(0, -8, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#0288d1';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 冰晶晶瑩高光
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.beginPath();
+    ctx.ellipse(-4, -12, 3, 1.5, -Math.PI / 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    this.drawFace(ctx, -8);
+    ctx.restore();
+  },
+
+  // 3. 向日葵 (金燦雙層花瓣 + 旋轉律動 + 熟成金棕果盤)
+  drawTower_sunflower: function(ctx, time) {
+    ctx.save();
+    const sway = Math.sin(time * 2.5) * 0.08;
+    ctx.rotate(sway);
+
+    // 外圍 12 片太陽花瓣
+    ctx.save();
+    ctx.rotate(time * 0.2);
+    for (let i = 0; i < 12; i++) {
+      ctx.rotate((Math.PI * 2) / 12);
+      const pGrad = ctx.createLinearGradient(0, -18, 0, 0);
+      pGrad.addColorStop(0, '#ffea00');
+      pGrad.addColorStop(0.7, '#ffc107');
+      pGrad.addColorStop(1, '#ff9800');
+      ctx.fillStyle = pGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, -13, 4.5, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 金黃花盤中心
+    const coreGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 10);
+    coreGrad.addColorStop(0, '#8d6e63');
+    coreGrad.addColorStop(0.6, '#5d4037');
+    coreGrad.addColorStop(1, '#3e2723');
+    ctx.fillStyle = coreGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffd54f';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 點綴花籽紋理
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.beginPath();
+    ctx.arc(-4, -4, 1.2, 0, Math.PI * 2);
+    ctx.arc(4, -4, 1.2, 0, Math.PI * 2);
+    ctx.arc(0, 5, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    this.drawFace(ctx, 0);
+    ctx.restore();
+  },
+
+  // 4. 糖果炮 (旋轉棒棒糖 + 糖果發射筒 + 晶瑩反光)
+  drawTower_candy: function(ctx, time) {
+    ctx.save();
+    const pulse = 1 + Math.sin(time * 4) * 0.05;
+    ctx.scale(pulse, pulse);
+
+    // 兩側糖果包裝紙翅膀
+    const wingGrad = ctx.createLinearGradient(-18, 0, 18, 0);
+    wingGrad.addColorStop(0, '#ff80ab');
+    wingGrad.addColorStop(1, '#ff4081');
+    ctx.fillStyle = wingGrad;
+    ctx.beginPath();
+    ctx.moveTo(-12, -4); ctx.lineTo(-18, -10); ctx.lineTo(-18, 10); ctx.lineTo(-12, 4);
+    ctx.moveTo(12, -4); ctx.lineTo(18, -10); ctx.lineTo(18, 10); ctx.lineTo(12, 4);
+    ctx.fill();
+    ctx.strokeStyle = '#c51162';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 糖果本體球形漸層 (草莓牛奶球)
+    const ballGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
+    ballGrad.addColorStop(0, '#ffffff');
+    ballGrad.addColorStop(0.3, '#ff80ab');
+    ballGrad.addColorStop(0.8, '#f50057');
+    ballGrad.addColorStop(1, '#c51162');
+    ctx.fillStyle = ballGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, 13, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 旋轉螺旋白色糖霜條紋
+    ctx.save();
+    ctx.rotate(time * 1.5);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, Math.PI, false); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 10.5, Math.PI, Math.PI * 2, false); ctx.stroke();
+    ctx.restore();
+
+    this.drawFace(ctx, 1);
+    ctx.restore();
+  },
+
+  // 5. 彩虹塔 (立體七彩拱門 + 珍珠雲朵底座 + 頂部彩星)
+  drawTower_rainbow: function(ctx, time) {
+    ctx.save();
+    const floatY = Math.sin(time * 3) * 1.5;
     ctx.translate(0, floatY);
-    const flap = Math.sin(time * 15) * 3;
-    ctx.fillStyle = '#ff9aa2';
-    ctx.beginPath(); ctx.moveTo(-6, -4); ctx.lineTo(-16, -10 - flap); ctx.lineTo(-12, 0); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(6, -4); ctx.lineTo(16, -10 - flap); ctx.lineTo(12, 0); ctx.fill();
-    ctx.fillStyle = '#ff6b6b';
-    ctx.beginPath(); ctx.ellipse(0, 2, 10, 12, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffffba';
-    ctx.beginPath(); ctx.ellipse(0, 5, 6, 8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(-4, -3, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(4, -3, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.moveTo(-2, 1); ctx.lineTo(-1, 3); ctx.lineTo(0, 1); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(2, 1); ctx.lineTo(1, 3); ctx.lineTo(0, 1); ctx.fill();
+
+    // 4 層彩虹立體同心環
+    const rainbowColors = [
+      { stroke: '#ff5252', r: 15 },
+      { stroke: '#ffd740', r: 12 },
+      { stroke: '#69f0ae', r: 9 },
+      { stroke: '#40c4ff', r: 6 }
+    ];
+    for (const rb of rainbowColors) {
+      ctx.strokeStyle = rb.stroke;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(0, 4, rb.r, Math.PI, 0);
+      ctx.stroke();
+    }
+
+    // 底部左右兩團立體棉花糖雲朵
+    const drawCloud = (cx, cy) => {
+      const cloudGrad = ctx.createRadialGradient(cx - 2, cy - 2, 1, cx, cy, 8);
+      cloudGrad.addColorStop(0, '#ffffff');
+      cloudGrad.addColorStop(0.7, '#e0f7fa');
+      cloudGrad.addColorStop(1, '#b2ebf2');
+      ctx.fillStyle = cloudGrad;
+      ctx.beginPath();
+      ctx.arc(cx - 4, cy + 2, 4.5, 0, Math.PI * 2);
+      ctx.arc(cx + 4, cy + 2, 4.5, 0, Math.PI * 2);
+      ctx.arc(cx, cy - 2, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#80deea';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    };
+    drawCloud(-11, 4);
+    drawCloud(11, 4);
+
+    // 中央微光小星
+    ctx.fillStyle = '#fff9c4';
+    ctx.beginPath(); ctx.arc(0, -11, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  },
+
+  // 6. 雷電蘑菇塔 (立體青藍水靈傘蓋 + 電流脈衝閃光 + 蘑菇臉蛋)
+  drawTower_thunder: function(ctx, time) {
+    ctx.save();
+    const shock = (Math.sin(time * 20) > 0.7) ? 1.08 : 1.0;
+    ctx.scale(shock, shock);
+
+    // 蘑菇白色菌柄 (立體圓柱漸層)
+    const stemGrad = ctx.createLinearGradient(-6, 0, 6, 14);
+    stemGrad.addColorStop(0, '#ffffff');
+    stemGrad.addColorStop(0.5, '#e0f7fa');
+    stemGrad.addColorStop(1, '#b2ebf2');
+    ctx.fillStyle = stemGrad;
+    ctx.beginPath();
+    ctx.roundRect(-7, 0, 14, 15, 6);
+    ctx.fill();
+    ctx.strokeStyle = '#00bcd4';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 蘑菇青藍電光傘蓋 (半球形立體漸層)
+    const capGrad = ctx.createRadialGradient(-3, -12, 2, 0, -6, 16);
+    capGrad.addColorStop(0, '#ffffff');
+    capGrad.addColorStop(0.3, '#80deea');
+    capGrad.addColorStop(0.7, '#00e5ff');
+    capGrad.addColorStop(1, '#0097a7');
+    ctx.fillStyle = capGrad;
+    ctx.beginPath();
+    ctx.arc(0, -4, 15, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#006064';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 傘蓋上的金色閃電斑紋
+    ctx.strokeStyle = '#ffd600';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-5, -16); ctx.lineTo(-2, -9); ctx.lineTo(-6, -9); ctx.lineTo(-1, -3);
+    ctx.moveTo(4, -15); ctx.lineTo(7, -8); ctx.lineTo(3, -8); ctx.lineTo(7, -2);
+    ctx.stroke();
+
+    // 蘑菇臉蛋
+    this.drawFace(ctx, 4);
+    ctx.restore();
+  },
+
+  // 7. 毒霧孢子塔 (立體暗紫斑斕傘蓋 + 綠色劇毒螢光點 + 劇毒呼吸)
+  drawTower_poison: function(ctx, time) {
+    ctx.save();
+    const squish = 1 + Math.sin(time * 3) * 0.06;
+    ctx.scale(squish, 2 - squish);
+
+    // 菌柄 (深紫幽暗感)
+    const stemGrad = ctx.createLinearGradient(-6, 0, 6, 14);
+    stemGrad.addColorStop(0, '#e1bee7');
+    stemGrad.addColorStop(0.6, '#ab47bc');
+    stemGrad.addColorStop(1, '#6a1b9a');
+    ctx.fillStyle = stemGrad;
+    ctx.beginPath();
+    ctx.roundRect(-6, 0, 12, 14, 5);
+    ctx.fill();
+    ctx.strokeStyle = '#4a148c';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 毒菌傘蓋 (暗夜紫毒物球形漸層)
+    const capGrad = ctx.createRadialGradient(-3, -11, 2, 0, -5, 15);
+    capGrad.addColorStop(0, '#e040fb');
+    capGrad.addColorStop(0.4, '#aa00ff');
+    capGrad.addColorStop(0.8, '#6200ea');
+    capGrad.addColorStop(1, '#311b92');
+    ctx.fillStyle = capGrad;
+    ctx.beginPath();
+    ctx.arc(0, -3, 14.5, Math.PI, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#4a148c';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 劇毒螢光綠斑點 (微光閃爍)
+    const glowAlpha = 0.6 + Math.sin(time * 6) * 0.35;
+    ctx.fillStyle = `rgba(118, 255, 3, ${glowAlpha})`;
+    ctx.beginPath();
+    ctx.arc(-7, -10, 2.5, 0, Math.PI * 2);
+    ctx.arc(6, -9, 3, 0, Math.PI * 2);
+    ctx.arc(0, -14, 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 臉蛋
+    this.drawFace(ctx, 3);
+    ctx.restore();
+  },
+
+  // ─── 怪物立體繪製 ──────────────────────────
+
+  // 1. 毛毛蟲 (多節立體果凍圓球 + 彈簧蠕動波浪)
+  drawEnemy_caterpillar: function(ctx, time) {
+    ctx.save();
+    const wave1 = Math.sin(time * 8) * 2;
+    const wave2 = Math.sin(time * 8 - 1) * 2;
+    const wave3 = Math.sin(time * 8 - 2) * 2;
+
+    const drawSegment = (cx, cy, r, isHead = false) => {
+      const segGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 1, cx, cy, r);
+      segGrad.addColorStop(0, '#e8f5e9');
+      segGrad.addColorStop(0.4, '#a5d6a7');
+      segGrad.addColorStop(0.85, '#66bb6a');
+      segGrad.addColorStop(1, '#388e3c');
+      ctx.fillStyle = segGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#2e7d32';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    };
+
+    // 尾節 -> 中節 -> 頭節
+    drawSegment(9 + wave3, 0, 5);
+    drawSegment(1 + wave2, wave2 * 0.5, 6.5);
+    drawSegment(-8 + wave1, 0, 8, true);
+
+    // 頭頂觸角 (粉紅發光小圓球)
+    ctx.strokeStyle = '#2e7d32';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-9 + wave1, -6); ctx.lineTo(-13 + wave1, -12);
+    ctx.moveTo(-6 + wave1, -6); ctx.lineTo(-3 + wave1, -12);
+    ctx.stroke();
+    ctx.fillStyle = '#ff4081';
+    ctx.beginPath(); ctx.arc(-13 + wave1, -12, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-3 + wave1, -12, 1.8, 0, Math.PI * 2); ctx.fill();
+
+    // 水汪汪萌大眼
+    ctx.save();
+    ctx.translate(-8 + wave1, 0);
+    this.drawFace(ctx, -1);
+    ctx.restore();
+    ctx.restore();
+  },
+
+  // 2. 蜜蜂 (金黃黑條紋立體毛茸身軀 + 半透明振翅高光)
+  drawEnemy_bee: function(ctx, time) {
+    ctx.save();
+    const flap = Math.sin(time * 30) * 5;
+
+    // 半透明發光翅膀
+    ctx.fillStyle = 'rgba(225, 245, 254, 0.8)';
+    ctx.strokeStyle = '#81d4fa';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(-3, -7 - flap, 5, 8, Math.PI / 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(4, -7 - flap, 5, 8, -Math.PI / 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // 蜜蜂立體橢圓主體
+    const beeGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 12);
+    beeGrad.addColorStop(0, '#fffde7');
+    beeGrad.addColorStop(0.4, '#fff176');
+    beeGrad.addColorStop(0.8, '#fbc02d');
+    beeGrad.addColorStop(1, '#f57f17');
+    ctx.fillStyle = beeGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 11, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#f57f17';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 黑色紋路
+    ctx.fillStyle = '#212121';
+    ctx.fillRect(-2, -8.5, 4, 17);
+    ctx.fillRect(4, -7, 3.5, 14);
+
+    // 尾部小毒針
+    ctx.fillStyle = '#212121';
+    ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(14, -1.5); ctx.lineTo(14, 1.5); ctx.closePath(); ctx.fill();
+
+    this.drawFace(ctx, -1);
+    ctx.restore();
+  },
+
+  // 3. 蝸牛 (立體旋轉焦糖蝸牛殼 + Q 彈黏液肉身)
+  drawEnemy_snail: function(ctx, time) {
+    ctx.save();
+    const squish = Math.sin(time * 4) * 0.8;
+
+    // 身體底座 (草綠果凍感)
+    const bodyGrad = ctx.createLinearGradient(-12, 6, 12, 6);
+    bodyGrad.addColorStop(0, '#c8e6c9');
+    bodyGrad.addColorStop(1, '#81c784');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.ellipse(-2 + squish, 5, 13, 4.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#4caf50';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 蝸牛殼 (焦糖金黃立體同心螺紋)
+    const shellGrad = ctx.createRadialGradient(2, -3, 2, 4, 0, 10);
+    shellGrad.addColorStop(0, '#ffe082');
+    shellGrad.addColorStop(0.5, '#ffb300');
+    shellGrad.addColorStop(1, '#e65100');
+    ctx.fillStyle = shellGrad;
+    ctx.beginPath();
+    ctx.arc(3, -1, 9.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#bf360c';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 旋渦紋
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(3, -1, 5, 0.2, Math.PI * 1.6);
+    ctx.stroke();
+
+    // 眼睛觸角
+    ctx.strokeStyle = '#4caf50';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(-9 + squish, 4); ctx.lineTo(-14 + squish, -3);
+    ctx.moveTo(-5 + squish, 4); ctx.lineTo(-8 + squish, -5);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1b5e20';
+    ctx.beginPath(); ctx.arc(-14 + squish, -3, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-8 + squish, -5, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  },
+
+  // 4. 蝴蝶 (夢幻漸層雙翅 + 揮翅流光 + 纖細觸鬚)
+  drawEnemy_butterfly: function(ctx, time) {
+    ctx.save();
+    const flap = Math.sin(time * 12);
+    const scaleX = 0.5 + Math.abs(flap) * 0.5;
+
+    // 左右大翅膀 (紫粉到天藍雙色漸層)
+    ctx.save();
+    ctx.scale(scaleX, 1);
+    const drawWing = (dir) => {
+      const wingGrad = ctx.createRadialGradient(dir * 8, -4, 2, dir * 8, 0, 14);
+      wingGrad.addColorStop(0, '#f8bbd0');
+      wingGrad.addColorStop(0.5, '#b388ff');
+      wingGrad.addColorStop(1, '#80d8ff');
+      ctx.fillStyle = wingGrad;
+      ctx.beginPath();
+      ctx.ellipse(dir * 9, -4, 9, 12, dir * Math.PI / 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#7c4dff';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // 翅膀花紋亮斑
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(dir * 9, -5, 2.5, 0, Math.PI * 2); ctx.fill();
+    };
+    drawWing(-1);
+    drawWing(1);
+    ctx.restore();
+
+    // 細長身體
+    const bGrad = ctx.createLinearGradient(0, -8, 0, 8);
+    bGrad.addColorStop(0, '#ff80ab');
+    bGrad.addColorStop(1, '#c51162');
+    ctx.fillStyle = bGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 3, 10, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 弧形觸角
+    ctx.strokeStyle = '#4a148c';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-1, -8); ctx.quadraticCurveTo(-5, -14, -8, -12);
+    ctx.moveTo(1, -8); ctx.quadraticCurveTo(5, -14, 8, -12);
+    ctx.stroke();
+
+    this.drawFace(ctx, -2);
+    ctx.restore();
+  },
+
+  // 5. 小龍 Boss (霸氣立體紅寶石身軀 + 龍角金鱗 + 霸氣龍翼)
+  drawEnemy_dragon: function(ctx, time) {
+    ctx.save();
+    const floatY = Math.sin(time * 4) * 2;
+    const flap = Math.sin(time * 10) * 4;
+    ctx.translate(0, floatY);
+
+    // 兩側龍翼
+    const wingGrad = ctx.createLinearGradient(-16, -10, 16, 10);
+    wingGrad.addColorStop(0, '#ff1744');
+    wingGrad.addColorStop(1, '#b71c1c');
+    ctx.fillStyle = wingGrad;
+    ctx.beginPath();
+    ctx.moveTo(-6, -3); ctx.lineTo(-18, -12 - flap); ctx.lineTo(-14, 2); ctx.closePath();
+    ctx.moveTo(6, -3); ctx.lineTo(18, -12 - flap); ctx.lineTo(14, 2); ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#880e4f';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // 龍身 (紅寶石立體漸層球)
+    const bodyGrad = ctx.createRadialGradient(-3, -3, 2, 0, 2, 14);
+    bodyGrad.addColorStop(0, '#ff8a80');
+    bodyGrad.addColorStop(0.4, '#ff5252');
+    bodyGrad.addColorStop(0.8, '#d50000');
+    bodyGrad.addColorStop(1, '#8b0000');
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 12, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#b71c1c';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 龍肚皮 (金黃鱗甲)
+    const bellyGrad = ctx.createLinearGradient(0, -2, 0, 12);
+    bellyGrad.addColorStop(0, '#fff59d');
+    bellyGrad.addColorStop(1, '#fbc02d');
+    ctx.fillStyle = bellyGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 5, 7, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 頭頂金色龍角
+    ctx.fillStyle = '#ffd700';
+    ctx.strokeStyle = '#ff8f00';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-6, -8); ctx.lineTo(-10, -17); ctx.lineTo(-3, -10); ctx.closePath();
+    ctx.moveTo(6, -8); ctx.lineTo(10, -17); ctx.lineTo(3, -10); ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 龍的小獠牙與霸氣眼睛
+    this.drawFace(ctx, -2);
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.moveTo(-3, 2); ctx.lineTo(-1.5, 4.5); ctx.lineTo(0, 2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(3, 2); ctx.lineTo(1.5, 4.5); ctx.lineTo(0, 2); ctx.fill();
+    ctx.restore();
+  },
+
+  // 6. 鐵甲甲蟲 (立體重裝黑曜石/青銅金屬甲殼 + 金屬高光 + 鋼鐵巨角)
+  drawEnemy_beetle: function(ctx, time) {
+    ctx.save();
+    const bob = Math.sin(time * 6) * 1.2;
+    ctx.translate(0, bob);
+
+    // 6 隻步足 (金屬爪)
+    ctx.strokeStyle = '#37474f';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    for (let side = -1; side <= 1; side += 2) {
+      ctx.beginPath();
+      ctx.moveTo(side * 8, -6); ctx.lineTo(side * 15, -11);
+      ctx.moveTo(side * 9, 0);  ctx.lineTo(side * 16, 0);
+      ctx.moveTo(side * 8, 6);  ctx.lineTo(side * 15, 11);
+      ctx.stroke();
+    }
+
+    // 甲蟲背部立體青銅金屬硬殼 (深邃金屬漸層)
+    const shellGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 14);
+    shellGrad.addColorStop(0, '#78909c');
+    shellGrad.addColorStop(0.4, '#455a64');
+    shellGrad.addColorStop(0.85, '#263238');
+    shellGrad.addColorStop(1, '#0d161a');
+    ctx.fillStyle = shellGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 12, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#90a4ae';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 硬殼中央金屬中縫與高光脊線
+    ctx.strokeStyle = '#cfd8dc';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(0, 14);
+    ctx.stroke();
+
+    // 頭部重裝甲與巨角
+    const headGrad = ctx.createRadialGradient(-2, -10, 1, 0, -8, 6);
+    headGrad.addColorStop(0, '#90a4ae');
+    headGrad.addColorStop(1, '#263238');
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -9, 7, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 鋼鐵巨角 (金色分叉大角)
+    ctx.fillStyle = '#ffb300';
+    ctx.strokeStyle = '#ff6f00';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-3, -12);
+    ctx.lineTo(-6, -20);
+    ctx.lineTo(-2, -18);
+    ctx.lineTo(0, -22);
+    ctx.lineTo(2, -18);
+    ctx.lineTo(6, -20);
+    ctx.lineTo(3, -12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // 發光紅眼
+    ctx.fillStyle = '#ff1744';
+    ctx.beginPath(); ctx.arc(-3.5, -9, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3.5, -9, 1.8, 0, Math.PI * 2); ctx.fill();
+
     ctx.restore();
   }
 };
@@ -743,6 +1303,19 @@ class Enemy {
     this.slowTimer = 0;
     this.slowFactor = 1;
 
+    // 特性旗標與技能計時
+    this.canEnrage = !!data.canEnrage;
+    this.isEnraged = false;
+    this.armor = data.armor || 0; // 0.5 = 50% 物理減傷
+    this.isBoss = !!data.isBoss;
+    this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
+    this.summonedStages = new Set();
+
+    // Poison DOT (劇毒持續傷害)
+    this.poisonTimer = 0;
+    this.poisonDps = 0;
+    this.poisonTickTimer = 0;
+
     // Visual
     this.hitFlash = 0;
     this.scale = 0;
@@ -750,10 +1323,26 @@ class Enemy {
     this.animTime = Math.random() * 10;
   }
 
-  update(dt) {
+  update(dt, game) {
     this.animTime += dt;
     // Scale animation (spawn pop)
     this.scale = lerp(this.scale, this.targetScale, dt * 8);
+
+    // 狂暴加速 (低於 35% 血量狂暴)
+    if (this.canEnrage && !this.isEnraged && (this.hp / this.maxHp) <= 0.35) {
+      this.isEnraged = true;
+      if (game) {
+        game.spawnParticle(this.x, this.y - 18, {
+          text: '⚡ 狂暴！',
+          color: '#ff1744',
+          fontSize: 13,
+          vx: 0,
+          vy: -35,
+          gravity: 0,
+          life: 1.0,
+        });
+      }
+    }
 
     // Slow effect
     if (this.slowTimer > 0) {
@@ -763,11 +1352,39 @@ class Enemy {
       }
     }
 
+    // Poison DOT effect (毒霧可完全無視護甲融甲)
+    if (this.poisonTimer > 0) {
+      this.poisonTimer -= dt;
+      this.poisonTickTimer += dt;
+      if (this.poisonTickTimer >= 0.5) { // 每 0.5 秒跳一次毒傷
+        this.poisonTickTimer = 0;
+        const tickDamage = this.poisonDps * 0.5;
+        this.hp -= tickDamage;
+        this.hitFlash = 0.5;
+        if (game) {
+          game.spawnParticle(this.x, this.y - 10, {
+            text: `-${Math.round(tickDamage)} 🧪`,
+            color: '#76ff03',
+            fontSize: 11,
+            vx: (Math.random() - 0.5) * 30,
+            vy: -35,
+            gravity: 0,
+            life: 0.8,
+          });
+        }
+        if (this.hp <= 0) {
+          this.hp = 0;
+          this.alive = false;
+        }
+      }
+    }
+
     // Hit flash
     if (this.hitFlash > 0) this.hitFlash -= dt * 4;
 
-    // Move along path
-    const currentSpeed = this.baseSpeed * this.slowFactor;
+    // Move along path (狂暴時速度 1.8 倍)
+    const enrageMultiplier = this.isEnraged ? 1.8 : 1.0;
+    const currentSpeed = this.baseSpeed * this.slowFactor * enrageMultiplier;
     this.distance += currentSpeed * dt;
     const pos = this.map.getPositionAtDistance(this.distance);
     this.x = pos.x;
@@ -780,12 +1397,51 @@ class Enemy {
     }
   }
 
-  takeDamage(amount, slowFactor, slowDuration) {
-    this.hp -= amount;
+  takeDamage(amount, slowFactor, slowDuration, poisonDps, poisonDuration, isPhysical = false, game = null) {
+    // 鐵甲甲蟲物理減傷 50%，非物理（毒/雷/冰/流星）全額承受
+    let finalAmount = amount;
+    if (this.armor > 0 && isPhysical) {
+      finalAmount = amount * (1 - this.armor);
+    }
+    this.hp -= finalAmount;
     this.hitFlash = 1;
+
+    // Boss 小龍召喚護衛術 (75%, 50%, 25% 觸發)
+    if (this.isBoss && game && game.enemies) {
+      const ratio = this.hp / this.maxHp;
+      for (const th of this.summonThresholds) {
+        if (ratio <= th && !this.summonedStages.has(th)) {
+          this.summonedStages.add(th);
+          game.sfx.play('explosion');
+          game.spawnParticle(this.x, this.y - 25, {
+            text: '🐉 召喚護衛！',
+            color: '#ffd700',
+            fontSize: 14,
+            vx: 0,
+            vy: -40,
+            gravity: 0,
+            life: 1.2
+          });
+          // 召喚 2 隻蜜蜂護衛
+          for (let i = 0; i < 2; i++) {
+            const minion = new Enemy('bee', this.map);
+            minion.distance = Math.max(0, this.distance - (i + 1) * 20);
+            const mPos = this.map.getPositionAtDistance(minion.distance);
+            minion.x = mPos.x;
+            minion.y = mPos.y;
+            game.enemies.push(minion);
+          }
+        }
+      }
+    }
+
     if (slowFactor && slowDuration) {
       this.slowFactor = slowFactor;
       this.slowTimer = slowDuration;
+    }
+    if (poisonDps && poisonDuration) {
+      this.poisonDps = Math.max(this.poisonDps, poisonDps);
+      this.poisonTimer = Math.max(this.poisonTimer, poisonDuration);
     }
     if (this.hp <= 0) {
       this.hp = 0;
@@ -801,12 +1457,40 @@ class Enemy {
     ctx.translate(this.x, this.y);
     ctx.scale(s, s);
 
+    // 1. 落地立體陰影 (消除漂浮感)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+    ctx.beginPath();
+    ctx.ellipse(0, 12, 16, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. 行進間左右扭動微動作 (Wobble Walk)
+    const wobble = Math.sin(this.distance * 0.15) * 0.08;
+    ctx.rotate(wobble);
+
+    // 3. 狂暴微光 (紅色光環與蒸氣)
+    if (this.isEnraged) {
+      ctx.fillStyle = 'rgba(255, 23, 68, 0.35)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     // Slow tint
     if (this.slowTimer > 0) {
       ctx.globalAlpha = 0.4;
       ctx.fillStyle = '#88ddff';
       ctx.beginPath();
       ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // Poison tint (劇毒綠色毒雲光環)
+    if (this.poisonTimer > 0) {
+      ctx.globalAlpha = 0.35 + Math.sin(this.animTime * 10) * 0.15;
+      ctx.fillStyle = '#76ff03';
+      ctx.beginPath();
+      ctx.arc(0, 0, 20, 0, Math.PI * 2);
       ctx.fill();
       ctx.globalAlpha = 1;
     }
@@ -861,9 +1545,16 @@ class Projectile {
     this.piercing = tower.getStats().piercing || 0;
     this.piercedEnemies = new Set();
     this.towerType = tower.typeKey;
+
+    // Thunder Chain & Poison DOT properties
+    this.chainCount = tower.getStats().chainCount || 0;
+    this.chainRange = tower.getStats().chainRange || 0;
+    this.poisonDps = tower.getStats().poisonDps || 0;
+    this.poisonDuration = tower.getStats().poisonDuration || 0;
+    this.chainedEnemies = new Set();
   }
 
-  update(dt) {
+  update(dt, game) {
     if (!this.alive) return;
 
     // Track target or fly to last known position
@@ -883,7 +1574,7 @@ class Projectile {
     const d = dist(this.x, this.y, tx, ty);
     if (d < 8) {
       // Hit!
-      this.onHit();
+      this.onHit(game);
       return;
     }
 
@@ -898,44 +1589,89 @@ class Projectile {
     if (this.trail.length > 6) this.trail.shift();
   }
 
-  onHit() {
+  onHit(game) {
     if (this.target && this.target.alive) {
-      this.target.takeDamage(this.damage, this.slowFactor, this.slowDuration);
+      const isPhysical = (this.towerType === 'petal' || this.towerType === 'candy');
+      this.target.takeDamage(this.damage, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, isPhysical, game);
       this.piercedEnemies.add(this.target);
+      this.chainedEnemies.add(this.target);
+
+      // 連鎖閃電折射演算法 (Chain Lightning Jump)
+      if (this.chainCount > 1 && game && game.enemies) {
+        let currentTarget = this.target;
+        for (let c = 1; c < this.chainCount; c++) {
+          let nextTarget = null;
+          let minD = this.chainRange;
+          for (const other of game.enemies) {
+            if (!other.alive || this.chainedEnemies.has(other)) continue;
+            const d = dist(currentTarget.x, currentTarget.y, other.x, other.y);
+            if (d < minD) {
+              minD = d;
+              nextTarget = other;
+            }
+          }
+          if (nextTarget) {
+            this.chainedEnemies.add(nextTarget);
+            const chainDmg = this.damage * Math.pow(0.8, c); // 每次彈射衰減 20% 傷害
+            nextTarget.takeDamage(chainDmg, null, 0, 0, 0, false, game); // 閃電為魔法傷害
+
+            // 閃電折射火花粒子
+            for (let k = 0; k < 5; k++) {
+              game.spawnParticle((currentTarget.x + nextTarget.x) / 2, (currentTarget.y + nextTarget.y) / 2, {
+                color: '#00e5ff',
+                size: 2.5,
+                vx: (Math.random() - 0.5) * 120,
+                vy: (Math.random() - 0.5) * 120,
+                life: 0.3,
+                gravity: 0
+              });
+            }
+            currentTarget = nextTarget;
+          } else {
+            break;
+          }
+        }
+      }
     }
     if (this.piercing > 0 && this.piercedEnemies.size < this.piercing) {
-      // Don't die yet, continue to next target
-      this.target = null; // Will be reassigned by game
+      this.target = null;
     } else {
       this.alive = false;
     }
   }
 
   render(ctx) {
-    // Trail
+    ctx.save();
+
+    // 1. 發光拖尾 (Neon Particle Trail)
     for (let i = 0; i < this.trail.length; i++) {
       const t = this.trail[i];
-      const alpha = (i / this.trail.length) * 0.4;
+      const alpha = (i / this.trail.length) * 0.55;
       ctx.globalAlpha = alpha;
       ctx.fillStyle = this.color;
       ctx.beginPath();
-      ctx.arc(t.x, t.y, 3, 0, Math.PI * 2);
+      ctx.arc(t.x, t.y, 2.5 + i * 0.4, 0, Math.PI * 2);
       ctx.fill();
     }
-    ctx.globalAlpha = 1;
 
-    // Projectile body
+    // 2. 子彈外層霓虹光暈 (Glow Effect)
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 10;
+    ctx.globalAlpha = 0.85;
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, 5.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Glow
-    ctx.globalAlpha = 0.3;
+    // 3. 子彈中心晶瑩白色核心 (Specular Core)
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+    ctx.arc(this.x - 1, this.y - 1, 2.2, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 1;
+
+    ctx.restore();
   }
 }
 
@@ -1117,20 +1853,30 @@ class Tower {
     const pulse = this.pulseTimer > 0 ? 1 + Math.sin(this.pulseTimer * 20) * 0.1 : 1;
     ctx.scale(s * pulse, s * pulse);
 
-    // Base circle
-    const stats = this.getStats();
-    ctx.fillStyle = this.data.color;
-    ctx.globalAlpha = 0.3;
+    // 1. 落地立體陰影 (消除漂浮感)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
     ctx.beginPath();
-    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.ellipse(0, 14, 18, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. 精緻底座 (立體微光圓環)
+    const stats = this.getStats();
+    const baseGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 20);
+    baseGrad.addColorStop(0, '#ffffff');
+    baseGrad.addColorStop(0.3, this.data.color);
+    baseGrad.addColorStop(1, 'rgba(0,0,0,0.4)');
+    ctx.fillStyle = baseGrad;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, 19, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // Border
+    // 3. 底座外邊框高光
     ctx.strokeStyle = this.data.color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.arc(0, 0, 20, 0, Math.PI * 2);
+    ctx.arc(0, 0, 19, 0, Math.PI * 2);
     ctx.stroke();
 
     // Draw Canvas Sprite
@@ -1170,15 +1916,26 @@ class Tower {
     if (stats.range <= 0) return;
 
     ctx.save();
-    ctx.globalAlpha = 0.1;
+    // 1. 半透明填充（增強能見度）
+    ctx.globalAlpha = 0.22;
     ctx.fillStyle = this.data.color;
     ctx.beginPath();
     ctx.arc(this.x, this.y, stats.range, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.3;
+
+    // 2. 實線發光外圈
+    ctx.globalAlpha = 0.85;
     ctx.strokeStyle = this.data.color;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, stats.range, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 3. 內層精緻亮白色虛線圈，對比更鮮明
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1.5;
-    ctx.setLineDash([4, 4]);
+    ctx.setLineDash([6, 6]);
     ctx.beginPath();
     ctx.arc(this.x, this.y, stats.range, 0, Math.PI * 2);
     ctx.stroke();
@@ -1276,6 +2033,18 @@ class Game {
     this.projectiles = [];
     this.particles = [];
 
+    // Active Skills System
+    this.skills = {
+      meteor: { cd: 30, timer: 0, cost: 0, range: 110, damage: 150 },
+      freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 }
+    };
+    this.activeTargetingSkill = null; // 'meteor' or null
+
+    // Base & Gate Dynamic Feedback
+    this.baseHurtTimer = 0;
+    this.gatePulseTimer = 0;
+    this.smokeTimer = 0;
+
     // Interaction
     this.selectedTowerType = null;
     this.selectedTower = null;
@@ -1300,6 +2069,7 @@ class Game {
     this.setupUI();
     this.setupEvents();
     this.updateUI();
+    this.renderLeaderboards();
     this.gameLoop(0);
   }
 
@@ -1312,17 +2082,48 @@ class Game {
     ctx.fillStyle = '#deb887';
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-    // 2. 建造平台格線微光
+    // 2. 建造平台 2.5D 立體石台基座 (Elevated Stone Pedestals)
     for (let r = 0; r < CONFIG.ROWS; r++) {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.map.grid[r][c] === 0) {
-          // 建造區基座立體石台微光
-          ctx.fillStyle = (r + c) % 2 === 0 ? 'rgba(255, 255, 255, 0.15)' : 'rgba(100, 60, 20, 0.04)';
-          ctx.fillRect(c * cs + 2, r * cs + 2, cs - 4, cs - 4);
+          const px = c * cs + 3;
+          const py = r * cs + 3;
+          const pw = cs - 6;
+          const ph = cs - 6;
 
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(c * cs + 3, r * cs + 3, cs - 6, cs - 6);
+          // 2.1 底部石台厚度與深色陰影 (3D 側面)
+          ctx.fillStyle = 'rgba(70, 45, 20, 0.4)';
+          ctx.beginPath();
+          ctx.roundRect(px, py + 4, pw, ph, 8);
+          ctx.fill();
+
+          // 2.2 石台主頂面 (米白溫潤石磚漸層)
+          const stoneGrad = ctx.createLinearGradient(px, py, px + pw, py + ph);
+          if ((r + c) % 2 === 0) {
+            stoneGrad.addColorStop(0, '#fbf7ee');
+            stoneGrad.addColorStop(1, '#ebe0cb');
+          } else {
+            stoneGrad.addColorStop(0, '#f5eee0');
+            stoneGrad.addColorStop(1, '#e2d4bd');
+          }
+          ctx.fillStyle = stoneGrad;
+          ctx.beginPath();
+          ctx.roundRect(px, py, pw, ph - 2, 8);
+          ctx.fill();
+
+          // 2.3 石台頂面金色細緻收邊
+          ctx.strokeStyle = 'rgba(218, 165, 32, 0.45)';
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.roundRect(px + 1, py + 1, pw - 2, ph - 4, 7);
+          ctx.stroke();
+
+          // 2.4 四角精緻古典鉚釘/刻痕
+          ctx.fillStyle = 'rgba(160, 110, 50, 0.35)';
+          ctx.fillRect(px + 4, py + 4, 2, 2);
+          ctx.fillRect(px + pw - 6, py + 4, 2, 2);
+          ctx.fillRect(px + 4, py + ph - 8, 2, 2);
+          ctx.fillRect(px + pw - 6, py + ph - 8, 2, 2);
         }
       }
     }
@@ -1460,79 +2261,278 @@ class Game {
       ctx.restore();
     }
 
-    // 5. 起點：精緻石造城門 (Top-Left [0,0])
+    // 5. 起點主題建築：深淵召喚符文傳送門 (Void Rift Portal)
     const entry = this.map.pathPixels[0];
     const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
 
     ctx.save();
     ctx.translate(entry.x, entry.y);
-    // 陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath(); ctx.ellipse(0, 22, 24, 10, 0, 0, Math.PI * 2); ctx.fill();
-    // 石門外框
-    ctx.fillStyle = '#78909c';
-    ctx.fillRect(-22, -26, 44, 48);
-    ctx.beginPath(); ctx.arc(0, -26, 22, Math.PI, 0); ctx.fill();
-    // 石磚刻痕
-    ctx.fillStyle = '#546e7a';
-    ctx.fillRect(-20, -24, 40, 4);
-    ctx.fillRect(-20, -10, 40, 3);
-    // 門洞深處（暗紅色惡魔傳送門）
-    ctx.fillStyle = '#263238';
-    ctx.fillRect(-14, -18, 28, 40);
-    ctx.beginPath(); ctx.arc(0, -18, 14, Math.PI, 0); ctx.fill();
-    // 傳送門旋渦微光
-    ctx.fillStyle = '#e91e63';
-    ctx.beginPath(); ctx.arc(0, -6, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ff80ab';
-    ctx.beginPath(); ctx.arc(0, -6, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
+    // 5.1 魔法陣基座陰影
+    ctx.fillStyle = 'rgba(0,0,0,0.32)';
+    ctx.beginPath(); ctx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 6. 終點：精緻保衛守護小屋 (Top-Right [5,0])
-    ctx.save();
-    ctx.translate(exit.x, exit.y);
-    // 房屋陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath(); ctx.ellipse(0, 20, 26, 10, 0, 0, Math.PI * 2); ctx.fill();
-    // 主牆體
-    ctx.fillStyle = '#fff8e1';
-    ctx.fillRect(-24, -10, 48, 32);
-    ctx.strokeStyle = '#ffe082';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-24, -10, 48, 32);
-    // 紅色三角瓦片屋頂
-    ctx.fillStyle = '#e53935';
-    ctx.beginPath();
-    ctx.moveTo(-30, -10);
-    ctx.lineTo(0, -32);
-    ctx.lineTo(30, -10);
-    ctx.closePath();
-    ctx.fill();
-    // 屋頂陰影與紋路
-    ctx.strokeStyle = '#b71c1c';
+    // 5.2 古代紫晶黑石魔法底座 (八角星石陣)
+    const riftBase = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
+    riftBase.addColorStop(0, '#4a148c');
+    riftBase.addColorStop(0.5, '#311b92');
+    riftBase.addColorStop(1, '#1a237e');
+    ctx.fillStyle = riftBase;
+    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#b388ff';
     ctx.lineWidth = 2;
     ctx.stroke();
-    // 煙囪
-    ctx.fillStyle = '#8d6e63';
-    ctx.fillRect(12, -28, 7, 12);
-    // 門
-    ctx.fillStyle = '#5d4037';
-    ctx.fillRect(-7, 4, 14, 18);
-    ctx.fillStyle = '#ffd54f';
-    ctx.beginPath(); ctx.arc(3, 13, 2, 0, Math.PI * 2); ctx.fill();
-    // 玻璃窗戶（發光藍）
-    ctx.fillStyle = '#81d4fa';
-    ctx.fillRect(-18, -2, 8, 8);
-    ctx.fillRect(10, -2, 8, 8);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(-18, -2, 8, 8);
-    ctx.strokeRect(10, -2, 8, 8);
+
+    // 5.3 內圈神秘符文同心金環
+    ctx.strokeStyle = '#ea80fc';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 5.4 傳送門立體紫晶立柱（左右兩側黑曜石尖碑）
+    for (let side of [-1, 1]) {
+      ctx.fillStyle = '#212121';
+      ctx.beginPath();
+      ctx.moveTo(side * 18, 14);
+      ctx.lineTo(side * 22, -18);
+      ctx.lineTo(side * 16, -26);
+      ctx.lineTo(side * 12, -16);
+      ctx.lineTo(side * 14, 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#7c4dff';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // 尖碑頂端鑲嵌懸浮紫水晶
+      ctx.fillStyle = '#e040fb';
+      ctx.beginPath();
+      ctx.moveTo(side * 16, -28);
+      ctx.lineTo(side * 18, -34);
+      ctx.lineTo(side * 16, -40);
+      ctx.lineTo(side * 14, -34);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // 6. 終點主題建築：極光琉璃水晶樹 (Aurora Crystal Tree - 5號設計)
+    ctx.save();
+    ctx.translate(exit.x, exit.y);
+
+    // 6.1 地面晶光倒影陰影
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.beginPath(); ctx.ellipse(0, 20, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 6.2 冰晶折射基座
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(-24, 10, 48, 13, 5);
+    ctx.fill();
+    ctx.stroke();
+
+    // 6.3 極光琉璃水晶主幹 (藍白晶透漸層)
+    const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
+    cGrad.addColorStop(0, '#80d8ff');
+    cGrad.addColorStop(0.5, '#ffffff');
+    cGrad.addColorStop(1, '#00b0ff');
+    ctx.fillStyle = cGrad;
+    ctx.beginPath();
+    ctx.moveTo(-8, 10);
+    ctx.lineTo(-20, -26);
+    ctx.lineTo(0, -38);
+    ctx.lineTo(20, -26);
+    ctx.lineTo(8, 10);
+    ctx.closePath();
+    ctx.fill();
+
+    // 6.4 琉璃棱鏡多面體立體切面
+    const facets = [
+      { p: [[0, -38], [-20, -26], [-11, -11], [0, -20]], c: '#e1f5fe' },
+      { p: [[0, -38], [20, -26], [11, -11], [0, -20]], c: '#b3e5fc' },
+      { p: [[0, -20], [-11, -11], [0, 8]], c: '#4fc3f7' },
+      { p: [[0, -20], [11, -11], [0, 8]], c: '#29b6f6' }
+    ];
+    for (let f of facets) {
+      ctx.fillStyle = f.c;
+      ctx.beginPath();
+      f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // 6.5 頂端神聖晶核亮點
+    ctx.shadowColor = '#00e5ff';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(0, -42, 5.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
   // ─── UI Setup ───
   setupUI() {
+    // 動態綁定程式設定的版本號
+    const versionBadge = document.getElementById('menu-version-badge');
+    if (versionBadge) {
+      const isDev = CONFIG.VERSION.includes('dev');
+      versionBadge.textContent = `${isDev ? '🛠️ 開發版' : '✨ 正式版'} ${CONFIG.VERSION}`;
+    }
+
+    // 繪製專屬技能 Canvas 圖標 (完全告別 Emoji)
+    const meteorCv = document.getElementById('skill-canvas-meteor');
+    if (meteorCv) {
+      const mctx = meteorCv.getContext('2d');
+      mctx.clearRect(0, 0, 36, 36);
+      mctx.translate(18, 18);
+      // 燃燒流星火尾
+      const flameGrad = mctx.createRadialGradient(0, 0, 2, 0, 0, 14);
+      flameGrad.addColorStop(0, '#fff59d');
+      flameGrad.addColorStop(0.4, '#ff9800');
+      flameGrad.addColorStop(0.8, '#ff1744');
+      flameGrad.addColorStop(1, 'transparent');
+      mctx.fillStyle = flameGrad;
+      mctx.beginPath(); mctx.arc(0, 0, 14, 0, Math.PI * 2); mctx.fill();
+      // 火球核心
+      mctx.fillStyle = '#ffffff';
+      mctx.beginPath(); mctx.arc(-2, -2, 4, 0, Math.PI * 2); mctx.fill();
+      // 隕石坑紋
+      mctx.fillStyle = '#b71c1c';
+      mctx.beginPath(); mctx.arc(3, 3, 2.5, 0, Math.PI * 2); mctx.fill();
+      mctx.beginPath(); mctx.arc(-3, 4, 1.8, 0, Math.PI * 2); mctx.fill();
+    }
+
+    const freezeCv = document.getElementById('skill-canvas-freeze');
+    if (freezeCv) {
+      const fctx = freezeCv.getContext('2d');
+      fctx.clearRect(0, 0, 36, 36);
+      fctx.translate(18, 18);
+      // 冰晶光芒
+      fctx.strokeStyle = '#00e5ff';
+      fctx.lineWidth = 2.5;
+      fctx.lineCap = 'round';
+      for (let i = 0; i < 6; i++) {
+        const ang = (i * Math.PI) / 3;
+        fctx.beginPath();
+        fctx.moveTo(0, 0);
+        fctx.lineTo(Math.cos(ang) * 12, Math.sin(ang) * 12);
+        fctx.stroke();
+        // 冰晶分叉
+        const bx = Math.cos(ang) * 7;
+        const by = Math.sin(ang) * 7;
+        const pAng1 = ang + Math.PI / 4;
+        const pAng2 = ang - Math.PI / 4;
+        fctx.beginPath();
+        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng1) * 4, by + Math.sin(pAng1) * 4);
+        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng2) * 4, by + Math.sin(pAng2) * 4);
+        fctx.stroke();
+      }
+      // 冰晶核心亮點
+      fctx.fillStyle = '#ffffff';
+      fctx.beginPath(); fctx.arc(0, 0, 3, 0, Math.PI * 2); fctx.fill();
+    }
+
+    // 繪製首頁城堡大插畫 Canvas (告別 🏰 Emoji)
+    const titleCv = document.getElementById('menu-title-canvas');
+    if (titleCv) {
+      const tctx = titleCv.getContext('2d');
+      tctx.clearRect(0, 0, 80, 80);
+      tctx.translate(40, 48);
+      // 城堡基底陰影
+      tctx.fillStyle = 'rgba(0,0,0,0.18)';
+      tctx.beginPath(); tctx.ellipse(0, 24, 32, 10, 0, 0, Math.PI * 2); tctx.fill();
+      // 城牆主體 (石磚厚度漸層)
+      const wallGrad = tctx.createLinearGradient(0, -20, 0, 20);
+      wallGrad.addColorStop(0, '#ffe082');
+      wallGrad.addColorStop(1, '#ffb300');
+      tctx.fillStyle = wallGrad;
+      tctx.fillRect(-22, -10, 44, 32);
+      // 左右兩座高塔與圓錐尖頂
+      for (let s of [-20, 20]) {
+        tctx.fillStyle = '#ffb300';
+        tctx.fillRect(s - 8, -26, 16, 48);
+        tctx.fillStyle = '#e91e63';
+        tctx.beginPath();
+        tctx.moveTo(s - 10, -26); tctx.lineTo(s, -42); tctx.lineTo(s + 10, -26); tctx.closePath();
+        tctx.fill();
+        // 塔頂金球
+        tctx.fillStyle = '#ffd54f';
+        tctx.beginPath(); tctx.arc(s, -42, 2.5, 0, Math.PI * 2); tctx.fill();
+      }
+      // 中央拱門
+      tctx.fillStyle = '#5d4037';
+      tctx.beginPath(); tctx.arc(0, 10, 9, Math.PI, 0); tctx.fill();
+      tctx.fillRect(-9, 10, 18, 12);
+    }
+
+    // 繪製勝利金冠插畫 Canvas (告別 🎉 Emoji)
+    const vicCv = document.getElementById('victory-canvas');
+    if (vicCv) {
+      const vctx = vicCv.getContext('2d');
+      vctx.clearRect(0, 0, 70, 70);
+      vctx.translate(35, 38);
+      // 金色皇冠
+      const crGrad = vctx.createLinearGradient(0, -20, 0, 15);
+      crGrad.addColorStop(0, '#fff59d');
+      crGrad.addColorStop(0.5, '#ffd54f');
+      crGrad.addColorStop(1, '#ff8f00');
+      vctx.fillStyle = crGrad;
+      vctx.beginPath();
+      vctx.moveTo(-24, 12);
+      vctx.lineTo(-26, -14);
+      vctx.lineTo(-12, -4);
+      vctx.lineTo(0, -22);
+      vctx.lineTo(12, -4);
+      vctx.lineTo(26, -14);
+      vctx.lineTo(24, 12);
+      vctx.closePath();
+      vctx.fill();
+      vctx.strokeStyle = '#ff6f00';
+      vctx.lineWidth = 2;
+      vctx.stroke();
+      // 皇冠頂端 3 顆紅寶石
+      vctx.fillStyle = '#ff1744';
+      vctx.beginPath(); vctx.arc(-26, -14, 3, 0, Math.PI * 2); vctx.fill();
+      vctx.beginPath(); vctx.arc(0, -22, 4, 0, Math.PI * 2); vctx.fill();
+      vctx.beginPath(); vctx.arc(26, -14, 3, 0, Math.PI * 2); vctx.fill();
+    }
+
+    // 繪製失敗碎裂心之水晶 Canvas (告別 💔 Emoji)
+    const govCv = document.getElementById('gameover-canvas');
+    if (govCv) {
+      const gctx = govCv.getContext('2d');
+      gctx.clearRect(0, 0, 70, 70);
+      gctx.translate(35, 35);
+      // 暗紫裂紋心靈護盾
+      const hGrad = gctx.createRadialGradient(-4, -4, 2, 0, 0, 22);
+      hGrad.addColorStop(0, '#ef5350');
+      hGrad.addColorStop(0.7, '#c62828');
+      hGrad.addColorStop(1, '#3e2723');
+      gctx.fillStyle = hGrad;
+      // 繪製心形
+      gctx.beginPath();
+      gctx.moveTo(0, 16);
+      gctx.bezierCurveTo(-22, 2, -22, -16, 0, -8);
+      gctx.bezierCurveTo(22, -16, 22, 2, 0, 16);
+      gctx.fill();
+      // 心形中央閃電裂痕
+      gctx.strokeStyle = '#ffffff';
+      gctx.lineWidth = 2.5;
+      gctx.beginPath();
+      gctx.moveTo(0, -10);
+      gctx.lineTo(-4, -2);
+      gctx.lineTo(5, 5);
+      gctx.lineTo(-2, 10);
+      gctx.lineTo(0, 16);
+      gctx.stroke();
+    }
+
     const list = document.getElementById('tower-list');
     list.innerHTML = '';
 
@@ -1540,52 +2540,53 @@ class Game {
       const item = document.createElement('div');
       item.className = 'tower-item';
       item.dataset.type = key;
-      item.innerHTML = `
-        <span class="tower-emoji">${data.emoji}</span>
-        <div class="tower-details">
-          <div class="tower-name">${data.name}</div>
-          <div class="tower-cost">💰 ${data.cost}</div>
-          <div class="tower-desc">${data.description}</div>
-        </div>
-      `;
 
-      // 支援長按顯示資訊、拖曳建立防禦塔
-      let pressTimer = null;
-      let isLongPressed = false;
+      // 建立專屬 Mini Canvas 進行 3D 繪製 (告別 Emoji)
+      const iconCanvas = document.createElement('canvas');
+      iconCanvas.width = 36;
+      iconCanvas.height = 36;
+      iconCanvas.className = 'tower-mini-canvas';
+      const ictx = iconCanvas.getContext('2d');
+      ictx.translate(18, 20);
+      ictx.scale(0.85, 0.85);
+      const drawFn = Sprites['drawTower_' + key];
+      if (drawFn) {
+        drawFn.call(Sprites, ictx, 0, 1);
+      }
+
+      item.appendChild(iconCanvas);
+
+      const details = document.createElement('div');
+      details.className = 'tower-details';
+      details.innerHTML = `
+        <div class="tower-name">${data.name}</div>
+        <div class="tower-cost">💰 ${data.cost}</div>
+      `;
+      item.appendChild(details);
+
+      // 支援按下立即顯示資訊、拖曳建立防禦塔
+      let isPressed = false;
       let startX = 0, startY = 0;
       let isItemDragging = false;
-
-      const clearPress = () => {
-        if (pressTimer) {
-          clearTimeout(pressTimer);
-          pressTimer = null;
-        }
-      };
 
       const startPress = (clientX, clientY) => {
         if (this.state !== 'planning' && this.state !== 'wave') return;
         startX = clientX;
         startY = clientY;
-        isLongPressed = false;
+        isPressed = true;
         isItemDragging = false;
 
-        pressTimer = setTimeout(() => {
-          isLongPressed = true;
-          this.deselectTower();
-          this.showTowerPreviewInfo(key);
-          if (navigator.vibrate) navigator.vibrate(40);
-        }, 350); // 350ms 觸發長按資訊
+        // 按下狀態立即顯示塔的資訊
+        this.deselectTower();
+        this.showTowerPreviewInfo(key);
       };
 
-      const movePress = (clientX, clientY) => {
+      const movePress = (clientX, clientY, isTouch = false) => {
+        if (!isPressed && !isItemDragging) return;
         const distMoved = Math.hypot(clientX - startX, clientY - startY);
         if (distMoved > 8) {
-          // 移動超過閾值，代表開始拖曳，取消長按計時並關閉資訊
-          clearPress();
-          if (isLongPressed) {
-            isLongPressed = false;
-            document.getElementById('tower-info').classList.add('hidden');
-          }
+          // 移動超過閾值，代表開始拖曳，關閉固定資訊面板並進入拖曳狀態
+          document.getElementById('tower-info').classList.add('hidden');
           if (!isItemDragging) {
             if (this.gold < data.cost) {
               return;
@@ -1594,14 +2595,14 @@ class Game {
             this.draggingTowerType = key;
             this.isDragging = true;
             item.classList.add('is-dragging');
-            document.getElementById('tower-info').classList.add('hidden');
           }
-          // 計算 Canvas 內座標
+          // 計算 Canvas 內座標 (手機觸控時向上偏移 35px 避免手指遮擋視線)
           const rect = this.canvas.getBoundingClientRect();
           const scaleX = this.canvas.width / rect.width;
           const scaleY = this.canvas.height / rect.height;
+          const offsetY = isTouch ? -35 : 0;
           const cx = (clientX - rect.left) * scaleX;
-          const cy = (clientY - rect.top) * scaleY;
+          const cy = (clientY - rect.top + offsetY) * scaleY;
           this.dragPos = { x: cx, y: cy };
           const { col, row } = pixelToGrid(cx, cy);
           if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
@@ -1612,16 +2613,17 @@ class Game {
         }
       };
 
-      const endPress = (clientX, clientY) => {
-        clearPress();
+      const endPress = (clientX, clientY, isTouch = false) => {
+        isPressed = false;
         if (isItemDragging) {
           item.classList.remove('is-dragging');
-          // 嘗試在目標位置放置防禦塔
+          // 嘗試在目標位置放置防禦塔 (若為觸控同步套用向上偏移)
           const rect = this.canvas.getBoundingClientRect();
           const scaleX = this.canvas.width / rect.width;
           const scaleY = this.canvas.height / rect.height;
+          const offsetY = isTouch ? -35 : 0;
           const cx = (clientX - rect.left) * scaleX;
-          const cy = (clientY - rect.top) * scaleY;
+          const cy = (clientY - rect.top + offsetY) * scaleY;
           const { col, row } = pixelToGrid(cx, cy);
           if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
             this.selectedTowerType = key;
@@ -1633,13 +2635,9 @@ class Game {
           this.isDragging = false;
           this.hoverCell = null;
           this.updateTowerPanel();
-        } else if (isLongPressed) {
-          // 長按後放開 -> 關閉資訊
-          isLongPressed = false;
-          document.getElementById('tower-info').classList.add('hidden');
         } else {
-          // 點擊生產區塔卡片 -> 關閉現有的場上塔資訊面板並取消場上塔選取
-          this.deselectTower();
+          // 按下放開後關閉預覽資訊
+          document.getElementById('tower-info').classList.add('hidden');
         }
       };
 
@@ -1654,7 +2652,7 @@ class Game {
 
       item.addEventListener('touchmove', (e) => {
         if (e.touches.length > 0) {
-          movePress(e.touches[0].clientX, e.touches[0].clientY);
+          movePress(e.touches[0].clientX, e.touches[0].clientY, true);
           if (isItemDragging) {
             e.preventDefault();
           }
@@ -1663,11 +2661,11 @@ class Game {
 
       item.addEventListener('touchend', (e) => {
         const touch = e.changedTouches[0];
-        endPress(touch.clientX, touch.clientY);
+        endPress(touch.clientX, touch.clientY, true);
       }, { passive: true });
 
       item.addEventListener('touchcancel', () => {
-        clearPress();
+        isPressed = false;
         if (isItemDragging) {
           item.classList.remove('is-dragging');
           this.draggingTowerType = null;
@@ -1698,7 +2696,7 @@ class Game {
       list.appendChild(item);
     }
 
-    // Map selector setup
+    // Map selector setup (極簡純文字卡片，無任何圖標)
     const mapSelectContainer = document.getElementById('map-selection-list');
     if (mapSelectContainer) {
       mapSelectContainer.innerHTML = '';
@@ -1706,14 +2704,19 @@ class Game {
         const card = document.createElement('div');
         card.className = `map-select-card ${key === this.map.mapId ? 'active' : ''}`;
         card.dataset.mapId = key;
-        card.innerHTML = `
-          <div class="map-card-icon">${mapCfg.icon}</div>
-          <div class="map-card-info">
-            <div class="map-card-title">${mapCfg.name}</div>
-            <div class="map-card-desc">${mapCfg.desc}</div>
-          </div>
-          <div class="map-card-radio"></div>
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'map-card-info';
+        infoDiv.innerHTML = `
+          <div class="map-card-title">${mapCfg.name}</div>
+          <div class="map-card-desc">${mapCfg.desc}</div>
         `;
+        card.appendChild(infoDiv);
+
+        const radioDiv = document.createElement('div');
+        radioDiv.className = 'map-card-radio';
+        card.appendChild(radioDiv);
+
         card.addEventListener('click', () => this.selectMap(key));
         mapSelectContainer.appendChild(card);
       }
@@ -1742,6 +2745,12 @@ class Game {
     bindTap('start-wave-btn', () => this.startNextWave());
     bindTap('retry-btn', () => this.restartGame());
     bindTap('replay-btn', () => this.restartGame());
+    bindTap('gameover-menu-btn', () => this.quitToMenu());
+    bindTap('victory-menu-btn', () => this.quitToMenu());
+    bindTap('open-leaderboard-btn', () => this.openLeaderboardModal());
+    bindTap('gameover-open-lb-btn', () => this.openLeaderboardModal());
+    bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
+    bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
     bindTap('speed-btn', () => this.toggleSpeed());
     bindTap('upgrade-btn', () => this.upgradeTower());
     bindTap('sell-btn', () => this.sellTower());
@@ -1828,6 +2837,18 @@ class Game {
       } else {
         this.hoverCell = null;
       }
+
+      if (this.state === 'planning' && this.map.pathPixels.length > 0) {
+        const entry = this.map.pathPixels[0];
+        const distToEntry = Math.hypot(pos.x - entry.x, pos.y - entry.y);
+        if (distToEntry <= CONFIG.CELL_SIZE * 0.65) {
+          this.canvas.style.cursor = 'pointer';
+          return;
+        }
+      }
+      if (!this.selectedTowerType) {
+        this.canvas.style.cursor = 'crosshair';
+      }
     });
 
     this.canvas.addEventListener('mouseleave', () => {
@@ -1906,7 +2927,9 @@ class Game {
           e.target.tagName === 'BUTTON' ||
           e.target.closest('button') ||
           e.target.closest('.map-select-card') ||
-          e.target.closest('.tower-item')
+          e.target.closest('.tower-item') ||
+          e.target.closest('.menu-champion-card') ||
+          e.target.closest('.leaderboard-modal-content')
         );
         if (!isClickable && e.cancelable) {
           e.preventDefault();
@@ -1922,7 +2945,9 @@ class Game {
           e.target.tagName === 'BUTTON' ||
           e.target.closest('button') ||
           e.target.closest('.map-select-card') ||
-          e.target.closest('.tower-item')
+          e.target.closest('.tower-item') ||
+          e.target.closest('.menu-champion-card') ||
+          e.target.closest('.leaderboard-modal-content')
         );
         if (!isClickable && e.cancelable) {
           e.preventDefault();
@@ -1937,9 +2962,22 @@ class Game {
       }
     }, { passive: false });
 
+    // Active skill buttons
+    document.getElementById('skill-meteor-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleSkillTargeting('meteor');
+    });
+
+    document.getElementById('skill-freeze-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleSkillTargeting('freeze');
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        this.activeTargetingSkill = null;
+        document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
         this.selectedTowerType = null;
         this.deselectTower();
         this.updateTowerPanel();
@@ -1947,6 +2985,12 @@ class Game {
       if (e.key === ' ' && this.state === 'planning') {
         e.preventDefault();
         this.startNextWave();
+      }
+      if (e.key === '1') {
+        this.toggleSkillTargeting('meteor');
+      }
+      if (e.key === '2') {
+        this.toggleSkillTargeting('freeze');
       }
     });
   }
@@ -1956,6 +3000,22 @@ class Game {
     const { col, row } = pixelToGrid(px, py);
 
     if (this.state !== 'planning' && this.state !== 'wave') return;
+
+    // 施放主動瞄準技能（如：流星轟炸）
+    if (this.activeTargetingSkill === 'meteor') {
+      this.castMeteor(px, py);
+      return;
+    }
+
+    // 點擊起點出怪口：直接觸發出怪開始波次
+    if (this.state === 'planning' && this.map.pathPixels.length > 0) {
+      const entry = this.map.pathPixels[0];
+      const distToEntry = Math.hypot(px - entry.x, py - entry.y);
+      if (distToEntry <= CONFIG.CELL_SIZE * 0.65) {
+        this.startNextWave();
+        return;
+      }
+    }
 
     // Placing a tower
     if (this.selectedTowerType) {
@@ -1973,6 +3033,148 @@ class Game {
     }
   }
 
+  // ─── Active Skills (主動技能系統) ───
+  toggleSkillTargeting(skillKey) {
+    if (this.state !== 'wave') {
+      this.showToast('戰鬥開始後才能施放技能！');
+      this.sfx.play('error');
+      return;
+    }
+    const skill = this.skills[skillKey];
+    if (skill.timer > 0) {
+      this.showToast(`技能冷卻中 (${Math.ceil(skill.timer)} 秒)`);
+      this.sfx.play('error');
+      return;
+    }
+
+    if (skillKey === 'freeze') {
+      // 絕對零度立即全螢幕生效
+      this.castFreeze();
+      return;
+    }
+
+    if (this.activeTargetingSkill === skillKey) {
+      this.activeTargetingSkill = null;
+      document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
+      this.showToast('取消技能施放');
+    } else {
+      this.activeTargetingSkill = skillKey;
+      this.selectedTowerType = null;
+      this.deselectTower();
+      this.updateTowerPanel();
+      document.getElementById('skill-meteor-btn')?.classList.add('targeting');
+      this.showToast('請點擊地圖任意區域施放流星轟炸！');
+    }
+  }
+
+  castMeteor(px, py) {
+    if (this.state !== 'wave') return;
+    const skill = this.skills.meteor;
+    skill.timer = skill.cd;
+    this.activeTargetingSkill = null;
+    document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
+
+    this.sfx.play('explosion');
+    this.showToast('流星轟炸降臨！');
+
+    // 螢幕震動
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+    // 巨大衝擊波與火焰火花粒子
+    for (let i = 0; i < 25; i++) {
+      this.spawnParticle(px, py, {
+        color: Math.random() < 0.6 ? '#ff1744' : '#ff9100',
+        size: 4 + Math.random() * 6,
+        vx: (Math.random() - 0.5) * 240,
+        vy: (Math.random() - 0.5) * 240 - 30,
+        gravity: 120,
+        life: 0.6 + Math.random() * 0.4
+      });
+    }
+
+    // 範圍傷害判定
+    let hitCount = 0;
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      const d = dist(px, py, enemy.x, enemy.y);
+      if (d <= skill.range) {
+        enemy.takeDamage(skill.damage, null, 0);
+        hitCount++;
+      }
+    }
+
+    this.spawnParticle(px, py - 30, {
+      text: `-${skill.damage}`,
+      color: '#ff1744',
+      fontSize: 22,
+      vx: 0,
+      vy: -60,
+      gravity: 0,
+      life: 1.2
+    });
+  }
+
+  castFreeze() {
+    if (this.state !== 'wave') return;
+    const skill = this.skills.freeze;
+    skill.timer = skill.cd;
+
+    this.sfx.play('ice');
+    this.showToast('全體冰封 3.5 秒！');
+
+    // 全體怪物定身並凍結
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      enemy.slowFactor = 0; // 完全定身
+      enemy.slowTimer = skill.duration;
+      this.spawnParticle(enemy.x, enemy.y - 15, {
+        text: '冰凍',
+        color: '#00e5ff',
+        fontSize: 12,
+        vx: 0,
+        vy: -30,
+        gravity: 0,
+        life: 1.0
+      });
+    }
+  }
+
+  updateSkills(dt) {
+    // 只有在戰鬥波次進行中 (wave 狀態) 才倒數技能 CD，準備階段 (planning) 凍結 CD
+    if (this.state === 'wave') {
+      for (const [key, skill] of Object.entries(this.skills)) {
+        if (skill.timer > 0) {
+          skill.timer = Math.max(0, skill.timer - dt);
+        }
+      }
+    }
+    this.updateSkillsUI();
+  }
+
+  updateSkillsUI() {
+    const meteorBtn = document.getElementById('skill-meteor-btn');
+    if (meteorBtn) {
+      const s = this.skills.meteor;
+      const onCd = s.timer > 0;
+      meteorBtn.classList.toggle('on-cd', onCd);
+      const overlay = meteorBtn.querySelector('.skill-cd-overlay');
+      const text = meteorBtn.querySelector('.skill-cd-text');
+      if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
+      if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
+    }
+
+    const freezeBtn = document.getElementById('skill-freeze-btn');
+    if (freezeBtn) {
+      const s = this.skills.freeze;
+      const onCd = s.timer > 0;
+      freezeBtn.classList.toggle('on-cd', onCd);
+      const overlay = freezeBtn.querySelector('.skill-cd-overlay');
+      const text = freezeBtn.querySelector('.skill-cd-text');
+      if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
+      if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
+    }
+  }
+
   // ─── Tower management ───
   selectTowerType(typeKey) {
     if (this.state !== 'planning' && this.state !== 'wave') return;
@@ -1986,7 +3188,7 @@ class Game {
     }
     const data = TOWER_DATA[typeKey];
     if (this.gold < data.cost) {
-      this.showToast(`💰 金幣不足！需要 ${data.cost}`);
+      this.showToast(`金幣不足！需要 ${data.cost}`);
       this.sfx.play('error');
       return;
     }
@@ -2001,20 +3203,20 @@ class Game {
     const data = TOWER_DATA[this.selectedTowerType];
 
     if (!this.map.isBuildable(col, row)) {
-      this.showToast('❌ 不能放在路上！');
+      this.showToast('不能放在道路上！');
       this.sfx.play('error');
       return;
     }
 
     const key = `${col},${row}`;
     if (this.towerGrid[key]) {
-      this.showToast('❌ 已有防禦塔！');
+      this.showToast('該位置已有防禦塔！');
       this.sfx.play('error');
       return;
     }
 
     if (this.gold < data.cost) {
-      this.showToast(`💰 金幣不足！需要 ${data.cost}`);
+      this.showToast(`金幣不足！需要 ${data.cost}`);
       this.sfx.play('error');
       return;
     }
@@ -2057,20 +3259,22 @@ class Game {
     const info = document.getElementById('tower-info');
     info.classList.remove('hidden');
 
-    document.getElementById('tower-info-name').textContent = `${tower.data.emoji} ${tower.data.name}`;
+    document.getElementById('tower-info-name').textContent = `${tower.data.name}`;
     document.getElementById('tower-info-level').textContent = `等級 ${tower.level} / ${CONFIG.MAX_LEVEL}`;
     document.getElementById('tower-info-actions').style.display = 'flex';
 
     let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${tower.data.description}</div>`;
     if (tower.typeKey === 'sunflower') {
-      statsHtml += `💰 產金：${stats.goldPerSecond}/秒（僅出怪時生效）`;
+      statsHtml += `產金：${stats.goldPerSecond}/秒（僅出怪時生效）`;
     } else {
-      statsHtml += `⚔️ 傷害：${stats.damage}<br>`;
-      statsHtml += `📏 範圍：${stats.range}<br>`;
-      statsHtml += `💫 攻速：${stats.fireRate.toFixed(1)}/秒`;
-      if (stats.splashRadius) statsHtml += `<br>💥 爆炸：${stats.splashRadius}`;
-      if (stats.slowFactor) statsHtml += `<br>❄️ 減速：${Math.round((1 - stats.slowFactor) * 100)}%`;
-      if (stats.piercing) statsHtml += `<br>🌈 穿透：${stats.piercing}體`;
+      statsHtml += `傷害：${stats.damage}<br>`;
+      statsHtml += `範圍：${stats.range}<br>`;
+      statsHtml += `攻速：${stats.fireRate.toFixed(1)}/秒`;
+      if (stats.splashRadius) statsHtml += `<br>爆炸：${stats.splashRadius}`;
+      if (stats.slowFactor) statsHtml += `<br>減速：${Math.round((1 - stats.slowFactor) * 100)}%`;
+      if (stats.piercing) statsHtml += `<br>穿透：${stats.piercing}體`;
+      if (stats.chainCount) statsHtml += `<br>連鎖：${stats.chainCount}體`;
+      if (stats.poisonDps) statsHtml += `<br>劇毒：${stats.poisonDps}/秒 (${stats.poisonDuration}s)`;
     }
     document.getElementById('tower-info-stats').innerHTML = statsHtml;
 
@@ -2106,6 +3310,8 @@ class Game {
       if (data.splashRadius) statsHtml += `<br>💥 爆炸範圍：${data.splashRadius}`;
       if (data.slowFactor) statsHtml += `<br>❄️ 減速效果：${Math.round((1 - data.slowFactor) * 100)}% (持續 ${data.slowDuration}s)`;
       if (data.piercing) statsHtml += `<br>🌈 穿透數量：${data.piercing} 體`;
+      if (data.chainCount) statsHtml += `<br>⚡ 連鎖彈射：${data.chainCount} 體`;
+      if (data.poisonDps) statsHtml += `<br>🧪 劇毒腐蝕：${data.poisonDps}/秒 (持續 ${data.poisonDuration}s)`;
     }
     document.getElementById('tower-info-stats').innerHTML = statsHtml;
   }
@@ -2234,7 +3440,7 @@ class Game {
   gameOver() {
     this.state = 'gameover';
     this.sfx.play('gameover');
-    this.saveBestScore();
+    this.saveGameRecord();
     document.getElementById('final-wave').textContent = this.currentWave + 1;
     document.getElementById('final-score').textContent = this.score;
     document.getElementById('gameover-screen').classList.remove('hidden');
@@ -2244,7 +3450,7 @@ class Game {
     this.state = 'victory';
     this.sfx.play('victory');
     this.score += this.lives * 50; // Bonus for remaining lives
-    this.saveBestScore();
+    this.saveGameRecord();
     document.getElementById('victory-score').textContent = this.score;
     document.getElementById('victory-screen').classList.remove('hidden');
   }
@@ -2300,13 +3506,101 @@ class Game {
     this.showToast('🏠 已返回首頁');
   }
 
-  saveBestScore() {
-    if (this.score > this.bestScore) {
-      this.bestScore = this.score;
-      localStorage.setItem(CONFIG.LS_KEY, this.bestScore);
-      const menuScore = document.getElementById('menu-best-score');
-      if (menuScore) menuScore.textContent = this.bestScore;
+  saveGameRecord() {
+    try {
+      const recordsKey = 'dd_td_leaderboard_v1';
+      let records = [];
+      try {
+        records = JSON.parse(localStorage.getItem(recordsKey)) || [];
+      } catch (e) {
+        records = [];
+      }
+
+      const mapName = MAP_CONFIGS[this.map.mapId]?.name || '外環道路';
+      const newRecord = {
+        score: this.score,
+        wave: Math.min(this.currentWave + 1, CONFIG.TOTAL_WAVES),
+        map: mapName,
+        date: new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      };
+
+      records.push(newRecord);
+      // 依分數由高到低排序，取 Top 10
+      records.sort((a, b) => b.score - a.score);
+      records = records.slice(0, 10);
+
+      localStorage.setItem(recordsKey, JSON.stringify(records));
+
+      if (this.score > this.bestScore) {
+        this.bestScore = this.score;
+        localStorage.setItem(CONFIG.LS_KEY, this.bestScore);
+      }
+    } catch (err) {
+      console.warn('LocalStorage error:', err);
     }
+    this.renderLeaderboards();
+  }
+
+  renderLeaderboards() {
+    let records = [];
+    try {
+      records = JSON.parse(localStorage.getItem('dd_td_leaderboard_v1')) || [];
+    } catch (e) {
+      records = [];
+    }
+
+    // 1. 榜首精簡預覽更新 (首頁與結算頁)
+    const champ = records[0];
+    const updateChampionCard = (scoreElId, descElId) => {
+      const scoreEl = document.getElementById(scoreElId);
+      const descEl = document.getElementById(descElId);
+      if (champ) {
+        if (scoreEl) scoreEl.textContent = `⭐ ${champ.score}`;
+        if (descEl) descEl.textContent = `${champ.map} · 第 ${champ.wave} 波 (${champ.date || ''})`;
+      } else {
+        if (scoreEl) scoreEl.textContent = '0';
+        if (descEl) descEl.textContent = '尚無紀錄，點擊挑戰！';
+      }
+    };
+
+    updateChampionCard('menu-champion-score', 'menu-champion-desc');
+    updateChampionCard(null, 'gameover-champion-desc');
+    updateChampionCard(null, 'victory-champion-desc');
+
+    // 2. 獨立 Top 10 彈窗清單渲染
+    const modalListEl = document.getElementById('modal-leaderboard-list');
+    if (modalListEl) {
+      if (records.length === 0) {
+        modalListEl.innerHTML = '<div style="color:#888;text-align:center;padding:12px;">尚無歷史戰績，快來挑戰首殺！</div>';
+      } else {
+        modalListEl.innerHTML = records.map((rec, idx) => {
+          const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+          return `
+            <div class="leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
+              <div class="leaderboard-row-left">
+                <span style="font-size:13px;width:18px;">${medal}</span>
+                <span>${rec.map} (W${rec.wave})</span>
+              </div>
+              <div class="leaderboard-row-right">
+                <span>⭐ ${rec.score}</span>
+                <span style="font-size:9px;color:#999;">${rec.date || ''}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  }
+
+  openLeaderboardModal() {
+    this.renderLeaderboards();
+    document.getElementById('leaderboard-modal')?.classList.remove('hidden');
+    this.sfx.play('tap');
+  }
+
+  closeLeaderboardModal() {
+    document.getElementById('leaderboard-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
   }
 
   // ─── Helpers ───
@@ -2400,13 +3694,31 @@ class Game {
   }
 
   updateUI() {
-    document.getElementById('gold').textContent = this.gold;
-    document.getElementById('lives').textContent = this.lives;
-    document.getElementById('wave-info').textContent =
-      this.state === 'menu'
-        ? '準備中'
-        : `第 ${this.currentWave + 1} / ${CONFIG.TOTAL_WAVES} 波`;
-    document.getElementById('score').textContent = this.score;
+    const updateStatWithPunch = (id, newVal) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.textContent !== String(newVal)) {
+        el.textContent = newVal;
+        el.classList.remove('stat-punch');
+        void el.offsetWidth; // 強制重繪觸發動畫
+        el.classList.add('stat-punch');
+      }
+    };
+
+    updateStatWithPunch('gold', this.gold);
+    updateStatWithPunch('lives', this.lives);
+    updateStatWithPunch('score', this.score);
+
+    // 波次資訊 (純淨文本無怪物 Emoji)
+    const waveEl = document.getElementById('wave-info');
+    if (waveEl) {
+      if (this.state === 'menu') {
+        waveEl.textContent = '準備中';
+      } else {
+        waveEl.textContent = `第 ${this.currentWave + 1}/${CONFIG.TOTAL_WAVES} 波`;
+      }
+    }
+
     this.updateTowerPanel();
   }
 
@@ -2442,7 +3754,10 @@ class Game {
   }
 
   update(dt) {
-    // Spawn enemies
+    // 1. Update Active Skills
+    this.updateSkills(dt);
+
+    // 2. Spawn enemies
     if (this.state === 'wave') {
       const newEnemy = this.waveManager.update(dt, this.map);
       if (newEnemy) this.enemies.push(newEnemy);
@@ -2451,16 +3766,31 @@ class Game {
     // Update enemies
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
-      enemy.update(dt);
+      enemy.update(dt, this);
 
       if (enemy.reachedEnd) {
         this.lives -= enemy.damage;
-        this.spawnParticle(enemy.x, enemy.y, {
+        this.baseHurtTimer = 0.45; // 觸發基地受損紅光與劇烈震顫
+        if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+
+        // 基地受創爆炸煙塵與碎石
+        for (let i = 0; i < 10; i++) {
+          this.spawnParticle(enemy.x, enemy.y - 10, {
+            color: Math.random() < 0.5 ? '#ff5252' : '#ffb74d',
+            size: 3 + Math.random() * 4,
+            vx: (Math.random() - 0.5) * 160,
+            vy: (Math.random() - 0.5) * 160 - 40,
+            gravity: 100,
+            life: 0.5 + Math.random() * 0.3,
+          });
+        }
+
+        this.spawnParticle(enemy.x, enemy.y - 20, {
           text: `-${enemy.damage} ❤️`,
-          color: '#ff4444',
-          fontSize: 16,
+          color: '#ff1744',
+          fontSize: 18,
           vx: 0,
-          vy: -50,
+          vy: -55,
           gravity: 0,
           life: 1.5,
         });
@@ -2471,6 +3801,24 @@ class Game {
         }
         this.updateUI();
       }
+    }
+
+    // 基地受擊計時與煙囪升煙
+    if (this.baseHurtTimer > 0) {
+      this.baseHurtTimer -= dt;
+    }
+    this.smokeTimer += dt;
+    if (this.smokeTimer >= 1.6 && this.map.pathPixels.length > 0) {
+      this.smokeTimer = 0;
+      const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
+      this.spawnParticle(exit.x + 15, exit.y - 30, {
+        color: 'rgba(240, 240, 245, 0.7)',
+        size: 5 + Math.random() * 3,
+        vx: (Math.random() - 0.5) * 15,
+        vy: -25 - Math.random() * 15,
+        gravity: -5, // 緩緩升空
+        life: 1.2,
+      });
     }
 
     // Update towers
@@ -2484,7 +3832,7 @@ class Game {
     // Update projectiles
     for (const proj of this.projectiles) {
       if (!proj.alive) continue;
-      proj.update(dt);
+      proj.update(dt, this);
 
       // Handle splash damage on hit
       if (!proj.alive && proj.splashRadius > 0) {
@@ -2602,20 +3950,29 @@ class Game {
         const data = TOWER_DATA[this.selectedTowerType];
         if (data.range > 0) {
           const center = gridToPixel(col, row);
-          ctx.globalAlpha = 0.08;
+          ctx.save();
+          ctx.globalAlpha = 0.2;
           ctx.fillStyle = data.color;
           ctx.beginPath();
           ctx.arc(center.x, center.y, data.range, 0, Math.PI * 2);
           ctx.fill();
-          ctx.globalAlpha = 0.2;
+
+          ctx.globalAlpha = 0.85;
           ctx.strokeStyle = data.color;
-          ctx.setLineDash([4, 4]);
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, data.range, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.9;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([6, 6]);
           ctx.beginPath();
           ctx.arc(center.x, center.y, data.range, 0, Math.PI * 2);
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.globalAlpha = 1;
+          ctx.restore();
         }
 
         // Preview tower emoji
@@ -2660,6 +4017,42 @@ class Game {
       proj.render(ctx);
     }
 
+    // Active Skill Targeting Preview (流星轟炸瞄準光圈)
+    if (this.activeTargetingSkill === 'meteor' && this.mouseX >= 0 && this.mouseY >= 0) {
+      const skill = this.skills.meteor;
+      const now = performance.now() / 1000;
+      ctx.save();
+      ctx.translate(this.mouseX, this.mouseY);
+
+      // 紅色爆炸範圍圈
+      ctx.fillStyle = 'rgba(255, 23, 68, 0.22)';
+      ctx.beginPath();
+      ctx.arc(0, 0, skill.range, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 旋轉發光虛線外框
+      ctx.strokeStyle = '#ff1744';
+      ctx.lineWidth = 2.5;
+      ctx.shadowColor = '#ff1744';
+      ctx.shadowBlur = 10;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.arc(0, 0, skill.range, now * 2, now * 2 + Math.PI * 2);
+      ctx.stroke();
+
+      // 中央準心十字
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-12, 0); ctx.lineTo(12, 0);
+      ctx.moveTo(0, -12); ctx.lineTo(0, 12);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
     // Dragging Tower Preview (Range & Emoji following cursor/finger)
     if (this.isDragging && this.draggingTowerType && this.dragPos) {
       const data = TOWER_DATA[this.draggingTowerType];
@@ -2685,36 +4078,236 @@ class Game {
 
       if (data.range > 0) {
         ctx.save();
-        ctx.globalAlpha = 0.12;
+        ctx.globalAlpha = 0.22;
         ctx.fillStyle = data.color;
         ctx.beginPath();
         ctx.arc(rangeCenterX, rangeCenterY, data.range, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.85;
         ctx.strokeStyle = data.color;
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 4]);
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(rangeCenterX, rangeCenterY, data.range, 0, Math.PI * 2);
         ctx.stroke();
+
+        ctx.globalAlpha = 0.9;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.arc(rangeCenterX, rangeCenterY, data.range, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
         ctx.restore();
       }
 
-      // 3. 繪製跟隨手指/滑鼠的塔圖示
+      // 3. 繪製跟隨手指/滑鼠的立體手繪防禦塔與浮空陰影
       ctx.save();
-      ctx.globalAlpha = 0.85;
-      ctx.font = '32px serif';
+      ctx.translate(x, y);
+
+      // 浮空投影
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      ctx.beginPath();
+      ctx.ellipse(0, 16, 16, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 調用 3D 手繪 Sprite
+      const drawFunc = Sprites['drawTower_' + this.draggingTowerType];
+      if (drawFunc) {
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        drawFunc.call(Sprites, ctx, performance.now() / 1000);
+        ctx.restore();
+      } else {
+        ctx.font = '32px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(data.emoji, 0, -5);
+      }
+      ctx.restore();
+    }
+
+    // 4.1 起點傳送門：動態旋轉深淵漩渦 (Dynamic Void Vortex)
+    if (this.map.pathPixels.length > 0) {
+      const entry = this.map.pathPixels[0];
+      const now = performance.now() / 1000;
+      ctx.save();
+      ctx.translate(entry.x, entry.y);
+
+      // 旋轉深淵紫黑星雲
+      ctx.save();
+      ctx.translate(0, -6);
+      ctx.rotate(now * 2);
+      const vortGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 12);
+      vortGrad.addColorStop(0, '#ff4081');
+      vortGrad.addColorStop(0.5, '#7c4dff');
+      vortGrad.addColorStop(0.85, '#311b92');
+      vortGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = vortGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 傳送門旋臂火花
+      ctx.strokeStyle = '#ea80fc';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 7, 0, Math.PI);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // 4.2 終點保衛小屋：懸浮守護水晶與受損紅光警報 (Sanctuary Crystal & Base Shake)
+    if (this.map.pathPixels.length > 0) {
+      const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
+      const now = performance.now() / 1000;
+      ctx.save();
+
+      // 若受傷則產生劇烈畫面震顫與紅光
+      if (this.baseHurtTimer > 0) {
+        const shakeX = (Math.random() - 0.5) * 8;
+        const shakeY = (Math.random() - 0.5) * 8;
+        ctx.translate(exit.x + shakeX, exit.y + shakeY);
+
+        // 紅色受創光罩
+        ctx.fillStyle = 'rgba(255, 23, 68, 0.45)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 32, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.translate(exit.x, exit.y);
+      }
+
+      // 懸浮守護水晶 (翡翠綠/黃金旋轉菱形)
+      const crystalY = -34 + Math.sin(now * 3.5) * 3;
+      const crystalScale = 1 + Math.sin(now * 5) * 0.08;
+      ctx.save();
+      ctx.translate(0, crystalY);
+      ctx.scale(crystalScale, crystalScale);
+
+      // 水晶微光光暈
+      ctx.shadowColor = '#69f0ae';
+      ctx.shadowBlur = 12;
+      const cGrad = ctx.createLinearGradient(-6, -8, 6, 8);
+      cGrad.addColorStop(0, '#ffffff');
+      cGrad.addColorStop(0.4, '#b9f6ca');
+      cGrad.addColorStop(0.8, '#00e676');
+      cGrad.addColorStop(1, '#00c853');
+      ctx.fillStyle = cGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, -9);
+      ctx.lineTo(6.5, 0);
+      ctx.lineTo(0, 9);
+      ctx.lineTo(-6.5, 0);
+      ctx.closePath();
+      ctx.fill();
+
+      // 水晶立體切面高光
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.beginPath();
+      ctx.moveTo(0, -9);
+      ctx.lineTo(6.5, 0);
+      ctx.lineTo(0, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    // 4.3 起點出怪口按鈕（在 planning 狀態下極為醒目，帶有呼吸縮放與點擊提示）
+    if (this.state === 'planning' && this.map.pathPixels.length > 0) {
+      const entry = this.map.pathPixels[0];
+      const now = performance.now() / 1000;
+      const pulseScale = 1 + Math.sin(now * 5) * 0.08;
+      const waveNum = this.currentWave + 1;
+
+      ctx.save();
+      ctx.translate(entry.x, entry.y);
+      ctx.scale(pulseScale, pulseScale);
+
+      // 外圍發光呼吸圈
+      ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 36, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 出怪徽章按鈕主體膠囊
+      const btnW = 68;
+      const btnH = 26;
+      const btnR = 13;
+      const bx = -btnW / 2;
+      const by = 16;
+
+      ctx.fillStyle = 'rgba(255, 107, 0, 0.95)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+      ctx.beginPath();
+      ctx.roundRect(bx, by, btnW, btnH, btnR);
+      ctx.fill();
+
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = '#ffe082';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(data.emoji, x, y - 10);
+      ctx.fillText(`出怪 第${waveNum}波`, 0, by + btnH / 2 + 1);
+
+      ctx.fillStyle = '#ffeb3b';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('點擊出怪', 0, -28);
+
       ctx.restore();
+    }
+
+    // 5. 路徑動態引導微光 (Path Flow Particle Beam)
+    if (this.map && this.map.pathPixels && this.map.pathPixels.length > 1) {
+      const now = performance.now() / 1000;
+      const waypoints = this.map.pathPixels;
+      const totalLen = this.map.totalPathLength || 1000;
+      // 沿路徑循環游動的 3 顆引導光球
+      for (let i = 0; i < 3; i++) {
+        const offset = ((now * 120 + i * (totalLen / 3)) % totalLen);
+        const pos = this.map.getPositionAtDistance(offset);
+        if (pos) {
+          ctx.save();
+          ctx.globalAlpha = 0.5 + Math.sin(now * 8 + i) * 0.2;
+          ctx.fillStyle = '#fff9c4';
+          ctx.shadowColor = '#ffd54f';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(pos.x, pos.y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
     }
 
     // Particles
     for (const p of this.particles) {
       p.render(ctx);
     }
+
+    // 6. 全螢幕電影感立體暗角 (Vignette Overlay)
+    ctx.save();
+    const vigGrad = ctx.createRadialGradient(
+      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.35,
+      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.8
+    );
+    vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vigGrad.addColorStop(1, 'rgba(40, 20, 5, 0.28)');
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.restore();
   }
 }
 
