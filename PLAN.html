@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏰 可愛塔防 - 視覺升級計畫書</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #1a1b26;
+      --card-bg: #24283b;
+      --text-color: #c0caf5;
+      --accent-color: #ff9e64;
+      --heading-color: #7aa2f7;
+      --border-color: #414868;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background-color: var(--card-bg);
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+    }
+    h1, h2, h3 {
+      color: var(--heading-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    h1 { font-size: 24px; color: #ff9e64; }
+    h2 { font-size: 20px; margin-top: 24px; }
+    h3 { font-size: 16px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 6px; }
+    input[type="checkbox"] {
+      margin-right: 8px;
+      transform: scale(1.2);
+    }
+    blockquote {
+      background: rgba(122, 162, 247, 0.1);
+      border-left: 4px solid var(--heading-color);
+      padding: 8px 16px;
+      margin: 12px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    code {
+      background: #1f2335;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #bb9af7;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="content">載入中...</div>
+
+  <script>
+    const markdownContent = `# 🏰 可愛塔防 (DD Tower Defense) 遊戲畫面視覺升級計畫
+
+本計畫旨在將遊戲畫面從「陽春/小畫家感」全面升級為「現代精緻手遊級別」的立體繪本風格。
+
+---
+
+## 📋 各階段詳細執行清單
+
+### 🌸 階段 1：角色與防禦塔立體手繪重構 (Sprites & Animation Overhaul)
+> **目標**：消除平面貼紙感，賦予所有單位立體深度與活生生的動態。
+
+- [x] **落地立體陰影 (Ground Shadow)**：為所有防禦塔、敵人底部加入半透明深色投影，物件瞬間落地不飄浮。
+- [x] **光影漸層與高光點 (Radial Gradient & Specular Highlights)**：
+  - **花瓣塔**：粉白雙層花瓣漸層 + 晶瑩白光反光點。
+  - **冰淇淋塔**：立體甜筒斜紋刻痕 + 圓潤冰淇淋球漸層與反光。
+  - **向日葵**：微旋轉太陽花瓣 + 金黃漸層花蕊與笑臉。
+  - **糖果炮**：旋轉螺旋條紋棒棒糖 + 糖果炮管金屬漸層。
+  - **彩虹塔**：立體發光弧形拱門 + 雲朵基座。
+  - **敵人（毛毛蟲/蜜蜂/蝸牛/蝴蝶/小龍）**：果凍漸層體態 + 水汪汪立體眼珠。
+- [x] **微動作生命感 (Squash, Stretch & Wobble)**：
+  - 怪物移動時帶有左右各 5° 傾斜扭動步態（\`Wobble Walk\`）。
+  - 防禦塔待機時具備微小週期呼吸起伏（\`Idle Breathing\`）。
+  - 怪物受擊瞬間 0.08 秒白閃反饋（\`Hit Flash\`）。
+
+---
+
+### 🏛️ 階段 2：地圖地形 2.5D 石台化與路徑流光 (Terrain & Path Glow)
+> **目標**：告別純色地皮，營造浮島/古代石陣立體層次。
+
+- [x] **2.5D 立體石台建造格 (Elevated Stone Pedestals)**：建造格升級為「頂部米白石磚 + 底部深色石壁厚度陰影 + 邊緣微光」，呈現棋盤浮島高低落差。
+- [x] **自然微環境裝飾 (Environmental Props)**：隨機生成微風搖曳的花草、彩色小蘑菇與荒漠金黃晶石點綴地表。
+- [x] **路徑動態引導流光 (Path Flow Particles)**：怪物行徑路線的中心虛線加入動態往前游動的金色微光粒子，視覺引導明確。
+
+---
+
+### ✨ 階段 3：戰鬥特效與打擊感強化 (Glow, Sparks & Juice)
+> **目標**：讓每一次攻擊、命中與消滅都充滿反饋感。
+
+- [x] **子彈霓虹發光 (Canvas Glow Effect)**：所有投射物加上 \`shadowColor\` 與 \`shadowBlur\`，呈現發光魔法彈/彩虹雷射質感。
+- [x] **發射擠壓與回彈 (Squash on Fire)**：防禦塔開火瞬間產生 \`scale(1.15, 0.85)\` 擠壓，0.1 秒後回彈，強化開火力量感。
+- [x] **受擊火花噴濺 (Hit Sparks)**：命中時噴濺 6~8 顆帶有重力的隨機彩光火花粒子。
+
+---
+
+### 🎬 階段 4：後製氛圍與暗角營造 (Atmosphere & Post-Processing)
+> **目標**：提升整體遊戲畫面沉浸感。
+
+- [x] **全螢幕電影感暗角 (Vignette Overlay)**：在 Canvas 最上層繪製四周微暗、中央通透的徑向暗角，聚焦中央戰場視線。
+- [x] **深色琥珀金屬收邊 HUD**：狀態列與卡槽邊框微調，與新版戰場完美融合。
+`;
+
+    document.getElementById('content').innerHTML = marked.parse(markdownContent);
+  </script>
+</body>
+</html>

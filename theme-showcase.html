@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可愛塔防 - 20 款極致「淺色/亮色美學」色彩主題提案全覽</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --text: #2c3e50;
+      --text-dim: #7f8c8d;
+      --card-border: rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 30px 16px;
+    }
+
+    header {
+      max-width: 1400px;
+      margin: 0 auto 30px auto;
+      text-align: center;
+      padding: 26px;
+      background: #ffffff;
+      border: 1.5px solid rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ff8f00;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 14.5px;
+      color: var(--text-dim);
+    }
+
+    .category-title {
+      max-width: 1400px;
+      margin: 32px auto 16px auto;
+      font-size: 20px;
+      font-weight: 900;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08);
+      padding-bottom: 8px;
+    }
+
+    .category-title span {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+
+    .grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 22px;
+    }
+
+    .theme-card {
+      border-radius: 18px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 2px solid var(--card-border);
+      position: relative;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+      border-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-num {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .theme-title {
+      font-size: 16.5px;
+      font-weight: 900;
+      margin-left: 36px;
+      line-height: 1.3;
+      color: #2c3e50;
+    }
+
+    .theme-sub {
+      font-size: 11.5px;
+      font-weight: 800;
+      margin-left: 36px;
+      margin-top: -6px;
+    }
+
+    .palette-row {
+      display: flex;
+      height: 24px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .swatch {
+      flex: 1;
+      height: 100%;
+    }
+
+    .mockup-viewport {
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1.5px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .mockup-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .mockup-stat-chip {
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .mockup-canvas-area {
+      height: 95px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .mockup-tower-panel {
+      padding: 5px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-around;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .mockup-card-slot {
+      width: 40px;
+      height: 42px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5px;
+      font-weight: 800;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .mockup-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+    }
+
+    .theme-desc {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #555;
+    }
+
+    .nav-bar {
+      max-width: 1400px;
+      margin: 30px auto 0 auto;
+      text-align: center;
+    }
+    .nav-btn {
+      display: inline-block;
+      padding: 12px 28px;
+      background: #ff8f00;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 900;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(255, 143, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>☀️ 可愛塔防 - 20 款極致「淺色/明亮清爽」色彩主題提案</h1>
+    <p>擺脫暗黑壓迫感！從「純白神聖、明亮粉嫩、溫潤奶油、清透天空」全方位呈現輕盈、通透、高對比的淺色美學！</p>
+  </header>
+
+  <!-- 類別 1: 溫潤奶油與明亮白金 (Cream & Ivory Sunlight) -->
+  <div class="category-title">🍦 1. 溫潤奶油與明亮白金 <span>(暖陽奶油、象牙白金、燕麥燕麥奶)</span></div>
+  <div class="grid" id="group-1"></div>
+
+  <!-- 類別 2: 甜美馬卡龍與櫻花粉嫩 (Pastel & Blossom) -->
+  <div class="category-title">🌸 2. 甜美馬卡龍與櫻花粉嫩 <span>(草莓奶霜、櫻花初綻、蜜桃蘇打)</span></div>
+  <div class="grid" id="group-2"></div>
+
+  <!-- 類別 3: 清透天空與極光冰川 (Sky Blue & Glacial) -->
+  <div class="category-title">🩵 3. 清透天空與極光冰川 <span>(晴空天藍、薄荷清泉、冰晶晨露)</span></div>
+  <div class="grid" id="group-3"></div>
+
+  <!-- 類別 4: 輕柔自然與暖陽綠洲 (Light Nature & Meadow) -->
+  <div class="category-title">🌿 4. 輕柔自然與暖陽綠洲 <span>(抹茶牛奶、向日葵花田、春日嫩芽)</span></div>
+  <div class="grid" id="group-4"></div>
+
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn">🎮 返回遊戲 (index.html)</a>
+  </div>
+
+  <script>
+    const THEMES = [
+      // ─── Group 1: 溫潤奶油與明亮白金 ───
+      {
+        id: 1, group: 1, name: '明亮溫潤白金 (Ivory Sunlight)',
+        tag: '象牙白金 · 暖陽奶霜 · 典雅神聖',
+        desc: '以明亮象牙白為底，搭配暖陽金邊與米白大理石台，明亮清爽且不失神聖守護感。',
+        bg: '#fcfaf2', panel: '#ffffff', border: '#ffb300', btnBg: 'linear-gradient(180deg, #ffe082, #ffb300)', btnColor: '#3e2723',
+        canvasBg: '#f5efe0', statBg: '#fff8e1', statColor: '#f57f17',
+        swatches: ['#fcfaf2', '#f5efe0', '#ffffff', '#ffb300', '#3e2723']
+      },
+      {
+        id: 2, group: 1, name: '燕麥奶香溫拿 (Oatmeal Cream)',
+        tag: '溫潤燕麥 · 焦糖拿鐵 · 溫馨柔和',
+        desc: '極具無印風的溫暖燕麥奶色系，搭配輕焦糖色按鈕，低飽和度非常耐看護眼。',
+        bg: '#f7f3eb', panel: '#ffffff', border: '#d7ccc8', btnBg: 'linear-gradient(180deg, #d7ccc8, #a1887f)', btnColor: '#ffffff',
+        canvasBg: '#ede6d8', statBg: '#efebe9', statColor: '#5d4037',
+        swatches: ['#f7f3eb', '#ede6d8', '#ffffff', '#a1887f', '#5d4037']
+      },
+      {
+        id: 3, group: 1, name: '皇家雪白浮雕 (Royal Snow Marble)',
+        tag: '純淨雪白 · 浮雕金邊 · 貴族典雅',
+        desc: '雪白宮殿石階與閃耀香檳金裝飾，呈現輕奢極簡的高貴視覺效果。',
+        bg: '#f8f9fa', panel: '#ffffff', border: '#ffd54f', btnBg: 'linear-gradient(180deg, #fff59d, #fbc02d)', btnColor: '#455a64',
+        canvasBg: '#eef2f5', statBg: '#ffffff', statColor: '#f57f17',
+        swatches: ['#f8f9fa', '#eef2f5', '#ffffff', '#ffd54f', '#455a64']
+      },
+      {
+        id: 4, group: 1, name: '晨曦暖陽金沙 (Morning Dawn Sand)',
+        tag: '溫暖金沙 · 晨光微曦 · 活力朝氣',
+        desc: '清晨第一縷陽光灑在沙灘上的淡金黃色，明亮溫暖，充滿冒險生機。',
+        bg: '#fffdf5', panel: '#ffffff', border: '#ffa726', btnBg: 'linear-gradient(180deg, #ffcc80, #fb8c00)', btnColor: '#ffffff',
+        canvasBg: '#fef7dc', statBg: '#fff3e0', statColor: '#e65100',
+        swatches: ['#fffdf5', '#fef7dc', '#ffffff', '#ffa726', '#e65100']
+      },
+      {
+        id: 5, group: 1, name: '香檳珍珠微光 (Champagne Pearl)',
+        tag: '香檳珍珠 · 輕奢米金 · 柔和高雅',
+        desc: '如珍珠般散發微光的淡香檳米色，乾淨清爽，適合長時間遊玩。',
+        bg: '#faf8f5', panel: '#ffffff', border: '#e0cfb8', btnBg: 'linear-gradient(180deg, #f5e6d3, #d4b896)', btnColor: '#4e3b31',
+        canvasBg: '#f0eae1', statBg: '#fbf7f0', statColor: '#6d4c41',
+        swatches: ['#faf8f5', '#f0eae1', '#ffffff', '#d4b896', '#4e3b31']
+      },
+
+      // ─── Group 2: 甜美馬卡龍與櫻花粉嫩 ───
+      {
+        id: 6, group: 2, name: '粉櫻初綻少女 (Sakura Blossom)',
+        tag: '柔嫩櫻粉 · 白桃果凍 · 甜美童話',
+        desc: '極致可愛的櫻花淺粉與白桃奶凍配色，充滿日系少女動漫的浪漫情調。',
+        bg: '#fff5f7', panel: '#ffffff', border: '#ff80ab', btnBg: 'linear-gradient(180deg, #ff80ab, #ff4081)', btnColor: '#ffffff',
+        canvasBg: '#fde7eb', statBg: '#fce4ec', statColor: '#c2185b',
+        swatches: ['#fff5f7', '#fde7eb', '#ffffff', '#ff80ab', '#c2185b']
+      },
+      {
+        id: 7, group: 2, name: '蜜桃草莓蘇打 (Peach Strawberry Soda)',
+        tag: '蜜桃粉橘 · 氣泡蘇打 · 活潑清甜',
+        desc: '粉橘與草莓紅的明亮撞色，如同夏日氣泡飲般清爽可口、充滿元氣。',
+        bg: '#fff6f2', panel: '#ffffff', border: '#ff7043', btnBg: 'linear-gradient(180deg, #ff8a65, #f4511e)', btnColor: '#ffffff',
+        canvasBg: '#fde9e0', statBg: '#fbe9e7', statColor: '#d84315',
+        swatches: ['#fff6f2', '#fde9e0', '#ffffff', '#ff7043', '#d84315']
+      },
+      {
+        id: 8, group: 2, name: '薰衣草甜心 (Lavender Sweetheart)',
+        tag: '粉嫩柔紫 · 夢幻奶香 · 療癒馬卡龍',
+        desc: '夢幻柔和的淡紫與粉藍交融，自帶糖霜童話感，視覺極度舒適放鬆。',
+        bg: '#f8f6fc', panel: '#ffffff', border: '#b39ddb', btnBg: 'linear-gradient(180deg, #b39ddb, #7e57c2)', btnColor: '#ffffff',
+        canvasBg: '#ede8f5', statBg: '#ede7f6', statColor: '#512da8',
+        swatches: ['#f8f6fc', '#ede8f5', '#ffffff', '#b39ddb', '#512da8']
+      },
+      {
+        id: 9, group: 2, name: '棉花糖粉藍 (Marshmallow Dream)',
+        tag: '棉花糖粉 · 天空粉藍 · 雙色夢境',
+        desc: '經典粉藍 + 粉紅的雙色棉花糖配色，萌系塔防的代表色調。',
+        bg: '#f4f9ff', panel: '#ffffff', border: '#80d8ff', btnBg: 'linear-gradient(180deg, #80d8ff, #ff80ab)', btnColor: '#ffffff',
+        canvasBg: '#e8f3fe', statBg: '#e1f5fe', statColor: '#0277bd',
+        swatches: ['#f4f9ff', '#e8f3fe', '#ffffff', '#80d8ff', '#ff80ab']
+      },
+      {
+        id: 10, group: 2, name: '覆盆子奶油塔 (Raspberry Tart)',
+        tag: '覆盆子莓 · 濃郁奶香 · 精緻甜點',
+        desc: '莓果的鮮豔與奶油白底結合，按鈕如同點綴的果醬，視覺焦點鮮明。',
+        bg: '#fcf5f8', panel: '#ffffff', border: '#f06292', btnBg: 'linear-gradient(180deg, #f06292, #e91e63)', btnColor: '#ffffff',
+        canvasBg: '#f8e6ee', statBg: '#fce4ec', statColor: '#ad1457',
+        swatches: ['#fcf5f8', '#f8e6ee', '#ffffff', '#f06292', '#ad1457']
+      },
+
+      // ─── Group 3: 清透天空與極光冰川 ───
+      {
+        id: 11, group: 3, name: '晴空萬里蔚藍 (Sunny Sky Breeze)',
+        tag: '晴空淺藍 · 白雲純淨 · 陽光明媚',
+        desc: '晴朗天空的純淨水藍，搭配白雲色塊，心情豁然開朗的休閒風格。',
+        bg: '#f0f8ff', panel: '#ffffff', border: '#40c4ff', btnBg: 'linear-gradient(180deg, #40c4ff, #0091ea)', btnColor: '#ffffff',
+        canvasBg: '#e1f0fc', statBg: '#e1f5fe', statColor: '#01579b',
+        swatches: ['#f0f8ff', '#e1f0fc', '#ffffff', '#40c4ff', '#01579b']
+      },
+      {
+        id: 12, group: 3, name: '薄荷清泉冰露 (Mint Spring Glaze)',
+        tag: '薄荷沁綠 · 冰泉透亮 · 清涼消暑',
+        desc: '像咬下一口薄荷冰淇淋般清涼，淡青綠與白水波紋，超級護眼消暑。',
+        bg: '#f0faf6', panel: '#ffffff', border: '#64ffda', btnBg: 'linear-gradient(180deg, #64ffda, #00bfa5)', btnColor: '#004d40',
+        canvasBg: '#e2f5ee', statBg: '#e0f2f1', statColor: '#00695c',
+        swatches: ['#f0faf6', '#e2f5ee', '#ffffff', '#64ffda', '#004d40']
+      },
+      {
+        id: 13, group: 3, name: '極光琉璃水晶 (Aurora Ice Crystal)',
+        tag: '極光冰青 · 晶瑩琉璃 · 水晶折射',
+        desc: '與 5 號極光琉璃水晶樹 100% 呼應的亮色版！冰透水青色散發神聖純淨光芒。',
+        bg: '#f2fbfc', panel: '#ffffff', border: '#00e5ff', btnBg: 'linear-gradient(180deg, #80d8ff, #00b0ff)', btnColor: '#002f5e',
+        canvasBg: '#e2f7f9', statBg: '#e0f7fa', statColor: '#00838f',
+        swatches: ['#f2fbfc', '#e2f7f9', '#ffffff', '#00e5ff', '#002f5e']
+      },
+      {
+        id: 14, group: 3, name: '冰川晨露藍調 (Glacier Morning Dew)',
+        tag: '萬年冰川 · 晨露晶亮 · 清冽透光',
+        desc: '極淡的灰藍底色，搭配晶瑩透亮的晨露水滴，乾淨極簡現代。',
+        bg: '#f4f7f9', panel: '#ffffff', border: '#90caf9', btnBg: 'linear-gradient(180deg, #90caf9, #42a5f5)', btnColor: '#ffffff',
+        canvasBg: '#e8edf2', statBg: '#e3f2fd', statColor: '#1565c0',
+        swatches: ['#f4f7f9', '#e8edf2', '#ffffff', '#90caf9', '#1565c0']
+      },
+      {
+        id: 15, group: 3, name: '希臘愛琴海風 (Santorini Breeze)',
+        tag: '藍頂白牆 · 湛藍海風 · 浪漫海島',
+        desc: '聖托里尼島的純白牆面與湛藍穹頂，藍白鮮明對比，極富度假感。',
+        bg: '#f5faff', panel: '#ffffff', border: '#2979ff', btnBg: 'linear-gradient(180deg, #448aff, #2979ff)', btnColor: '#ffffff',
+        canvasBg: '#e5f2ff', statBg: '#e8eaf6', statColor: '#1a237e',
+        swatches: ['#f5faff', '#e5f2ff', '#ffffff', '#2979ff', '#1a237e']
+      },
+
+      // ─── Group 4: 輕柔自然與暖陽綠洲 ───
+      {
+        id: 16, group: 4, name: '抹茶牛奶茶園 (Matcha Milk Grove)',
+        tag: '抹茶淺綠 · 溫潤鮮乳 · 自然悠然',
+        desc: '溫柔的抹茶綠與牛奶白融合，充滿日式茶道的靜謐與治癒感。',
+        bg: '#f4f8f2', panel: '#ffffff', border: '#81c784', btnBg: 'linear-gradient(180deg, #a5d6a7, #66bb6a)', btnColor: '#1b5e20',
+        canvasBg: '#e7f0e4', statBg: '#e8f5e9', statColor: '#2e7d32',
+        swatches: ['#f4f8f2', '#e7f0e4', '#ffffff', '#81c784', '#1b5e20']
+      },
+      {
+        id: 17, group: 4, name: '向日葵花田草地 (Sunflower Meadow)',
+        tag: '向日葵金 · 鮮翠綠草 · 陽光大地',
+        desc: '嫩綠草地與明亮向日葵金黃色，最經典的童話塔防休閒自然風格。',
+        bg: '#f7faf3', panel: '#ffffff', border: '#ffd54f', btnBg: 'linear-gradient(180deg, #ffee58, #fbc02d)', btnColor: '#332a00',
+        canvasBg: '#edf5e5', statBg: '#fffde7', statColor: '#f57f17',
+        swatches: ['#f7faf3', '#edf5e5', '#ffffff', '#ffd54f', '#332a00']
+      },
+      {
+        id: 18, group: 4, name: '春日初萌嫩芽 (Spring Sprout Bloom)',
+        tag: '初春嫩綠 · 破土希望 · 生機勃勃',
+        desc: '春天破土而出的嫩芽黃綠色，清新亮麗，象徵生命神樹的生生不息。',
+        bg: '#f9fcf2', panel: '#ffffff', border: '#c0ca33', btnBg: 'linear-gradient(180deg, #d4e157, #afb42b)', btnColor: '#333b00',
+        canvasBg: '#edf5dc', statBg: '#f9fbe7', statColor: '#827717',
+        swatches: ['#f9fcf2', '#edf5dc', '#ffffff', '#c0ca33', '#333b00']
+      },
+      {
+        id: 19, group: 4, name: '綠洲沙漠之泉 (Desert Oasis Spring)',
+        tag: '暖金細砂 · 清冽綠洲 · 奇蹟之泉',
+        desc: '金黃細砂中的一抹清透綠洲泉水，溫暖而不刺眼，極具冒險感。',
+        bg: '#fcf8f0', panel: '#ffffff', border: '#4db6ac', btnBg: 'linear-gradient(180deg, #80cbc4, #26a69a)', btnColor: '#004d40',
+        canvasBg: '#f2eae0', statBg: '#e0f2f1', statColor: '#00695c',
+        swatches: ['#fcf8f0', '#f2eae0', '#ffffff', '#4db6ac', '#004d40']
+      },
+      {
+        id: 20, group: 4, name: '童話彩虹泡泡糖 (Rainbow Bubble Candy)',
+        tag: '彩虹繽紛 · 泡泡糖果 · 歡樂遊樂園',
+        desc: '純白基底上點綴彩虹糖果色，繽紛活潑，像走進迪士尼遊樂園般的歡樂感。',
+        bg: '#faf7fc', panel: '#ffffff', border: '#ba68c8', btnBg: 'linear-gradient(180deg, #ff80ab, #ab47bc)', btnColor: '#ffffff',
+        canvasBg: '#f2e8f7', statBg: '#f3e5f5', statColor: '#7b1fa2',
+        swatches: ['#faf7fc', '#f2e8f7', '#ffffff', '#ff80ab', '#ba68c8']
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      THEMES.forEach(t => {
+        const container = document.getElementById('group-' + t.group);
+        if (!container) return;
+
+        const card = document.createElement('div');
+        card.className = 'theme-card';
+        card.style.borderColor = `${t.border}55`;
+
+        card.innerHTML = `
+          <span class="theme-num" style="border-color:${t.border}; color:${t.border};">${t.id}</span>
+          <div class="theme-title">${t.name}</div>
+          <div class="theme-sub" style="color:${t.border};">${t.tag}</div>
+
+          <div class="palette-row">
+            ${t.swatches.map(s => `<div class="swatch" style="background:${s};" title="${s}"></div>`).join('')}
+          </div>
+
+          <div class="mockup-viewport" style="background:${t.bg}; border-color:${t.border}44;">
+            <div class="mockup-top-bar" style="background:${t.panel}; border:1.5px solid ${t.border}55;">
+              <div class="mockup-stat-chip" style="background:${t.statBg}; color:${t.statColor}; border:1px solid ${t.border}44;">💎 200</div>
+              <div class="mockup-stat-chip" style="background:${t.statBg}; color:${t.statColor}; border:1px solid ${t.border}44;">❤️ 20</div>
+              <div class="mockup-stat-chip" style="background:${t.statBg}; color:${t.statColor}; border:1px solid ${t.border}44;">W1/15</div>
+            </div>
+
+            <div class="mockup-canvas-area" style="background:${t.canvasBg}; border:1.5px solid ${t.border}44;">
+              <canvas id="mini-cv-${t.id}" width="70" height="70"></canvas>
+            </div>
+
+            <div class="mockup-tower-panel" style="background:${t.panel}; border:1.5px solid ${t.border}55;">
+              <div class="mockup-card-slot" style="background:${t.statBg}; border:1px solid ${t.border}66; color:#333;"><span>花瓣</span><span style="color:${t.statColor};">100</span></div>
+              <div class="mockup-card-slot" style="background:${t.statBg}; border:1px solid ${t.border}66; color:#333;"><span>冰淇淋</span><span style="color:${t.statColor};">150</span></div>
+              <div class="mockup-card-slot" style="background:${t.statBg}; border:1px solid ${t.border}66; color:#333;"><span>向日葵</span><span style="color:${t.statColor};">75</span></div>
+            </div>
+          </div>
+
+          <button class="mockup-btn" style="background:${t.btnBg}; color:${t.btnColor}; box-shadow:0 3px 0 rgba(0,0,0,0.15);">守衛世界樹</button>
+          <div class="theme-desc">${t.desc}</div>
+        `;
+
+        container.appendChild(card);
+
+        // Mini canvas crystal tree rendering
+        setTimeout(() => {
+          const cv = document.getElementById('mini-cv-' + t.id);
+          if (cv) {
+            const ctx = cv.getContext('2d');
+            ctx.translate(35, 42);
+            ctx.scale(0.72, 0.72);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctx.beginPath(); ctx.ellipse(0, 20, 26, 9, 0, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = 'rgba(0, 229, 255, 0.25)'; ctx.strokeStyle = t.border; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.roundRect(-22, 10, 44, 12, 4); ctx.fill(); ctx.stroke();
+
+            const tcGrad = ctx.createLinearGradient(-16, 0, 16, 0);
+            tcGrad.addColorStop(0, '#80d8ff'); tcGrad.addColorStop(0.5, '#ffffff'); tcGrad.addColorStop(1, '#00b0ff');
+            ctx.fillStyle = tcGrad;
+            ctx.beginPath(); ctx.moveTo(-9, 10); ctx.lineTo(-24, -22); ctx.lineTo(0, -38); ctx.lineTo(24, -22); ctx.lineTo(9, 10); ctx.closePath(); ctx.fill();
+
+            const facets = [
+              { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
+              { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
+              { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
+              { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
+            ];
+            for (let tf of facets) {
+              ctx.fillStyle = tf.c; ctx.beginPath();
+              tf.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+              ctx.closePath(); ctx.fill();
+              ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)'; ctx.lineWidth = 0.8; ctx.stroke();
+            }
+
+            ctx.shadowColor = t.border; ctx.shadowBlur = 8;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(0, -42, 5.5, 0, Math.PI * 2); ctx.fill();
+          }
+        }, 10);
+      });
+    });
+  </script>
+</body>
+</html>

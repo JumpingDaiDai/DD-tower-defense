@@ -27,27 +27,48 @@
 </head>
 <body>
   <div id="game-container">
-    <!-- 版本標籤 -->
-    <div id="app-version">v1.0.0 Official Release</div>
-
-    <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪) -->
+    <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪，全 SVG 向量無 Emoji) -->
     <div id="top-bar">
       <div class="top-bar-left">
-        <div class="stat" title="金幣">💰 <span id="gold">200</span></div>
-        <div class="stat" title="生命">❤️ <span id="lives">20</span></div>
+        <div class="stat" title="金幣">
+          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ffd54f" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-1.1c-1.3-.25-2.3-1.15-2.4-2.4h1.7c.1.6.5 1 1.2 1 .7 0 1.2-.4 1.2-1 0-.6-.4-.9-1.5-1.2-1.4-.4-2.5-.9-2.5-2.3 0-1.1.9-2 2.3-2.2V6.5h2v1.1c1.1.2 1.9.9 2.1 2h-1.7c-.1-.5-.5-.8-1-.8-.6 0-1.1.3-1.1.8 0 .5.4.8 1.4 1.1 1.6.4 2.6 1 2.6 2.4 0 1.2-.9 2.1-2.4 2.4v1.1z"/></svg>
+          <span id="gold">200</span>
+        </div>
+        <div class="stat" title="生命">
+          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ff5252" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span id="lives">20</span>
+        </div>
         <div class="stat" title="波次"><span id="wave-info">準備中</span></div>
-        <div class="stat" title="分數">⭐ <span id="score">0</span></div>
+        <div class="stat" title="分數">
+          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ffca28" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <span id="score">0</span>
+        </div>
       </div>
       <div class="top-bar-right">
         <button id="speed-btn" title="遊戲速度">1x</button>
-        <button id="start-wave-btn" class="btn-start">出怪</button>
-        <button id="settings-btn" class="btn-gear" title="設定">⚙️</button>
+        <button id="settings-btn" class="btn-gear" title="設定">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+        </button>
       </div>
     </div>
 
     <!-- 遊戲畫布視區 -->
     <div id="game-viewport">
       <canvas id="game-canvas"></canvas>
+
+      <!-- 玩家主動技能快捷欄 (浮動在畫布右下方，專屬手繪 Canvas 魔法圖示) -->
+      <div id="skill-bar">
+        <button id="skill-meteor-btn" class="skill-btn" title="流星轟炸 (冷卻 30s)">
+          <canvas id="skill-canvas-meteor" width="36" height="36" class="skill-mini-canvas"></canvas>
+          <span class="skill-cd-overlay"></span>
+          <span class="skill-cd-text"></span>
+        </button>
+        <button id="skill-freeze-btn" class="skill-btn" title="絕對零度 (冷卻 45s)">
+          <canvas id="skill-canvas-freeze" width="36" height="36" class="skill-mini-canvas"></canvas>
+          <span class="skill-cd-overlay"></span>
+          <span class="skill-cd-text"></span>
+        </button>
+      </div>
     </div>
 
     <!-- 底部專屬防禦塔選擇面板 (100% 空間全給塔卡片，不再被開始按鈕遮擋) -->
@@ -100,47 +121,102 @@
     <!-- 開始畫面 -->
     <div id="menu-screen" class="screen">
       <div class="screen-content">
-        <div class="menu-version-badge">✨ 正式版 v1.0.0</div>
-        <div class="title-emoji">🏰</div>
+        <div id="menu-version-badge" class="menu-version-badge"></div>
+        <div class="title-illustration">
+          <canvas id="menu-title-canvas" width="80" height="80"></canvas>
+        </div>
         <h1>可愛塔防</h1>
         <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
 
-        <!-- 首頁高分榜 -->
-        <div class="menu-leaderboard-card">
-          <span class="leaderboard-icon">🏆</span>
-          <span class="leaderboard-label">歷史最高分：</span>
-          <span class="leaderboard-score" id="menu-best-score">0</span>
+        <!-- 首頁高分榜 (僅展示第一名，點擊開啟完整英雄榜) -->
+        <div id="open-leaderboard-btn" class="menu-champion-card" title="點擊查看 Top 10 英雄榜">
+          <div class="champion-left">
+            <svg class="ui-icon-gold" viewBox="0 0 24 24" width="22" height="22"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+            <div class="champion-info">
+              <span class="champion-label">歷史榜首紀錄</span>
+              <span id="menu-champion-desc" class="champion-desc">尚無紀錄</span>
+            </div>
+          </div>
+          <div class="champion-right">
+            <span id="menu-champion-score" class="champion-score">0</span>
+            <span class="champion-arrow">›</span>
+          </div>
         </div>
 
         <!-- 地圖選擇器 -->
         <div class="map-selection-container">
-          <div class="map-selection-header">🗺️ 選擇戰場地圖</div>
+          <div class="map-selection-header">戰場地圖選擇</div>
           <div id="map-selection-list"></div>
         </div>
 
-        <button id="start-btn" class="btn-primary">🎮 開始遊戲</button>
+        <button id="start-btn" class="btn-primary">
+          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          <span>開始守衛</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 獨立 Top 10 英雄榜彈窗 -->
+    <div id="leaderboard-modal" class="screen hidden">
+      <div class="screen-content leaderboard-modal-content">
+        <svg class="ui-icon-gold" viewBox="0 0 24 24" width="36" height="36" style="margin-bottom:6px;"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+        <h2>榮譽英雄榜 Top 10</h2>
+        <div class="leaderboard-modal-card">
+          <div id="modal-leaderboard-list" class="leaderboard-modal-records"></div>
+        </div>
+        <button id="close-leaderboard-btn" class="btn-primary" style="margin-top: 14px;">關閉英雄榜</button>
       </div>
     </div>
 
     <!-- 遊戲結束畫面 -->
     <div id="gameover-screen" class="screen hidden">
-      <div class="screen-content">
-        <div class="title-emoji">💔</div>
-        <h1>花園淪陷了！</h1>
-        <p>你撐到了第 <span id="final-wave">0</span> 波</p>
-        <p>最終得分：<span id="final-score">0</span></p>
-        <button id="retry-btn" class="btn-primary">🔄 再試一次</button>
+      <div class="screen-content end-game-content">
+        <div class="end-illustration">
+          <canvas id="gameover-canvas" width="70" height="70"></canvas>
+        </div>
+        <h1>花園淪陷了</h1>
+        <p class="end-subtitle">你撐到了第 <span id="final-wave" class="stat-highlight">0</span> 波</p>
+        <div class="end-score-box">
+          <span class="end-score-label">最終得分</span>
+          <span id="final-score" class="end-score-val">0</span>
+        </div>
+
+        <div class="end-action-buttons">
+          <button id="retry-btn" class="btn-end-action btn-end-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>再試一次</span>
+          </button>
+          <button id="gameover-menu-btn" class="btn-end-action btn-end-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>返回首頁</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 勝利畫面 -->
     <div id="victory-screen" class="screen hidden">
-      <div class="screen-content">
-        <div class="title-emoji">🎉</div>
+      <div class="screen-content end-game-content">
+        <div class="end-illustration">
+          <canvas id="victory-canvas" width="70" height="70"></canvas>
+        </div>
         <h1>花園保衛成功！</h1>
-        <p>恭喜通關所有 15 波！</p>
-        <p>最終得分：<span id="victory-score">0</span></p>
-        <button id="replay-btn" class="btn-primary">🔄 再玩一次</button>
+        <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
+        <div class="end-score-box">
+          <span class="end-score-label">最終得分</span>
+          <span id="victory-score" class="end-score-val">0</span>
+        </div>
+
+        <div class="end-action-buttons">
+          <button id="replay-btn" class="btn-end-action btn-end-primary">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <span>再玩一次</span>
+          </button>
+          <button id="victory-menu-btn" class="btn-end-action btn-end-secondary">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            <span>返回首頁</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
