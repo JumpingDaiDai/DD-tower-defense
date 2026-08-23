@@ -1,0 +1,589 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可愛塔防 - 20 款防禦塔美術設計概念提案全覽 (20 Tower Designs Showcase)</title>
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: #ffffff;
+      --card-border: rgba(255, 167, 38, 0.3);
+      --text: #4e342e;
+      --text-dim: #8d6e63;
+      --accent: #ff9800;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 30px 16px;
+    }
+
+    header {
+      max-width: 1400px;
+      margin: 0 auto 30px auto;
+      text-align: center;
+      padding: 26px;
+      background: #ffffff;
+      border: 1.5px solid rgba(255, 167, 38, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(230, 81, 0, 0.06);
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #e65100;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 14.5px;
+      color: var(--text-dim);
+    }
+
+    .category-title {
+      max-width: 1400px;
+      margin: 32px auto 16px auto;
+      font-size: 20px;
+      font-weight: 900;
+      color: #e65100;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid rgba(255, 167, 38, 0.25);
+      padding-bottom: 8px;
+    }
+
+    .category-title span {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-dim);
+    }
+
+    .grid {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 2px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(255, 152, 0, 0.15);
+      border-color: #ffa726;
+    }
+
+    .badge-num {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: #fff3e0;
+      color: #e65100;
+      font-weight: 900;
+      font-size: 13px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #ffa726;
+      box-shadow: 0 2px 6px rgba(230, 81, 0, 0.1);
+    }
+
+    .badge-role {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: #f5f5f5;
+      color: #616161;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+    }
+
+    canvas {
+      display: block;
+      margin: 14px 0 12px 0;
+      filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+    }
+
+    .title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #3e2723;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: #e65100;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.45;
+      text-align: left;
+      background: #faf8f5;
+      padding: 8px 12px;
+      border-radius: 10px;
+      width: 100%;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .nav-bar {
+      max-width: 1400px;
+      margin: 30px auto 0 auto;
+      text-align: center;
+    }
+
+    .nav-btn {
+      display: inline-block;
+      padding: 12px 28px;
+      background: linear-gradient(180deg, #ffcc80, #fb8c00);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 900;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(251, 140, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🏰 可愛塔防 - 20 款防禦塔美術設計提案全覽</h1>
+    <p>完全去除 Emoji，專為「晨曦暖陽金沙」淺色風格打造！涵蓋「元素魔法、童話甜點、植物自然、遠古機械」4 大流派！</p>
+  </header>
+
+  <!-- 類別 1: 自然花靈與植物魔法 (Flora & Nature) -->
+  <div class="category-title">🌸 1. 自然花靈與植物魔法 <span>(單體射手、增益產金、連鎖彈射)</span></div>
+  <div class="grid" id="group-1"></div>
+
+  <!-- 類別 2: 甜點童話與糖果要塞 (Sweets & Fairytale) -->
+  <div class="category-title">🍦 2. 甜點童話與糖果要塞 <span>(群體減速、範圍濺射、穿透光束)</span></div>
+  <div class="grid" id="group-2"></div>
+
+  <!-- 類別 3: 元素水晶與遠古神殿 (Elemental & Sanctuary) -->
+  <div class="category-title">🔮 3. 元素水晶與遠古神殿 <span>(烈焰轟炸、極光冰錐、雷霆電弧)</span></div>
+  <div class="grid" id="group-3"></div>
+
+  <!-- 類別 4: 奇幻機關與煉金科技 (Arcane & Machinery) -->
+  <div class="category-title">⚙️ 4. 奇幻機關與煉金科技 <span>(迴旋齒輪、聚能透鏡、音波共鳴)</span></div>
+  <div class="grid" id="group-4"></div>
+
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn">🎮 返回遊戲 (index.html)</a>
+  </div>
+
+  <script>
+    const TOWERS = [
+      // ─── Group 1: 自然花靈與植物魔法 ───
+      {
+        id: 1, group: 1, role: '單體速射', name: '粉櫻花靈之箭 (Sakura Archer)',
+        tag: '五瓣粉櫻 · 翡翠藤蔓 · 精靈弓弦',
+        desc: '白石蓮花基座上生長出旋轉粉櫻花冠，中央懸浮翠綠光之箭矢，高速發射櫻花靈矢。',
+        draw: (ctx) => {
+          // 白石座
+          ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffa726'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(-20, 10, 40, 10, 4); ctx.fill(); ctx.stroke();
+          // 藤蔓主幹
+          ctx.fillStyle = '#66bb6a'; ctx.fillRect(-4, -6, 8, 18);
+          // 五瓣櫻花
+          ctx.fillStyle = '#ff80ab';
+          for (let i = 0; i < 5; i++) {
+            const ang = (i * Math.PI * 2) / 5;
+            ctx.beginPath(); ctx.arc(Math.cos(ang) * 14, -14 + Math.sin(ang) * 14, 9, 0, Math.PI * 2); ctx.fill();
+          }
+          // 核心黃花蕊
+          ctx.fillStyle = '#ffd54f'; ctx.beginPath(); ctx.arc(0, -14, 7, 0, Math.PI * 2); ctx.fill();
+          // 懸浮綠箭光
+          ctx.fillStyle = '#00e676'; ctx.beginPath(); ctx.moveTo(0, -32); ctx.lineTo(4, -24); ctx.lineTo(-4, -24); ctx.closePath(); ctx.fill();
+        }
+      },
+      {
+        id: 2, group: 1, role: '經濟增益', name: '暖陽向日葵金壇 (Golden Sunflower)',
+        tag: '金黃花瓣 · 陽光儲蓄 · 燦爛光環',
+        desc: '金紋瓷器花盆中盛開的向日葵，頭頂懸浮著不斷旋轉的純金錢幣徽記，定時產出金幣。',
+        draw: (ctx) => {
+          // 花盆底座
+          ctx.fillStyle = '#fff8e1'; ctx.strokeStyle = '#ffb300'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(-16, 20); ctx.lineTo(16, 20); ctx.lineTo(12, 6); ctx.lineTo(-12, 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+          // 向日葵金瓣
+          ctx.fillStyle = '#ffca28';
+          for (let i = 0; i < 8; i++) {
+            const ang = (i * Math.PI * 2) / 8;
+            ctx.beginPath(); ctx.arc(Math.cos(ang) * 16, -10 + Math.sin(ang) * 16, 7.5, 0, Math.PI * 2); ctx.fill();
+          }
+          // 焦糖花盤
+          ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.arc(0, -10, 10, 0, Math.PI * 2); ctx.fill();
+          // 頂端懸浮金幣
+          ctx.fillStyle = '#ffd54f'; ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, -32, 7, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        }
+      },
+      {
+        id: 3, group: 1, role: '彈射連鎖', name: '月影薰衣草法杖 (Lavender Arcane)',
+        tag: '幽紫薰衣草 · 月光法杖 · 連鎖電弧',
+        desc: '優雅木雕法杖頂部鑲嵌三簇薰衣草水晶花苞，釋放可在多個敵人之間跳躍的紫光電弧。',
+        draw: (ctx) => {
+          // 圓盤底座
+          ctx.fillStyle = '#ede7f6'; ctx.strokeStyle = '#b39ddb'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.ellipse(0, 16, 20, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // 木質法杖
+          ctx.fillStyle = '#8d6e63'; ctx.fillRect(-3, -15, 6, 30);
+          // 薰衣草花苞
+          const lavs = [{x: 0, y: -26, r: 8, c: '#ab47bc'}, {x: -8, y: -18, r: 6.5, c: '#7e57c2'}, {x: 8, y: -18, r: 6.5, c: '#ba68c8'}];
+          lavs.forEach(l => { ctx.fillStyle = l.c; ctx.beginPath(); ctx.arc(l.x, l.y, l.r, 0, Math.PI * 2); ctx.fill(); });
+          // 月光弧環
+          ctx.strokeStyle = '#ea80fc'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, -22, 16, Math.PI * 0.7, Math.PI * 2.3); ctx.stroke();
+        }
+      },
+      {
+        id: 4, group: 1, role: '範圍劇毒', name: '魔幻蘑菇孢子壇 (Spore Shroom)',
+        tag: '紫斑毒蕈 · 綠霧孢子 · 持續侵蝕',
+        desc: '古老樹樁上生長的雙生發光毒蘑菇，不斷向周圍噴灑綠色毒性孢子微粒。',
+        draw: (ctx) => {
+          // 樹樁座
+          ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.roundRect(-18, 4, 36, 16, 5); ctx.fill();
+          // 大蘑菇
+          ctx.fillStyle = '#f5f5f5'; ctx.fillRect(-6, -8, 12, 14);
+          ctx.fillStyle = '#ab47bc'; ctx.beginPath(); ctx.arc(0, -10, 18, Math.PI, 0); ctx.fill();
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-7, -17, 3, 0, Math.PI * 2); ctx.arc(7, -17, 3, 0, Math.PI * 2); ctx.arc(0, -23, 3.5, 0, Math.PI * 2); ctx.fill();
+          // 小蘑菇
+          ctx.fillStyle = '#4caf50'; ctx.beginPath(); ctx.arc(14, 2, 8, Math.PI, 0); ctx.fill();
+        }
+      },
+      {
+        id: 5, group: 1, role: '荊棘纏繞', name: '古木荊棘牢籠 (Thorn Treant)',
+        tag: '蒼勁藤木 · 尖銳利刺 · 定身束縛',
+        desc: '由活體荊棘樹幹扭曲而成的圖騰柱，伸出帶刺藤蔓定身並撕裂經過的怪物。',
+        draw: (ctx) => {
+          // 大地泥座
+          ctx.fillStyle = '#795548'; ctx.beginPath(); ctx.ellipse(0, 18, 22, 7, 0, 0, Math.PI * 2); ctx.fill();
+          // 扭曲樹幹
+          ctx.fillStyle = '#4e342e';
+          ctx.beginPath(); ctx.moveTo(-8, 18); ctx.quadraticCurveTo(8, 0, -6, -24); ctx.lineTo(6, -24); ctx.quadraticCurveTo(-6, 0, 8, 18); ctx.closePath(); ctx.fill();
+          // 荊棘尖刺
+          ctx.fillStyle = '#2e7d32';
+          [[-10, 4], [10, -4], [-8, -14], [8, -18]].forEach(p => {
+            ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p[0] * 1.6, p[1] - 4); ctx.lineTo(p[0], p[1] - 6); ctx.closePath(); ctx.fill();
+          });
+        }
+      },
+
+      // ─── Group 2: 甜點童話與糖果要塞 ───
+      {
+        id: 6, group: 2, role: '範圍減速', name: '薄荷冰淇淋聖代 (Mint Sundae)',
+        tag: '旋轉冰淇淋 · 脆皮甜筒 · 嚴寒霜凍',
+        desc: '脆皮格子甜筒底座上堆疊三色冰淇淋球，頂部點綴紅櫻桃，向四周釋放急凍霜氣。',
+        draw: (ctx) => {
+          // 甜筒底座
+          ctx.fillStyle = '#ffe082'; ctx.strokeStyle = '#ffa000'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.moveTo(-12, 6); ctx.lineTo(12, 6); ctx.lineTo(0, 24); ctx.closePath(); ctx.fill(); ctx.stroke();
+          // 雙球冰淇淋
+          ctx.fillStyle = '#80deea'; ctx.beginPath(); ctx.arc(-7, -2, 11, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ff80ab'; ctx.beginPath(); ctx.arc(7, -2, 11, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -12, 12, 0, Math.PI * 2); ctx.fill();
+          // 紅櫻桃
+          ctx.fillStyle = '#d50000'; ctx.beginPath(); ctx.arc(0, -27, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -32); ctx.quadraticCurveTo(6, -38, 8, -34); ctx.stroke();
+        }
+      },
+      {
+        id: 7, group: 2, role: '直線貫通', name: '拐杖糖光束發射器 (Candy Cane Beam)',
+        tag: '紅白螺旋 · 糖霜透鏡 · 穿透光束',
+        desc: '雙根巨大的紅白螺旋拐杖糖交叉架構，中央懸浮糖霜能量晶球，發射直線穿透光束。',
+        draw: (ctx) => {
+          // 白瓷座
+          ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ff1744'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(-20, 12, 40, 9, 3); ctx.fill(); ctx.stroke();
+          // 雙拐杖糖
+          for (let s of [-1, 1]) {
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6;
+            ctx.beginPath(); ctx.moveTo(s * 8, 12); ctx.lineTo(s * 14, -20); ctx.stroke();
+            ctx.strokeStyle = '#ff1744'; ctx.lineWidth = 6; ctx.setLineDash([4, 4]);
+            ctx.beginPath(); ctx.moveTo(s * 8, 12); ctx.lineTo(s * 14, -20); ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          // 中央糖晶球
+          ctx.fillStyle = '#ff4081'; ctx.beginPath(); ctx.arc(0, -14, 8, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 8, group: 2, role: '範圍震盪', name: '草莓甜甜圈重砲 (Donut Mortar)',
+        tag: '巧克力淋醬 · 彩色糖粒 · 甜甜圈重擊',
+        desc: '巨型草莓糖霜甜甜圈砲管，砲膛旋轉發射爆裂糖粉炸彈，造成大範圍擊退與震盪。',
+        draw: (ctx) => {
+          // 底座厚甜甜圈
+          ctx.fillStyle = '#ffcc80'; ctx.beginPath(); ctx.ellipse(0, 14, 22, 9, 0, 0, Math.PI * 2); ctx.fill();
+          // 草莓淋醬
+          ctx.fillStyle = '#ff4081'; ctx.beginPath(); ctx.ellipse(0, 10, 20, 7, 0, 0, Math.PI * 2); ctx.fill();
+          // 甜甜圈砲身
+          ctx.fillStyle = '#ffb74d'; ctx.beginPath(); ctx.arc(0, -10, 16, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#ff4081'; ctx.beginPath(); ctx.arc(0, -10, 13, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#3e2723'; ctx.beginPath(); ctx.arc(0, -10, 6, 0, Math.PI * 2); ctx.fill();
+          // 糖粒
+          ctx.fillStyle = '#ffeb3b'; ctx.fillRect(-8, -18, 3, 2); ctx.fillRect(6, -6, 3, 2);
+        }
+      },
+      {
+        id: 9, group: 2, role: '蓄力重擊', name: '爆米花熔爐要塞 (Popcorn Forge)',
+        tag: '黃金玉米 · 高壓爆裂 · 碎裂散射',
+        desc: '紅白相間的復古爆米花機熔爐，積蓄高熱能量後噴發漫天高爆金色玉米粒。',
+        draw: (ctx) => {
+          // 紅白條紋機身
+          ctx.fillStyle = '#f44336'; ctx.beginPath(); ctx.roundRect(-14, -2, 28, 22, 4); ctx.fill();
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(-9, -2, 5, 22); ctx.fillRect(4, -2, 5, 22);
+          // 透明玻璃罩
+          ctx.fillStyle = 'rgba(225, 245, 254, 0.8)'; ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(-12, -22, 24, 20, 3); ctx.fill(); ctx.stroke();
+          // 爆米花球
+          ctx.fillStyle = '#fff59d'; ctx.beginPath(); ctx.arc(-4, -14, 4, 0, Math.PI * 2); ctx.arc(4, -16, 4.5, 0, Math.PI * 2); ctx.arc(0, -10, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 10, group: 2, role: '連鎖冰凍', name: '藍莓泡泡糖球機 (Bubblegum Cannon)',
+        tag: '玻璃球艙 · 彈力泡泡 · 黏液減速',
+        desc: '經典投幣糖果機造型，旋轉噴射高彈力黏性藍莓泡泡糖，黏住並減速成群敵人。',
+        draw: (ctx) => {
+          // 紅色底座
+          ctx.fillStyle = '#e53935'; ctx.beginPath(); ctx.moveTo(-14, 20); ctx.lineTo(14, 20); ctx.lineTo(10, 4); ctx.lineTo(-10, 4); ctx.closePath(); ctx.fill();
+          // 投幣轉盤
+          ctx.fillStyle = '#ffd54f'; ctx.beginPath(); ctx.arc(0, 12, 3.5, 0, Math.PI * 2); ctx.fill();
+          // 玻璃球艙
+          ctx.fillStyle = 'rgba(128, 222, 234, 0.5)'; ctx.strokeStyle = '#b0bec5'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(0, -12, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // 彩色糖球
+          const gBalls = [{x: -5, y: -14, c: '#ff4081'}, {x: 5, y: -10, c: '#00e5ff'}, {x: 0, y: -18, c: '#ffeb3b'}];
+          gBalls.forEach(b => { ctx.fillStyle = b.c; ctx.beginPath(); ctx.arc(b.x, b.y, 4.5, 0, Math.PI * 2); ctx.fill(); });
+        }
+      },
+
+      // ─── Group 3: 元素水晶與遠古神殿 ───
+      {
+        id: 11, group: 3, role: '單體高傷', name: '烈焰熾熱聖火壇 (Flame Beacon)',
+        tag: '青銅古鼎 · 永恆熾焰 · 烈火焚燒',
+        desc: '雕花青銅鼎爐中燃燒著永不熄滅的神聖烈焰，對單一目標造成強烈灼燒傷害。',
+        draw: (ctx) => {
+          // 青銅三足鼎
+          ctx.fillStyle = '#4e342e'; ctx.beginPath(); ctx.roundRect(-16, 6, 32, 12, 4); ctx.fill();
+          ctx.fillRect(-12, 18, 4, 6); ctx.fillRect(8, 18, 4, 6);
+          // 熊熊烈火
+          const fGrad = ctx.createLinearGradient(0, 6, 0, -32);
+          fGrad.addColorStop(0, '#ff1744'); fGrad.addColorStop(0.5, '#ff9100'); fGrad.addColorStop(1, '#ffea00');
+          ctx.fillStyle = fGrad;
+          ctx.beginPath();
+          ctx.moveTo(-12, 6); ctx.quadraticCurveTo(-18, -14, -6, -22); ctx.quadraticCurveTo(0, -34, 4, -20);
+          ctx.quadraticCurveTo(16, -12, 12, 6); ctx.closePath(); ctx.fill();
+        }
+      },
+      {
+        id: 12, group: 3, role: '暴風雪範圍', name: '絕對零度冰晶塔 (Frost Spire)',
+        tag: '六角稜鏡 · 冰霜尖塔 · 絕對零度',
+        desc: '萬年寒冰雕刻而成的六角冰晶尖塔，持續散發寒霜粒子，大幅凍結範圍內敵人。',
+        draw: (ctx) => {
+          // 冰晶底座
+          ctx.fillStyle = 'rgba(0, 229, 255, 0.3)'; ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(-20, 12, 40, 8, 3); ctx.fill(); ctx.stroke();
+          // 三層冰稜角
+          const iGrad = ctx.createLinearGradient(-12, 0, 12, 0);
+          iGrad.addColorStop(0, '#80d8ff'); iGrad.addColorStop(0.5, '#ffffff'); iGrad.addColorStop(1, '#00b0ff');
+          ctx.fillStyle = iGrad;
+          ctx.beginPath(); ctx.moveTo(0, -36); ctx.lineTo(14, 12); ctx.lineTo(-14, 12); ctx.closePath(); ctx.fill();
+          // 懸浮六角冰晶
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -12, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 13, group: 3, role: '連鎖閃電', name: '雷霆特斯拉線圈 (Thunder Obelisk)',
+        tag: '秘銀線圈 · 閃電球體 · 連鎖充能',
+        desc: '金屬尖碑上纏繞著高導電金銅線圈，頂端電漿球積蓄雷電，瞬間釋放強烈電弧。',
+        draw: (ctx) => {
+          // 鋼鐵底座
+          ctx.fillStyle = '#37474f'; ctx.fillRect(-16, 12, 32, 8);
+          // 線圈立柱
+          ctx.fillStyle = '#78909c'; ctx.fillRect(-6, -18, 12, 30);
+          ctx.fillStyle = '#ffb300'; ctx.fillRect(-8, 6, 16, 3); ctx.fillRect(-8, -2, 16, 3); ctx.fillRect(-8, -10, 16, 3);
+          // 頂端電漿球
+          ctx.fillStyle = '#ffd600'; ctx.beginPath(); ctx.arc(0, -25, 9, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+      },
+      {
+        id: 14, group: 3, role: '群體護盾破除', name: '日耀破曉方尖碑 (Solar Obelisk)',
+        tag: '古代日石 · 白金尖塔 · 神聖淨化',
+        desc: '古埃及風格白金尖碑，吸收陽光能量後釋放日冕衝擊波，直接瓦解敵方護甲。',
+        draw: (ctx) => {
+          // 台階底座
+          ctx.fillStyle = '#fff8e1'; ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.roundRect(-18, 12, 36, 8, 2); ctx.fill(); ctx.stroke();
+          // 方尖碑主體
+          ctx.fillStyle = '#ffecb3';
+          ctx.beginPath(); ctx.moveTo(-10, 12); ctx.lineTo(-4, -28); ctx.lineTo(0, -36); ctx.lineTo(4, -28); ctx.lineTo(10, 12); ctx.closePath(); ctx.fill();
+          // 金頂寶石
+          ctx.fillStyle = '#ff6f00'; ctx.beginPath(); ctx.arc(0, -12, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 15, group: 3, role: '重力黑洞', name: '虛空重力黑晶石 (Void Singularity)',
+        tag: '黑曜晶簇 · 虛空重力 · 聚攏牽引',
+        desc: '三枚懸浮的黑曜石碎片圍繞奇點旋轉，產生重力引力場，將周圍怪物牽引至中心。',
+        draw: (ctx) => {
+          // 暗黑石台
+          ctx.fillStyle = '#212121'; ctx.beginPath(); ctx.ellipse(0, 16, 18, 7, 0, 0, Math.PI * 2); ctx.fill();
+          // 旋轉紫色黑洞軌道
+          ctx.strokeStyle = '#7c4dff'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]);
+          ctx.beginPath(); ctx.ellipse(0, -10, 18, 8, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+          // 黑曜水晶碎片
+          ctx.fillStyle = '#311b92';
+          [-12, 12].forEach(x => {
+            ctx.beginPath(); ctx.moveTo(x, -16); ctx.lineTo(x + 4, -8); ctx.lineTo(x - 4, -8); ctx.closePath(); ctx.fill();
+          });
+          // 中心黑洞核心
+          ctx.fillStyle = '#000000'; ctx.beginPath(); ctx.arc(0, -10, 6, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+
+      // ─── Group 4: 奇幻機關與煉金科技 ───
+      {
+        id: 16, group: 4, role: '迴旋穿透', name: '黃金齒輪迴旋鏢 (Clockwork Boomerang)',
+        tag: '發條機械 · 純金齒輪 · 雙向割裂',
+        desc: '精緻的發條齒輪發射台，發射旋轉純金齒輪，飛出與收回時皆造成雙重切割傷害。',
+        draw: (ctx) => {
+          // 發條底座
+          ctx.fillStyle = '#bcaaa4'; ctx.fillRect(-14, 8, 28, 12);
+          ctx.fillStyle = '#5d4037'; ctx.beginPath(); ctx.arc(0, 8, 12, Math.PI, 0); ctx.fill();
+          // 金色大齒輪
+          ctx.fillStyle = '#ffd54f'; ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, -14, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // 齒輪孔
+          ctx.fillStyle = '#5d4037'; ctx.beginPath(); ctx.arc(0, -14, 5, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 17, group: 4, role: '聚焦雷射', name: '煉金稜鏡聚焦塔 (Prism Beam Ray)',
+        tag: '光學凸透鏡 · 能量聚焦 · 傷害遞增',
+        desc: '黃銅支架托起巨型光學稜鏡，將自然光聚焦為一束極細高熱光束，時間越久傷害越高。',
+        draw: (ctx) => {
+          // 黃銅三腳支架
+          ctx.strokeStyle = '#ffb300'; ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.moveTo(-14, 20); ctx.lineTo(-6, 2); ctx.moveTo(14, 20); ctx.lineTo(6, 2); ctx.stroke();
+          // 透鏡金屬圓環
+          ctx.fillStyle = 'rgba(224, 247, 250, 0.7)'; ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(0, -12, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // 透鏡光斑
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-5, -16, 4, 0, Math.PI * 2); ctx.fill();
+        }
+      },
+      {
+        id: 18, group: 4, role: '全圖擊退', name: '音波喇叭共鳴台 (Sonic Boom Siren)',
+        tag: '黃銅留聲機 · 衝擊音波 · 全場震懾',
+        desc: '巨型復古黃銅留聲機大喇叭，周期性釋放擴散同心圓金色音波，擊退四周所有敵人。',
+        draw: (ctx) => {
+          // 木質音箱底座
+          ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.roundRect(-14, 4, 28, 16, 4); ctx.fill();
+          // 大喇叭號角
+          const bGrad = ctx.createLinearGradient(-15, -20, 15, -20);
+          bGrad.addColorStop(0, '#ffd54f'); bGrad.addColorStop(1, '#ff8f00');
+          ctx.fillStyle = bGrad;
+          ctx.beginPath();
+          ctx.moveTo(-4, 4); ctx.lineTo(-18, -26); ctx.lineTo(18, -26); ctx.lineTo(4, 4); ctx.closePath(); ctx.fill();
+          // 喇叭口金圈
+          ctx.strokeStyle = '#ffe082'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, -26, 18, 6, 0, 0, Math.PI * 2); ctx.stroke();
+        }
+      },
+      {
+        id: 19, group: 4, role: '劇毒噴霧', name: '煉金藥劑毒氣壺 (Alchemy Flask)',
+        tag: '玻璃燒瓶 · 沸騰毒劑 · 腐蝕毒霧',
+        desc: '青銅加熱爐上托著盛滿翠綠藥劑的圓底燒瓶，沸騰釋放強烈酸性毒氣雲。',
+        draw: (ctx) => {
+          // 青銅加熱底座
+          ctx.fillStyle = '#4e342e'; ctx.fillRect(-12, 12, 24, 8);
+          // 圓底燒瓶身
+          ctx.fillStyle = 'rgba(232, 245, 233, 0.7)'; ctx.strokeStyle = '#81c784'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(0, -2, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+          // 綠色藥水
+          ctx.fillStyle = '#00e676'; ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI); ctx.fill();
+          // 燒瓶細頸
+          ctx.fillStyle = 'rgba(232, 245, 233, 0.7)'; ctx.fillRect(-4, -24, 8, 12);
+        }
+      },
+      {
+        id: 20, group: 4, role: '全域死光', name: '天基軌道衛星炮 (Aegis Satellite Beacon)',
+        tag: '懸浮金屬環 · 天基信標 · 毀滅打擊',
+        desc: '懸浮於戰場上空的對接信標塔，召喚來自天際軌道的全屏天基光柱精準毀滅打擊。',
+        draw: (ctx) => {
+          // 金屬底座
+          ctx.fillStyle = '#263238'; ctx.beginPath(); ctx.ellipse(0, 16, 20, 8, 0, 0, Math.PI * 2); ctx.fill();
+          // 懸浮雙金屬環
+          ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.ellipse(0, 0, 18, 6, 0, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.ellipse(0, -16, 12, 4, 0, 0, Math.PI * 2); ctx.stroke();
+          // 頂端天基光球
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -26, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -36); ctx.lineTo(0, 16); ctx.stroke();
+        }
+      }
+    ];
+
+    window.addEventListener('DOMContentLoaded', () => {
+      TOWERS.forEach(t => {
+        const container = document.getElementById('group-' + t.group);
+        if (!container) return;
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <span class="badge-num">${t.id}</span>
+          <span class="badge-role">${t.role}</span>
+          <canvas id="cv-tower-${t.id}" width="90" height="90"></canvas>
+          <div class="title">${t.name}</div>
+          <div class="tag">${t.tag}</div>
+          <div class="desc">${t.desc}</div>
+        `;
+        container.appendChild(card);
+
+        // 渲染 Canvas
+        setTimeout(() => {
+          const cv = document.getElementById('cv-tower-' + t.id);
+          if (cv) {
+            const ctx = cv.getContext('2d');
+            ctx.translate(45, 52);
+            // 地面陰影
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            ctx.beginPath(); ctx.ellipse(0, 20, 24, 8, 0, 0, Math.PI * 2); ctx.fill();
+            // 調用自定義繪製
+            t.draw(ctx);
+          }
+        }, 10);
+      });
+    });
+  </script>
+</body>
+</html>

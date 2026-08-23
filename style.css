@@ -23,7 +23,8 @@ html, body {
   padding: 0;
   overflow: hidden;
   font-family: 'Zen Maru Gothic', 'Segoe UI', sans-serif;
-  background: #deb887;
+  background: #fffdf5;
+  color: #4e342e;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -35,7 +36,7 @@ html, body {
 
 :fullscreen body,
 :-webkit-full-screen body {
-  background: #deb887;
+  background: #fffdf5;
 }
 
 /* --- Game Container (消除上方多餘空白，完美貼齊安全區) --- */
@@ -50,12 +51,10 @@ html, body {
   justify-content: space-between;
   padding: env(safe-area-inset-top, 4px) calc(6px + env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) calc(6px + env(safe-area-inset-left, 0px));
   gap: 2px;
-  background: #deb887;
+  background: #fffdf5;
 }
 
-
-
-/* --- Top Bar (頂部整合狀態列：極簡單行排列，無多餘空白) --- */
+/* --- Top Bar (頂部狀態列：4號晨曦暖陽金沙 輕盈純白毛玻璃) --- */
 #top-bar {
   position: relative;
   z-index: 10;
@@ -65,13 +64,13 @@ html, body {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 6px;
-  background: rgba(45, 30, 15, 0.7);
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border: 1.5px solid rgba(255, 167, 38, 0.45);
   border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px rgba(230, 81, 0, 0.08), inset 0 1px 1px #ffffff;
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -96,22 +95,22 @@ html, body {
   align-items: center;
   justify-content: center;
   flex: 1;
-  gap: 2px;
+  gap: 3px;
   padding: 4px 6px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #fff3e0;
+  border: 1px solid rgba(255, 167, 38, 0.35);
   border-radius: 10px;
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  color: #e65100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 #top-bar .stat.best-score {
-  background: rgba(255, 193, 7, 0.3);
-  border: 1px solid rgba(255, 215, 0, 0.6);
-  color: #ffe082;
+  background: #fffde7;
+  border: 1px solid rgba(255, 213, 79, 0.8);
+  color: #f57f17;
 }
 
 #top-bar .controls {
@@ -120,14 +119,14 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Speed circular button (圓形加速鈕，無 Emoji) */
+/* Speed circular button (4號晨曦暖金加速鈕) */
 #speed-btn {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+  border: 1.5px solid rgba(255, 167, 38, 0.6);
+  background: #fff8e1;
+  color: #e65100;
   cursor: pointer;
   font-size: 11px;
   font-family: inherit;
@@ -136,14 +135,14 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(8px);
   transition: transform 0.1s, background 0.2s;
 }
 
 #speed-btn:active {
   transform: scale(0.9);
-  background: rgba(255, 255, 255, 0.45);
+  background: #ffe082;
 }
 
 /* Start wave button in top-bar */
@@ -302,21 +301,21 @@ html, body {
   filter: grayscale(0.5);
 }
 
-/* --- Tower Panel (底部防禦塔專屬橫排卡槽，100% 空間) --- */
+/* --- Tower Panel (底部防禦塔專屬橫排卡槽，4號晨曦暖陽金沙配色) --- */
 #tower-panel {
   position: relative;
   z-index: 10;
   width: 100%;
   max-width: 600px;
-  background: rgba(45, 30, 15, 0.7);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border: 1.5px solid rgba(255, 167, 38, 0.45);
   border-radius: 18px;
-  padding: 4px 6px;
+  padding: 5px 8px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(230, 81, 0, 0.08), inset 0 1px 1px #ffffff;
   flex-shrink: 0;
   user-select: none;
   -webkit-user-select: none;
@@ -345,11 +344,11 @@ html, body {
 
 @keyframes stat-bounce {
   0% { transform: scale(1); }
-  40% { transform: scale(1.3); color: #ffd54f; }
+  40% { transform: scale(1.3); color: #ff9800; }
   100% { transform: scale(1); }
 }
 
-/* Tower item cards (精緻 RPG 卡槽) */
+/* Tower item cards (4號晨曦暖陽卡槽) */
 .tower-item {
   display: flex;
   flex-direction: column;
@@ -357,8 +356,8 @@ html, body {
   justify-content: center;
   min-width: 64px;
   padding: 5px 6px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  background: #ffffff;
+  border: 1.5px solid rgba(255, 167, 38, 0.35);
   border-radius: 14px;
   cursor: grab;
   flex-shrink: 0;
@@ -367,14 +366,15 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.2s, box-shadow 0.2s;
 }
 
 .tower-item:not(.disabled):hover {
   transform: translateY(-3px);
-  border-color: #ffd54f;
-  box-shadow: 0 4px 12px rgba(255, 213, 79, 0.4);
+  border-color: #ffa726;
+  background: #fff8e1;
+  box-shadow: 0 4px 14px rgba(255, 152, 0, 0.25);
 }
 
 .tower-item:active {
@@ -385,20 +385,14 @@ html, body {
 .tower-item.is-dragging {
   opacity: 0.4;
   transform: scale(0.88) translateY(-10px);
-  border-color: #ff4081;
-  background: rgba(255, 64, 129, 0.25);
+  border-color: #ff9800;
+  background: rgba(255, 152, 0, 0.2);
 }
 
 .tower-item.disabled {
-  opacity: 0.38;
+  opacity: 0.35;
   filter: grayscale(0.8);
   cursor: not-allowed;
-}
-
-.tower-item .tower-emoji {
-  font-size: 20px;
-  line-height: 1.1;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .tower-item .tower-details {
@@ -408,26 +402,22 @@ html, body {
 
 .tower-item .tower-name {
   font-weight: 800;
-  color: #ffffff;
+  color: #4e342e;
   font-size: 10px;
   white-space: nowrap;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .tower-item .tower-cost {
   font-size: 10px;
-  color: #ffd54f;
+  color: #e65100;
   font-weight: 800;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .tower-item .tower-desc {
   display: none;
 }
 
-/* Start wave button handled in top-bar */
-
-/* --- Tower Info Panel --- */
+/* --- Tower Info Panel (4號晨曦暖金浮空面板) --- */
 #tower-info {
   position: absolute;
   bottom: 75px;
@@ -435,13 +425,14 @@ html, body {
   transform: translateX(-50%);
   z-index: 30;
   background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
-  border-radius: 14px;
+  backdrop-filter: blur(16px);
+  border-radius: 16px;
   padding: 12px 14px;
   width: 90%;
   max-width: 320px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
-  border: 2px solid rgba(255, 182, 193, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1.8px solid #ffa726;
+  color: #4e342e;
 }
 
 #tower-info.hidden {
@@ -450,7 +441,7 @@ html, body {
 
 #tower-info h4 {
   font-size: 15px;
-  color: #5c4033;
+  color: #e65100;
   margin-bottom: 2px;
 }
 
@@ -514,7 +505,7 @@ html, body {
   justify-content: center;
 }
 
-/* --- Screens (Overlay) --- */
+/* --- Screens (Overlay - 4號晨曦暖陽金沙明亮背景) --- */
 .screen {
   position: absolute;
   inset: 0;
@@ -522,7 +513,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #deb887;
+  background: #fffdf5;
   border-radius: 0px;
 }
 
@@ -541,14 +532,14 @@ html, body {
 .menu-version-badge {
   display: inline-block;
   font-size: 11px;
-  font-weight: 700;
-  color: #ff69b4;
-  background: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+  color: #e65100;
+  background: #fff3e0;
   padding: 3px 10px;
   border-radius: 12px;
-  border: 1.5px solid rgba(255, 105, 180, 0.3);
+  border: 1.5px solid rgba(255, 167, 38, 0.4);
   margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(255, 105, 180, 0.15);
+  box-shadow: 0 2px 6px rgba(230, 81, 0, 0.08);
 }
 
 .title-illustration {
@@ -574,27 +565,34 @@ html, body {
 .ui-icon-gold {
   display: inline-block;
   flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4));
+  filter: drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3));
 }
 
 .screen-content h1 {
   font-size: 26px;
-  color: #5c4033;
+  color: #4e342e;
   margin-bottom: 8px;
   font-weight: 900;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-/* Champion single record preview card (首頁與結算第一名精簡預覽卡) */
+.screen-content .subtitle {
+  color: #8d6e63;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* Champion single record preview card (首頁榜首預覽卡 - 4號暖陽淺色) */
 .menu-champion-card {
-  background: linear-gradient(135deg, rgba(255, 253, 231, 0.95), rgba(255, 248, 225, 0.9));
-  border: 1.8px solid #ffd54f;
+  background: #ffffff;
+  border: 1.8px solid #ffa726;
   border-radius: 16px;
   padding: 10px 16px;
   margin-bottom: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 14px rgba(255, 193, 7, 0.22);
+  box-shadow: 0 4px 14px rgba(230, 81, 0, 0.08);
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
@@ -603,8 +601,9 @@ html, body {
 
 .menu-champion-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(255, 193, 7, 0.35);
-  border-color: #ffb300;
+  box-shadow: 0 6px 18px rgba(255, 152, 0, 0.2);
+  border-color: #ff9800;
+  background: #fffdf8;
 }
 
 .menu-champion-card:active {
@@ -618,11 +617,6 @@ html, body {
   text-align: left;
 }
 
-.champion-medal {
-  font-size: 24px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-}
-
 .champion-info {
   display: flex;
   flex-direction: column;
@@ -632,7 +626,7 @@ html, body {
 .champion-label {
   font-size: 11px;
   font-weight: 800;
-  color: #d84315;
+  color: #e65100;
   letter-spacing: 0.5px;
 }
 
@@ -661,12 +655,12 @@ html, body {
   color: #ff9800;
 }
 
-/* Leaderboard Modal (獨立英雄榜彈窗) */
+/* Leaderboard Modal (獨立英雄榜彈窗 - 4號暖陽純白) */
 #leaderboard-modal {
   position: absolute;
   inset: 0;
   z-index: 150;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
@@ -679,18 +673,19 @@ html, body {
 }
 
 .leaderboard-modal-content {
-  background: #deb887;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  border: 2px solid #ffa726;
   border-radius: 24px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 36px rgba(230, 81, 0, 0.15);
   max-width: 360px;
   width: 90%;
   padding: 22px;
+  color: #4e342e;
 }
 
 .leaderboard-modal-card {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1.5px solid #ffe082;
+  background: #fff8e1;
+  border: 1.5px solid rgba(255, 167, 38, 0.35);
   border-radius: 14px;
   padding: 10px 12px;
   margin-top: 10px;
@@ -928,8 +923,8 @@ html, body {
 
 .map-selection-header {
   font-size: 13px;
-  font-weight: 700;
-  color: #5c4033;
+  font-weight: 800;
+  color: #e65100;
   margin-bottom: 8px;
   padding-left: 2px;
 }
@@ -947,19 +942,22 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(255, 182, 193, 0.4);
-  border-radius: 12px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1.5px solid rgba(255, 167, 38, 0.35);
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   touch-action: manipulation;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .map-select-card:hover {
-  transform: translateY(-1px);
-  border-color: #ff69b4;
+  transform: translateY(-2px);
+  border-color: #ffa726;
+  background: #fffdf8;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
 }
 
 .map-select-card:active {
@@ -967,18 +965,9 @@ html, body {
 }
 
 .map-select-card.active {
-  background: #fff0f6;
-  border-color: #ff69b4;
-  box-shadow: 0 2px 10px rgba(255, 105, 180, 0.2);
-}
-
-.map-mini-canvas {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1.5px solid #d7ccc8;
-  flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  background: #fff8e1;
+  border-color: #ff9800;
+  box-shadow: 0 3px 12px rgba(255, 152, 0, 0.2);
 }
 
 .map-card-info {
@@ -988,14 +977,14 @@ html, body {
 
 .map-card-title {
   font-size: 13px;
-  font-weight: 700;
-  color: #5c4033;
+  font-weight: 800;
+  color: #4e342e;
   line-height: 1.2;
 }
 
 .map-card-desc {
   font-size: 10px;
-  color: #888;
+  color: #8d6e63;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -1006,31 +995,31 @@ html, body {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid #ccc;
+  border: 2px solid rgba(255, 167, 38, 0.5);
   flex-shrink: 0;
   position: relative;
   transition: border-color 0.2s;
 }
 
 .map-select-card.active .map-card-radio {
-  border-color: #ff69b4;
-  background: #ff69b4;
+  border-color: #ff9800;
+  background: #ff9800;
   box-shadow: inset 0 0 0 3px #fff;
 }
 
-/* --- Primary Action Buttons (質感立體擬物 + 雙層光暈) --- */
+/* --- Primary Action Buttons (4號晨曦暖陽擬物按鈕) --- */
 .btn-primary {
   padding: 13px 32px;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
   border-radius: 18px;
-  background: linear-gradient(180deg, #ff77a9 0%, #ff4081 50%, #e91e63 100%);
+  background: linear-gradient(180deg, #ffcc80 0%, #ffa726 50%, #fb8c00 100%);
   color: #ffffff;
   font-family: inherit;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.8px;
   cursor: pointer;
-  box-shadow: 0 4px 0 #ad1457, 0 8px 20px rgba(233, 30, 99, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 0 #e65100, 0 8px 20px rgba(251, 140, 0, 0.35), inset 0 1px 1px #ffffff;
   margin-top: 12px;
   display: inline-flex;
   align-items: center;
@@ -1040,31 +1029,31 @@ html, body {
   z-index: 105;
   user-select: none;
   -webkit-user-select: none;
-  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #ad1457, 0 12px 24px rgba(233, 30, 99, 0.45), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 6px 0 #e65100, 0 12px 24px rgba(251, 140, 0, 0.45), inset 0 1px 2px #ffffff;
 }
 
 .btn-primary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #ad1457, 0 3px 8px rgba(233, 30, 99, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 0 #e65100, 0 3px 8px rgba(251, 140, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* Secondary Button */
+/* Secondary Button (純白大理石按鈕) */
 .btn-secondary {
   padding: 13px 28px;
-  border: 1.5px solid #d7ccc8;
+  border: 1.5px solid #ffcc80;
   border-radius: 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
-  color: #5d4037;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8e1 100%);
+  color: #e65100;
   font-family: inherit;
   font-size: 15px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 4px 0 #bcaaa4, 0 6px 16px rgba(0, 0, 0, 0.1), inset 0 1px 1px #ffffff;
+  box-shadow: 0 4px 0 #ffe082, 0 6px 16px rgba(0, 0, 0, 0.08), inset 0 1px 1px #ffffff;
   user-select: none;
   -webkit-user-select: none;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
@@ -1072,12 +1061,12 @@ html, body {
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 0 #bcaaa4, 0 8px 20px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 6px 0 #ffe082, 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .btn-secondary:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #bcaaa4, 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 0 #ffe082, 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* Mini Canvas in Tower Item */

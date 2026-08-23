@@ -75,7 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.0.16',
+  VERSION: 'v1.0.25',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -143,132 +143,92 @@ const MAP_CONFIGS = {
 let CURRENT_MAP_ID = 'outer_ring';
 let PATH_WAYPOINTS = MAP_CONFIGS[CURRENT_MAP_ID].waypoints;
 
-// ─── 3. 防禦塔數據 ──────────────────────────
+// ─── 3. 防禦塔數據 (Group 1: 5 大自然花靈與植物魔法流派) ──────────────────────────
 const TOWER_DATA = {
   petal: {
-    name: '花瓣塔',
-    emoji: '🌸',
+    name: '粉櫻花靈之箭',
     cost: 100,
     range: 120,
-    damage: 15,
-    fireRate: 1.0,
-    projectileSpeed: 300,
-    projectileColor: '#ffb6c1',
-    description: '基礎攻擊塔',
-    color: '#ffb6c1',
+    damage: 16,
+    fireRate: 1.1,
+    projectileSpeed: 320,
+    projectileColor: '#ff80ab',
+    description: '旋轉五瓣粉櫻 · 翡翠光箭速射',
+    color: '#ff80ab',
     levels: [
-      { damage: 15, range: 120, fireRate: 1.0 },
-      { damage: 25, range: 135, fireRate: 1.2, upgradeCost: 80 },
-      { damage: 40, range: 150, fireRate: 1.4, upgradeCost: 160 },
-    ],
-  },
-  ice: {
-    name: '冰淇淋塔',
-    emoji: '🍦',
-    cost: 150,
-    range: 110,
-    damage: 8,
-    fireRate: 0.8,
-    slowFactor: 0.4,
-    slowDuration: 2.0,
-    projectileSpeed: 250,
-    projectileColor: '#b5e8ff',
-    description: '減速敵人',
-    color: '#b5e8ff',
-    levels: [
-      { damage: 8, range: 110, fireRate: 0.8, slowFactor: 0.4, slowDuration: 2.0 },
-      { damage: 14, range: 120, fireRate: 1.0, slowFactor: 0.35, slowDuration: 2.5, upgradeCost: 100 },
-      { damage: 22, range: 140, fireRate: 1.2, slowFactor: 0.25, slowDuration: 3.0, upgradeCost: 200 },
+      { damage: 16, range: 120, fireRate: 1.1 },
+      { damage: 26, range: 135, fireRate: 1.3, upgradeCost: 80 },
+      { damage: 42, range: 150, fireRate: 1.5, upgradeCost: 160 },
     ],
   },
   sunflower: {
-    name: '向日葵',
-    emoji: '🌻',
+    name: '暖陽向日葵金壇',
     cost: 75,
     range: 0,
     damage: 0,
     fireRate: 0,
     goldPerSecond: 8,
-    description: '自動產金幣',
-    color: '#ffd700',
+    description: '金黃花瓣 · 定時產出陽光金幣',
+    color: '#ffb300',
     levels: [
       { goldPerSecond: 8 },
       { goldPerSecond: 18, upgradeCost: 75 },
       { goldPerSecond: 32, upgradeCost: 150 },
     ],
   },
-  candy: {
-    name: '糖果炮',
-    emoji: '🍬',
-    cost: 200,
-    range: 130,
-    damage: 45,
-    fireRate: 0.5,
-    splashRadius: 55,
-    projectileSpeed: 200,
-    projectileColor: '#ff69b4',
-    description: '範圍傷害',
-    color: '#ff69b4',
-    levels: [
-      { damage: 45, range: 130, fireRate: 0.5, splashRadius: 55 },
-      { damage: 70, range: 145, fireRate: 0.6, splashRadius: 65, upgradeCost: 150 },
-      { damage: 110, range: 160, fireRate: 0.7, splashRadius: 80, upgradeCost: 300 },
-    ],
-  },
-  rainbow: {
-    name: '彩虹塔',
-    emoji: '🌈',
-    cost: 300,
-    range: 150,
+  lavender: {
+    name: '月影薰衣草法杖',
+    cost: 220,
+    range: 135,
     damage: 28,
-    fireRate: 1.5,
-    piercing: 3,
-    projectileSpeed: 400,
-    projectileColor: '#dda0dd',
-    description: '穿透多個敵人',
-    color: '#dda0dd',
-    levels: [
-      { damage: 28, range: 150, fireRate: 1.5, piercing: 3 },
-      { damage: 42, range: 165, fireRate: 1.8, piercing: 4, upgradeCost: 200 },
-      { damage: 60, range: 180, fireRate: 2.0, piercing: 5, upgradeCost: 400 },
-    ],
-  },
-  thunder: {
-    name: '雷電蘑菇',
-    emoji: '⚡',
-    cost: 250,
-    range: 140,
-    damage: 32,
-    fireRate: 1.2,
+    fireRate: 1.0,
     chainCount: 3,
-    chainRange: 95,
-    projectileSpeed: 450,
-    projectileColor: '#00e5ff',
-    description: '連鎖閃電彈射',
-    color: '#00e5ff',
+    chainRange: 90,
+    projectileSpeed: 420,
+    projectileColor: '#ea80fc',
+    description: '幽紫薰衣草 · 月光電弧彈射',
+    color: '#ab47bc',
     levels: [
-      { damage: 32, range: 140, fireRate: 1.2, chainCount: 3 },
-      { damage: 50, range: 155, fireRate: 1.4, chainCount: 4, upgradeCost: 180 },
-      { damage: 75, range: 170, fireRate: 1.6, chainCount: 5, upgradeCost: 350 },
+      { damage: 28, range: 135, fireRate: 1.0, chainCount: 3 },
+      { damage: 45, range: 150, fireRate: 1.2, chainCount: 4, upgradeCost: 160 },
+      { damage: 70, range: 165, fireRate: 1.4, chainCount: 5, upgradeCost: 320 },
     ],
   },
-  poison: {
-    name: '毒霧孢子',
-    emoji: '🍄',
+  mushroom: {
+    name: '魔幻蘑菇孢子壇',
     cost: 180,
     range: 125,
-    damage: 18,
+    damage: 15,
     fireRate: 0.9,
-    poisonDps: 15,
+    poisonDps: 18,
     poisonDuration: 4.0,
-    projectileSpeed: 240,
-    projectileColor: '#76ff03',
-    description: '持續劇毒腐蝕',
-    color: '#76ff03',
+    projectileSpeed: 250,
+    projectileColor: '#69f0ae',
+    description: '紫斑毒蕈 · 綠霧孢子持續腐蝕',
+    color: '#4caf50',
     levels: [
-      { damage: 18, range: 125, fireRate: 0.9, poisonDps: 15, poisonDuration: 4.0 },
-      { damage: 28, range: 140, fireRate: 1.1, poisonDps: 26, poisonDuration: 5.0, upgradeCost: 140 },
-      { damage: 42, range: 155, fireRate: 1.3, poisonDps: 42, poisonDuration: 6.0, upgradeCost: 280 },
+      { damage: 15, range: 125, fireRate: 0.9, poisonDps: 18, poisonDuration: 4.0 },
+      { damage: 25, range: 140, fireRate: 1.1, poisonDps: 30, poisonDuration: 5.0, upgradeCost: 140 },
+      { damage: 38, range: 155, fireRate: 1.3, poisonDps: 48, poisonDuration: 6.0, upgradeCost: 280 },
+    ],
+  },
+  treant: {
+    name: '古木荊棘牢籠',
+    cost: 260,
+    range: 110,
+    damage: 35,
+    fireRate: 0.8,
+    slowFactor: 0.35,
+    slowDuration: 2.5,
+    splashRadius: 50,
+    projectileSpeed: 260,
+    projectileColor: '#795548',
+    description: '蒼勁藤木 · 尖刺定身與範圍震裂',
+    color: '#795548',
+    levels: [
+      { damage: 35, range: 110, fireRate: 0.8, slowFactor: 0.35, slowDuration: 2.5, splashRadius: 50 },
+      { damage: 55, range: 125, fireRate: 1.0, slowFactor: 0.3, slowDuration: 3.0, splashRadius: 60, upgradeCost: 180 },
+      { damage: 85, range: 140, fireRate: 1.2, slowFactor: 0.2, slowDuration: 3.5, splashRadius: 75, upgradeCost: 350 },
     ],
   },
 };
@@ -330,338 +290,195 @@ const Sprites = {
     ctx.restore();
   },
 
-  // 1. 花瓣塔 (立體粉白雙層花瓣 + 水晶高光花蕊)
+  // 1. 粉櫻花靈之箭 (Sakura Archer - 1號設計：白石蓮花座 + 翡翠藤蔓 + 五瓣粉櫻 + 懸浮翡翠光箭)
   drawTower_petal: function(ctx, time) {
     ctx.save();
-    const pulse = 1 + Math.sin(time * 3) * 0.04;
+    const pulse = 1 + Math.sin(time * 3.5) * 0.03;
     ctx.scale(pulse, pulse);
 
-    // 花瓣旋轉層
+    // 1. 白石金紋蓮花底座
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#ffa726';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.roundRect(-16, 8, 32, 8, 3);
+    ctx.fill();
+    ctx.stroke();
+
+    // 2. 翡翠生命藤蔓主幹
+    ctx.fillStyle = '#66bb6a';
+    ctx.fillRect(-3.5, -4, 7, 14);
+
+    // 3. 旋轉五瓣粉櫻花冠
     ctx.save();
-    ctx.rotate(time * 0.4);
+    ctx.translate(0, -10);
+    ctx.rotate(time * 0.35);
     for (let i = 0; i < 5; i++) {
       ctx.rotate((Math.PI * 2) / 5);
-      // 外層花瓣漸層 (桃紅 -> 柔粉)
-      const grad = ctx.createLinearGradient(0, -18, 0, 0);
+      // 粉櫻漸層花瓣
+      const grad = ctx.createLinearGradient(0, -14, 0, 0);
       grad.addColorStop(0, '#ff4081');
-      grad.addColorStop(0.5, '#ff80ab');
+      grad.addColorStop(0.6, '#ff80ab');
       grad.addColorStop(1, '#ffcdd2');
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.ellipse(0, -13, 7, 11, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, -9, 5.5, 9, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 花瓣中央脈絡微光
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 1.2;
+      // 花瓣白色高光中脈
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(0, -18);
-      ctx.lineTo(0, -5);
+      ctx.moveTo(0, -13);
+      ctx.lineTo(0, -3);
       ctx.stroke();
     }
     ctx.restore();
 
-    // 花蕊基座 (立體黃金漸層球)
-    const coreGrad = ctx.createRadialGradient(-3, -3, 1, 0, 0, 10);
+    // 4. 黃金核心花蕊
+    const coreGrad = ctx.createRadialGradient(-2, -12, 1, 0, -10, 8);
     coreGrad.addColorStop(0, '#fff9c4');
     coreGrad.addColorStop(0.6, '#ffd54f');
     coreGrad.addColorStop(1, '#ffb300');
     ctx.fillStyle = coreGrad;
     ctx.beginPath();
-    ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
+    ctx.arc(0, -10, 7.5, 0, Math.PI * 2);
     ctx.fill();
     ctx.strokeStyle = '#ffa000';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    this.drawFace(ctx, -1);
-    ctx.restore();
-  },
-
-  // 2. 冰淇淋塔 (斜紋立體甜筒 + 雙色圓潤冰淇淋球 + 融化糖漿高光)
-  drawTower_ice: function(ctx, time) {
-    ctx.save();
-    const bob = Math.sin(time * 4) * 1.2;
-
-    // 甜筒底座 (立體華夫格紋)
-    const coneGrad = ctx.createLinearGradient(-10, -2, 10, 14);
-    coneGrad.addColorStop(0, '#ffe0b2');
-    coneGrad.addColorStop(0.5, '#ffb74d');
-    coneGrad.addColorStop(1, '#f57c00');
-    ctx.fillStyle = coneGrad;
+    // 5. 頂端懸浮翡翠光之箭矢 (隨時間上下呼吸浮動)
+    const arrowBob = Math.sin(time * 6) * 2;
+    ctx.shadowColor = '#00e676';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#00e676';
     ctx.beginPath();
-    ctx.moveTo(-9, -2);
-    ctx.lineTo(9, -2);
-    ctx.lineTo(0, 14);
+    ctx.moveTo(0, -28 + arrowBob);
+    ctx.lineTo(4, -20 + arrowBob);
+    ctx.lineTo(-4, -20 + arrowBob);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 1;
-    ctx.stroke();
 
-    // 甜筒斜線刻痕
-    ctx.strokeStyle = 'rgba(120, 60, 10, 0.25)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-5, 0); ctx.lineTo(3, 8);
-    ctx.moveTo(0, -2); ctx.lineTo(5, 4);
-    ctx.moveTo(5, 0); ctx.lineTo(-3, 8);
-    ctx.stroke();
-
-    // 冰淇淋主球 (天藍立體球形漸層)
-    ctx.translate(0, bob);
-    const iceGrad = ctx.createRadialGradient(-3, -11, 2, 0, -8, 11);
-    iceGrad.addColorStop(0, '#ffffff');
-    iceGrad.addColorStop(0.4, '#e1f5fe');
-    iceGrad.addColorStop(0.8, '#81d4fa');
-    iceGrad.addColorStop(1, '#29b6f6');
-    ctx.fillStyle = iceGrad;
-    ctx.beginPath();
-    ctx.arc(0, -8, 10.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#0288d1';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // 冰晶晶瑩高光
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.beginPath();
-    ctx.ellipse(-4, -12, 3, 1.5, -Math.PI / 4, 0, Math.PI * 2);
-    ctx.fill();
-
-    this.drawFace(ctx, -8);
     ctx.restore();
   },
 
-  // 3. 向日葵 (金燦雙層花瓣 + 旋轉律動 + 熟成金棕果盤)
+  // 2. 暖陽向日葵金壇 (Golden Sunflower - 2號設計)
   drawTower_sunflower: function(ctx, time) {
     ctx.save();
-    const sway = Math.sin(time * 2.5) * 0.08;
+    const sway = Math.sin(time * 2.5) * 0.06;
     ctx.rotate(sway);
 
-    // 外圍 12 片太陽花瓣
+    // 花盆底座
+    ctx.fillStyle = '#fff8e1'; ctx.strokeStyle = '#ffb300'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-14, 18); ctx.lineTo(14, 18); ctx.lineTo(10, 6); ctx.lineTo(-10, 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // 向日葵金瓣
     ctx.save();
-    ctx.rotate(time * 0.2);
-    for (let i = 0; i < 12; i++) {
-      ctx.rotate((Math.PI * 2) / 12);
-      const pGrad = ctx.createLinearGradient(0, -18, 0, 0);
-      pGrad.addColorStop(0, '#ffea00');
-      pGrad.addColorStop(0.7, '#ffc107');
-      pGrad.addColorStop(1, '#ff9800');
-      ctx.fillStyle = pGrad;
-      ctx.beginPath();
-      ctx.ellipse(0, -13, 4.5, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
+    ctx.translate(0, -6);
+    ctx.rotate(time * 0.15);
+    ctx.fillStyle = '#ffca28';
+    for (let i = 0; i < 8; i++) {
+      ctx.rotate((Math.PI * 2) / 8);
+      ctx.beginPath(); ctx.ellipse(0, -11, 4.5, 7, 0, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
 
-    // 金黃花盤中心
-    const coreGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 10);
-    coreGrad.addColorStop(0, '#8d6e63');
-    coreGrad.addColorStop(0.6, '#5d4037');
-    coreGrad.addColorStop(1, '#3e2723');
-    ctx.fillStyle = coreGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 9.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#ffd54f';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    // 焦糖花盤
+    ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.arc(0, -6, 8.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.2; ctx.stroke();
 
-    // 點綴花籽紋理
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-    ctx.beginPath();
-    ctx.arc(-4, -4, 1.2, 0, Math.PI * 2);
-    ctx.arc(4, -4, 1.2, 0, Math.PI * 2);
-    ctx.arc(0, 5, 1.2, 0, Math.PI * 2);
-    ctx.fill();
+    // 頂端懸浮金幣
+    const coinBob = Math.sin(time * 5) * 1.5;
+    ctx.fillStyle = '#ffd54f'; ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.arc(0, -24 + coinBob, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    this.drawFace(ctx, 0);
     ctx.restore();
   },
 
-  // 4. 糖果炮 (旋轉棒棒糖 + 糖果發射筒 + 晶瑩反光)
-  drawTower_candy: function(ctx, time) {
+  // 3. 月影薰衣草法杖 (Lavender Arcane - 3號設計)
+  drawTower_lavender: function(ctx, time) {
     ctx.save();
-    const pulse = 1 + Math.sin(time * 4) * 0.05;
-    ctx.scale(pulse, pulse);
+    const sway = Math.sin(time * 3) * 0.05;
+    ctx.rotate(sway);
 
-    // 兩側糖果包裝紙翅膀
-    const wingGrad = ctx.createLinearGradient(-18, 0, 18, 0);
-    wingGrad.addColorStop(0, '#ff80ab');
-    wingGrad.addColorStop(1, '#ff4081');
-    ctx.fillStyle = wingGrad;
-    ctx.beginPath();
-    ctx.moveTo(-12, -4); ctx.lineTo(-18, -10); ctx.lineTo(-18, 10); ctx.lineTo(-12, 4);
-    ctx.moveTo(12, -4); ctx.lineTo(18, -10); ctx.lineTo(18, 10); ctx.lineTo(12, 4);
-    ctx.fill();
-    ctx.strokeStyle = '#c51162';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // 圓盤底座
+    ctx.fillStyle = '#ede7f6'; ctx.strokeStyle = '#b39ddb'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(0, 14, 16, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    // 糖果本體球形漸層 (草莓牛奶球)
-    const ballGrad = ctx.createRadialGradient(-4, -4, 2, 0, 0, 14);
-    ballGrad.addColorStop(0, '#ffffff');
-    ballGrad.addColorStop(0.3, '#ff80ab');
-    ballGrad.addColorStop(0.8, '#f50057');
-    ballGrad.addColorStop(1, '#c51162');
-    ctx.fillStyle = ballGrad;
-    ctx.beginPath();
-    ctx.arc(0, 0, 13, 0, Math.PI * 2);
-    ctx.fill();
+    // 木質法杖主幹
+    ctx.fillStyle = '#8d6e63'; ctx.fillRect(-2.5, -12, 5, 24);
 
-    // 旋轉螺旋白色糖霜條紋
-    ctx.save();
-    ctx.rotate(time * 1.5);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath(); ctx.arc(0, 0, 6.5, 0, Math.PI, false); ctx.stroke();
-    ctx.beginPath(); ctx.arc(0, 0, 10.5, Math.PI, Math.PI * 2, false); ctx.stroke();
-    ctx.restore();
-
-    this.drawFace(ctx, 1);
-    ctx.restore();
-  },
-
-  // 5. 彩虹塔 (立體七彩拱門 + 珍珠雲朵底座 + 頂部彩星)
-  drawTower_rainbow: function(ctx, time) {
-    ctx.save();
-    const floatY = Math.sin(time * 3) * 1.5;
-    ctx.translate(0, floatY);
-
-    // 4 層彩虹立體同心環
-    const rainbowColors = [
-      { stroke: '#ff5252', r: 15 },
-      { stroke: '#ffd740', r: 12 },
-      { stroke: '#69f0ae', r: 9 },
-      { stroke: '#40c4ff', r: 6 }
+    // 薰衣草水晶花苞
+    const lavs = [
+      { x: 0, y: -22, r: 6.5, c: '#ab47bc' },
+      { x: -6, y: -15, r: 5.5, c: '#7e57c2' },
+      { x: 6, y: -15, r: 5.5, c: '#ba68c8' }
     ];
-    for (const rb of rainbowColors) {
-      ctx.strokeStyle = rb.stroke;
-      ctx.lineWidth = 3.2;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.arc(0, 4, rb.r, Math.PI, 0);
-      ctx.stroke();
+    for (const l of lavs) {
+      ctx.fillStyle = l.c; ctx.beginPath(); ctx.arc(l.x, l.y, l.r, 0, Math.PI * 2); ctx.fill();
     }
 
-    // 底部左右兩團立體棉花糖雲朵
-    const drawCloud = (cx, cy) => {
-      const cloudGrad = ctx.createRadialGradient(cx - 2, cy - 2, 1, cx, cy, 8);
-      cloudGrad.addColorStop(0, '#ffffff');
-      cloudGrad.addColorStop(0.7, '#e0f7fa');
-      cloudGrad.addColorStop(1, '#b2ebf2');
-      ctx.fillStyle = cloudGrad;
-      ctx.beginPath();
-      ctx.arc(cx - 4, cy + 2, 4.5, 0, Math.PI * 2);
-      ctx.arc(cx + 4, cy + 2, 4.5, 0, Math.PI * 2);
-      ctx.arc(cx, cy - 2, 5.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#80deea';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    };
-    drawCloud(-11, 4);
-    drawCloud(11, 4);
+    // 月光守護電弧環
+    ctx.strokeStyle = '#ea80fc'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, -18, 14, Math.PI * 0.7, Math.PI * 2.3); ctx.stroke();
 
-    // 中央微光小星
-    ctx.fillStyle = '#fff9c4';
-    ctx.beginPath(); ctx.arc(0, -11, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   },
 
-  // 6. 雷電蘑菇塔 (立體青藍水靈傘蓋 + 電流脈衝閃光 + 蘑菇臉蛋)
-  drawTower_thunder: function(ctx, time) {
+  // 4. 魔幻蘑菇孢子壇 (Spore Shroom - 4號設計)
+  drawTower_mushroom: function(ctx, time) {
     ctx.save();
-    const shock = (Math.sin(time * 20) > 0.7) ? 1.08 : 1.0;
-    ctx.scale(shock, shock);
-
-    // 蘑菇白色菌柄 (立體圓柱漸層)
-    const stemGrad = ctx.createLinearGradient(-6, 0, 6, 14);
-    stemGrad.addColorStop(0, '#ffffff');
-    stemGrad.addColorStop(0.5, '#e0f7fa');
-    stemGrad.addColorStop(1, '#b2ebf2');
-    ctx.fillStyle = stemGrad;
-    ctx.beginPath();
-    ctx.roundRect(-7, 0, 14, 15, 6);
-    ctx.fill();
-    ctx.strokeStyle = '#00bcd4';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // 蘑菇青藍電光傘蓋 (半球形立體漸層)
-    const capGrad = ctx.createRadialGradient(-3, -12, 2, 0, -6, 16);
-    capGrad.addColorStop(0, '#ffffff');
-    capGrad.addColorStop(0.3, '#80deea');
-    capGrad.addColorStop(0.7, '#00e5ff');
-    capGrad.addColorStop(1, '#0097a7');
-    ctx.fillStyle = capGrad;
-    ctx.beginPath();
-    ctx.arc(0, -4, 15, Math.PI, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#006064';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // 傘蓋上的金色閃電斑紋
-    ctx.strokeStyle = '#ffd600';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-5, -16); ctx.lineTo(-2, -9); ctx.lineTo(-6, -9); ctx.lineTo(-1, -3);
-    ctx.moveTo(4, -15); ctx.lineTo(7, -8); ctx.lineTo(3, -8); ctx.lineTo(7, -2);
-    ctx.stroke();
-
-    // 蘑菇臉蛋
-    this.drawFace(ctx, 4);
-    ctx.restore();
-  },
-
-  // 7. 毒霧孢子塔 (立體暗紫斑斕傘蓋 + 綠色劇毒螢光點 + 劇毒呼吸)
-  drawTower_poison: function(ctx, time) {
-    ctx.save();
-    const squish = 1 + Math.sin(time * 3) * 0.06;
+    const squish = 1 + Math.sin(time * 3) * 0.04;
     ctx.scale(squish, 2 - squish);
 
-    // 菌柄 (深紫幽暗感)
-    const stemGrad = ctx.createLinearGradient(-6, 0, 6, 14);
-    stemGrad.addColorStop(0, '#e1bee7');
-    stemGrad.addColorStop(0.6, '#ab47bc');
-    stemGrad.addColorStop(1, '#6a1b9a');
-    ctx.fillStyle = stemGrad;
-    ctx.beginPath();
-    ctx.roundRect(-6, 0, 12, 14, 5);
-    ctx.fill();
-    ctx.strokeStyle = '#4a148c';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    // 古木樹樁座
+    ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.roundRect(-15, 3, 30, 14, 4); ctx.fill();
 
-    // 毒菌傘蓋 (暗夜紫毒物球形漸層)
-    const capGrad = ctx.createRadialGradient(-3, -11, 2, 0, -5, 15);
-    capGrad.addColorStop(0, '#e040fb');
-    capGrad.addColorStop(0.4, '#aa00ff');
-    capGrad.addColorStop(0.8, '#6200ea');
-    capGrad.addColorStop(1, '#311b92');
-    ctx.fillStyle = capGrad;
-    ctx.beginPath();
-    ctx.arc(0, -3, 14.5, Math.PI, 0);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#4a148c';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+    // 主菌傘 (紫斑毒蕈)
+    ctx.fillStyle = '#f5f5f5'; ctx.fillRect(-5, -6, 10, 10);
+    ctx.fillStyle = '#ab47bc'; ctx.beginPath(); ctx.arc(0, -8, 15, Math.PI, 0); ctx.fill();
+    // 蘑菇白斑
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(-6, -13, 2.5, 0, Math.PI * 2); ctx.arc(6, -13, 2.5, 0, Math.PI * 2); ctx.arc(0, -18, 3, 0, Math.PI * 2); ctx.fill();
 
-    // 劇毒螢光綠斑點 (微光閃爍)
-    const glowAlpha = 0.6 + Math.sin(time * 6) * 0.35;
-    ctx.fillStyle = `rgba(118, 255, 3, ${glowAlpha})`;
-    ctx.beginPath();
-    ctx.arc(-7, -10, 2.5, 0, Math.PI * 2);
-    ctx.arc(6, -9, 3, 0, Math.PI * 2);
-    ctx.arc(0, -14, 2, 0, Math.PI * 2);
-    ctx.fill();
+    // 旁生小青蕈
+    ctx.fillStyle = '#4caf50'; ctx.beginPath(); ctx.arc(11, 2, 6.5, Math.PI, 0); ctx.fill();
 
-    // 臉蛋
-    this.drawFace(ctx, 3);
+    // 綠色劇毒螢光微粒 (呼吸光暈)
+    const glowAlpha = 0.5 + Math.sin(time * 6) * 0.4;
+    ctx.fillStyle = `rgba(105, 240, 174, ${glowAlpha})`;
+    ctx.beginPath(); ctx.arc(-2, -26, 2, 0, Math.PI * 2); ctx.arc(4, -23, 1.8, 0, Math.PI * 2); ctx.fill();
+
+    ctx.restore();
+  },
+
+  // 5. 古木荊棘牢籠 (Thorn Treant - 5號設計)
+  drawTower_treant: function(ctx, time) {
+    ctx.save();
+    const pulse = 1 + Math.sin(time * 2) * 0.03;
+    ctx.scale(pulse, pulse);
+
+    // 大地泥座
+    ctx.fillStyle = '#795548'; ctx.beginPath(); ctx.ellipse(0, 15, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 扭曲蒼勁樹幹
+    ctx.fillStyle = '#4e342e';
+    ctx.beginPath();
+    ctx.moveTo(-7, 15); ctx.quadraticCurveTo(7, 0, -5, -20);
+    ctx.lineTo(5, -20); ctx.quadraticCurveTo(-5, 0, 7, 15);
+    ctx.closePath(); ctx.fill();
+
+    // 荊棘利刺
+    ctx.fillStyle = '#2e7d32';
+    const thorns = [[-8, 3], [8, -3], [-6, -12], [6, -15]];
+    for (const p of thorns) {
+      ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p[0] * 1.5, p[1] - 3); ctx.lineTo(p[0], p[1] - 5); ctx.closePath(); ctx.fill();
+    }
+
+    // 核心綠晶光芒
+    ctx.fillStyle = '#66bb6a'; ctx.beginPath(); ctx.arc(0, -6, 3.5, 0, Math.PI * 2); ctx.fill();
+
     ctx.restore();
   },
 
@@ -1358,23 +1175,25 @@ class Enemy {
       this.poisonTickTimer += dt;
       if (this.poisonTickTimer >= 0.5) { // 每 0.5 秒跳一次毒傷
         this.poisonTickTimer = 0;
-        const tickDamage = this.poisonDps * 0.5;
-        this.hp -= tickDamage;
-        this.hitFlash = 0.5;
-        if (game) {
-          game.spawnParticle(this.x, this.y - 10, {
-            text: `-${Math.round(tickDamage)} 🧪`,
-            color: '#76ff03',
-            fontSize: 11,
-            vx: (Math.random() - 0.5) * 30,
-            vy: -35,
-            gravity: 0,
-            life: 0.8,
-          });
-        }
-        if (this.hp <= 0) {
-          this.hp = 0;
-          this.alive = false;
+        const tickDamage = (this.poisonDps || 0) * 0.5;
+        if (tickDamage > 0) {
+          this.hp = Math.max(0, this.hp - tickDamage);
+          this.hitFlash = 0.5;
+          if (game) {
+            game.spawnParticle(this.x, this.y - 10, {
+              text: `-${Math.round(tickDamage)} 🧪`,
+              color: '#76ff03',
+              fontSize: 11,
+              vx: (Math.random() - 0.5) * 30,
+              vy: -35,
+              gravity: 0,
+              life: 0.8,
+            });
+          }
+          if (this.hp <= 0 || isNaN(this.hp)) {
+            this.hp = 0;
+            this.alive = false;
+          }
         }
       }
     }
@@ -1398,12 +1217,14 @@ class Enemy {
   }
 
   takeDamage(amount, slowFactor, slowDuration, poisonDps, poisonDuration, isPhysical = false, game = null) {
+    if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) return;
+
     // 鐵甲甲蟲物理減傷 50%，非物理（毒/雷/冰/流星）全額承受
     let finalAmount = amount;
     if (this.armor > 0 && isPhysical) {
       finalAmount = amount * (1 - this.armor);
     }
-    this.hp -= finalAmount;
+    this.hp = Math.max(0, this.hp - finalAmount);
     this.hitFlash = 1;
 
     // Boss 小龍召喚護衛術 (75%, 50%, 25% 觸發)
@@ -1435,15 +1256,15 @@ class Enemy {
       }
     }
 
-    if (slowFactor && slowDuration) {
+    if (typeof slowFactor === 'number' && typeof slowDuration === 'number' && slowDuration > 0) {
       this.slowFactor = slowFactor;
       this.slowTimer = slowDuration;
     }
-    if (poisonDps && poisonDuration) {
-      this.poisonDps = Math.max(this.poisonDps, poisonDps);
-      this.poisonTimer = Math.max(this.poisonTimer, poisonDuration);
+    if (typeof poisonDps === 'number' && typeof poisonDuration === 'number' && poisonDps > 0 && poisonDuration > 0) {
+      this.poisonDps = Math.max(this.poisonDps || 0, poisonDps);
+      this.poisonTimer = Math.max(this.poisonTimer || 0, poisonDuration);
     }
-    if (this.hp <= 0) {
+    if (this.hp <= 0 || isNaN(this.hp)) {
       this.hp = 0;
       this.alive = false;
     }
@@ -1958,8 +1779,12 @@ class WaveManager {
     this.currentWave = waveIndex;
     const wave = WAVE_DATA[waveIndex];
     this.spawnQueue = [];
+    if (!wave) {
+      dbgLog(`⚠️ WaveData not found for wave ${waveIndex}`);
+      return;
+    }
 
-    // Build spawn queue (flatten all enemy groups in sequence)
+    dbgLog(`🌊 [Wave] 第 ${waveIndex + 1} 波開始生成，組數: ${wave.enemies.length}`);
     for (const group of wave.enemies) {
       for (let i = 0; i < group.count; i++) {
         this.spawnQueue.push({
@@ -1968,6 +1793,7 @@ class WaveManager {
         });
       }
     }
+    dbgLog(`👾 [Wave] 總預定出怪數: ${this.spawnQueue.length}`);
 
     this.spawnTimer = 0.5; // Initial delay
     this.active = true;
@@ -1984,6 +1810,7 @@ class WaveManager {
 
       if (this.spawnQueue.length === 0) {
         this.allSpawned = true;
+        dbgLog(`✨ [Wave] 第 ${this.currentWave + 1} 波出怪完畢 (allSpawned = true)`);
       }
 
       return new Enemy(spawn.type, gameMap);
@@ -1992,7 +1819,8 @@ class WaveManager {
   }
 
   isComplete(enemies) {
-    return this.allSpawned && enemies.every((e) => !e.alive);
+    const aliveCount = enemies.filter((e) => e.alive).length;
+    return this.allSpawned && aliveCount === 0;
   }
 
   getWaveBonus() {
@@ -2078,11 +1906,11 @@ class Game {
     const ctx = this.mapCtx;
     const cs = CONFIG.CELL_SIZE;
 
-    // 1. 基底大地：暖金黃沙大地色系
-    ctx.fillStyle = '#deb887';
+    // 1. 基底大地：4號晨曦暖陽金沙 溫暖淡金純淨色系
+    ctx.fillStyle = '#fffdf5';
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-    // 2. 建造平台 2.5D 立體石台基座 (Elevated Stone Pedestals)
+    // 2. 建造平台 2.5D 立體石台基座 (Elevated Stone Pedestals - 4號晨曦暖金純白大理石台)
     for (let r = 0; r < CONFIG.ROWS; r++) {
       for (let c = 0; c < CONFIG.COLS; c++) {
         if (this.map.grid[r][c] === 0) {
@@ -2092,19 +1920,19 @@ class Game {
           const ph = cs - 6;
 
           // 2.1 底部石台厚度與深色陰影 (3D 側面)
-          ctx.fillStyle = 'rgba(70, 45, 20, 0.4)';
+          ctx.fillStyle = 'rgba(230, 81, 0, 0.15)';
           ctx.beginPath();
           ctx.roundRect(px, py + 4, pw, ph, 8);
           ctx.fill();
 
-          // 2.2 石台主頂面 (米白溫潤石磚漸層)
+          // 2.2 石台主頂面 (純白與暖陽奶霜石磚漸層)
           const stoneGrad = ctx.createLinearGradient(px, py, px + pw, py + ph);
           if ((r + c) % 2 === 0) {
-            stoneGrad.addColorStop(0, '#fbf7ee');
-            stoneGrad.addColorStop(1, '#ebe0cb');
+            stoneGrad.addColorStop(0, '#ffffff');
+            stoneGrad.addColorStop(1, '#fff8e7');
           } else {
-            stoneGrad.addColorStop(0, '#f5eee0');
-            stoneGrad.addColorStop(1, '#e2d4bd');
+            stoneGrad.addColorStop(0, '#ffffff');
+            stoneGrad.addColorStop(1, '#fff3d6');
           }
           ctx.fillStyle = stoneGrad;
           ctx.beginPath();
@@ -2112,14 +1940,14 @@ class Game {
           ctx.fill();
 
           // 2.3 石台頂面金色細緻收邊
-          ctx.strokeStyle = 'rgba(218, 165, 32, 0.45)';
+          ctx.strokeStyle = 'rgba(255, 167, 38, 0.55)';
           ctx.lineWidth = 1.2;
           ctx.beginPath();
           ctx.roundRect(px + 1, py + 1, pw - 2, ph - 4, 7);
           ctx.stroke();
 
           // 2.4 四角精緻古典鉚釘/刻痕
-          ctx.fillStyle = 'rgba(160, 110, 50, 0.35)';
+          ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
           ctx.fillRect(px + 4, py + 4, 2, 2);
           ctx.fillRect(px + pw - 6, py + 4, 2, 2);
           ctx.fillRect(px + 4, py + ph - 8, 2, 2);
@@ -2438,37 +2266,66 @@ class Game {
       fctx.beginPath(); fctx.arc(0, 0, 3, 0, Math.PI * 2); fctx.fill();
     }
 
-    // 繪製首頁城堡大插畫 Canvas (告別 🏰 Emoji)
+    // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree - 5號設計)
     const titleCv = document.getElementById('menu-title-canvas');
     if (titleCv) {
       const tctx = titleCv.getContext('2d');
       tctx.clearRect(0, 0, 80, 80);
       tctx.translate(40, 48);
-      // 城堡基底陰影
-      tctx.fillStyle = 'rgba(0,0,0,0.18)';
-      tctx.beginPath(); tctx.ellipse(0, 24, 32, 10, 0, 0, Math.PI * 2); tctx.fill();
-      // 城牆主體 (石磚厚度漸層)
-      const wallGrad = tctx.createLinearGradient(0, -20, 0, 20);
-      wallGrad.addColorStop(0, '#ffe082');
-      wallGrad.addColorStop(1, '#ffb300');
-      tctx.fillStyle = wallGrad;
-      tctx.fillRect(-22, -10, 44, 32);
-      // 左右兩座高塔與圓錐尖頂
-      for (let s of [-20, 20]) {
-        tctx.fillStyle = '#ffb300';
-        tctx.fillRect(s - 8, -26, 16, 48);
-        tctx.fillStyle = '#e91e63';
+
+      // 地面晶光微光倒影
+      tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      tctx.beginPath(); tctx.ellipse(0, 22, 28, 10, 0, 0, Math.PI * 2); tctx.fill();
+
+      // 水晶台座
+      tctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+      tctx.strokeStyle = '#00e5ff';
+      tctx.lineWidth = 1.5;
+      tctx.beginPath();
+      tctx.roundRect(-22, 10, 44, 12, 4);
+      tctx.fill();
+      tctx.stroke();
+
+      // 琉璃晶樹主幹
+      const tcGrad = tctx.createLinearGradient(-16, 0, 16, 0);
+      tcGrad.addColorStop(0, '#80d8ff');
+      tcGrad.addColorStop(0.5, '#ffffff');
+      tcGrad.addColorStop(1, '#00b0ff');
+      tctx.fillStyle = tcGrad;
+      tctx.beginPath();
+      tctx.moveTo(-9, 10);
+      tctx.lineTo(-24, -22);
+      tctx.lineTo(0, -38);
+      tctx.lineTo(24, -22);
+      tctx.lineTo(9, 10);
+      tctx.closePath();
+      tctx.fill();
+
+      // 晶芒切面
+      const titleFacets = [
+        { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
+        { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
+        { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
+        { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
+      ];
+      for (let tf of titleFacets) {
+        tctx.fillStyle = tf.c;
         tctx.beginPath();
-        tctx.moveTo(s - 10, -26); tctx.lineTo(s, -42); tctx.lineTo(s + 10, -26); tctx.closePath();
+        tf.p.forEach((pt, idx) => idx === 0 ? tctx.moveTo(pt[0], pt[1]) : tctx.lineTo(pt[0], pt[1]));
+        tctx.closePath();
         tctx.fill();
-        // 塔頂金球
-        tctx.fillStyle = '#ffd54f';
-        tctx.beginPath(); tctx.arc(s, -42, 2.5, 0, Math.PI * 2); tctx.fill();
+        tctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        tctx.lineWidth = 0.8;
+        tctx.stroke();
       }
-      // 中央拱門
-      tctx.fillStyle = '#5d4037';
-      tctx.beginPath(); tctx.arc(0, 10, 9, Math.PI, 0); tctx.fill();
-      tctx.fillRect(-9, 10, 18, 12);
+
+      // 頂端神聖守護晶核光芒
+      tctx.shadowColor = '#00e5ff';
+      tctx.shadowBlur = 14;
+      tctx.fillStyle = '#ffffff';
+      tctx.beginPath();
+      tctx.arc(0, -42, 6, 0, Math.PI * 2);
+      tctx.fill();
     }
 
     // 繪製勝利金冠插畫 Canvas (告別 🎉 Emoji)
@@ -2543,12 +2400,12 @@ class Game {
 
       // 建立專屬 Mini Canvas 進行 3D 繪製 (告別 Emoji)
       const iconCanvas = document.createElement('canvas');
-      iconCanvas.width = 36;
-      iconCanvas.height = 36;
+      iconCanvas.width = 38;
+      iconCanvas.height = 38;
       iconCanvas.className = 'tower-mini-canvas';
       const ictx = iconCanvas.getContext('2d');
-      ictx.translate(18, 20);
-      ictx.scale(0.85, 0.85);
+      ictx.translate(19, 21);
+      ictx.scale(0.68, 0.68);
       const drawFn = Sprites['drawTower_' + key];
       if (drawFn) {
         drawFn.call(Sprites, ictx, 0, 1);
@@ -2560,7 +2417,7 @@ class Game {
       details.className = 'tower-details';
       details.innerHTML = `
         <div class="tower-name">${data.name}</div>
-        <div class="tower-cost">💰 ${data.cost}</div>
+        <div class="tower-cost">${data.cost}</div>
       `;
       item.appendChild(details);
 
@@ -3362,6 +3219,7 @@ class Game {
     if (this.state !== 'wave') return;
     if (!this.waveManager.isComplete(this.enemies)) return;
 
+    dbgLog(`🎉 [Wave] 第 ${this.currentWave + 1} 波擊殺完畢，觸發結算！`);
     const bonus = this.waveManager.getWaveBonus();
     this.addGold(bonus);
     this.score += bonus;
@@ -3370,8 +3228,10 @@ class Game {
 
     this.currentWave++;
     if (this.currentWave >= CONFIG.TOTAL_WAVES) {
+      dbgLog(`🏆 達成全部 ${CONFIG.TOTAL_WAVES} 波通關，進入 victory 狀態`);
       this.victory();
     } else {
+      dbgLog(`⏳ 進入第 ${this.currentWave + 1} 波 planning 狀態`);
       this.state = 'planning';
       document.getElementById('start-wave-btn').disabled = false;
       this.updateWavePreview();
@@ -3444,6 +3304,8 @@ class Game {
     document.getElementById('final-wave').textContent = this.currentWave + 1;
     document.getElementById('final-score').textContent = this.score;
     document.getElementById('gameover-screen').classList.remove('hidden');
+    this.enemies = [];
+    this.projectiles = [];
   }
 
   victory() {
@@ -3453,6 +3315,8 @@ class Game {
     this.saveGameRecord();
     document.getElementById('victory-score').textContent = this.score;
     document.getElementById('victory-screen').classList.remove('hidden');
+    this.enemies = [];
+    this.projectiles = [];
   }
 
   openSettingsModal() {
@@ -3742,14 +3606,24 @@ class Game {
 
   // ─── Game Loop ───
   gameLoop(timestamp) {
-    const rawDt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
-    this.lastTime = timestamp;
-    const dt = rawDt * this.speedMultiplier;
+    try {
+      const rawDt = Math.min((timestamp - this.lastTime) / 1000, 0.05);
+      this.lastTime = timestamp;
+      const dt = rawDt * this.speedMultiplier;
 
-    if (this.state === 'wave' || this.state === 'planning') {
-      this.update(dt);
+      if (this.state === 'wave' || this.state === 'planning') {
+        this.update(dt);
+      } else {
+        // 在 victory / gameover 狀態下依然更新粒子特效
+        for (const p of this.particles) {
+          p.update(dt);
+        }
+        this.particles = this.particles.filter((p) => p.alive);
+      }
+      this.render();
+    } catch (err) {
+      dbgLog(`🔥 gameLoop Crash: ${err.message} \nStack: ${err.stack}`);
     }
-    this.render();
     this.animFrame = requestAnimationFrame((t) => this.gameLoop(t));
   }
 
@@ -3840,7 +3714,7 @@ class Game {
           if (!enemy.alive || proj.piercedEnemies.has(enemy)) continue;
           const d = dist(proj.x, proj.y, enemy.x, enemy.y);
           if (d <= proj.splashRadius) {
-            enemy.takeDamage(proj.damage * 0.5, proj.slowFactor, proj.slowDuration);
+            enemy.takeDamage(proj.damage * 0.5, proj.slowFactor, proj.slowDuration, 0, 0, false, this);
           }
         }
         // Splash effect
@@ -3883,6 +3757,7 @@ class Game {
         enemy._rewarded = true;
         this.gold += enemy.reward;
         this.score += enemy.reward;
+        dbgLog(`💀 [Kill] 擊殺 ${enemy.typeKey}，剩餘存活怪數: ${this.enemies.filter(e => e.alive).length - 1}`);
 
         // Kill effects
         for (let i = 0; i < 6; i++) {
@@ -3975,14 +3850,16 @@ class Game {
           ctx.restore();
         }
 
-        // Preview tower emoji
+        // Preview tower Sprite
         const center = gridToPixel(col, row);
-        ctx.globalAlpha = 0.6;
-        ctx.font = '28px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(data.emoji, center.x, center.y + 1);
-        ctx.globalAlpha = 1;
+        const drawFunc = Sprites['drawTower_' + this.selectedTowerType];
+        if (drawFunc) {
+          ctx.save();
+          ctx.translate(center.x, center.y);
+          ctx.globalAlpha = 0.65;
+          drawFunc.call(Sprites, ctx, performance.now() / 1000);
+          ctx.restore();
+        }
       }
     }
 
