@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="metalG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#78909c"/>
+      <stop offset="50%" stop-color="#37474f"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+    <radialGradient id="fireG" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffff00"/>
+      <stop offset="60%" stop-color="#ff3d00"/>
+      <stop offset="100%" stop-color="#dd2c00"/>
+    </radialGradient>
+  </defs>
+  <g>
+    <!-- 重型黑鐵底座 -->
+    <ellipse cx="50" cy="72" rx="36" ry="16" fill="rgba(0,0,0,0.3)"/>
+    <rect x="22" y="52" width="56" height="18" rx="8" fill="#424242" stroke="#212121" stroke-width="3"/>
+    <!-- 巨砲管 -->
+    <path d="M 32,56 L 24,18 L 44,14 L 52,56 Z" fill="url(#metalG)" stroke="#102027" stroke-width="3"/>
+    <path d="M 48,56 L 56,18 L 76,14 L 68,56 Z" fill="url(#metalG)" stroke="#102027" stroke-width="3"/>
+    <ellipse cx="34" cy="16" rx="10" ry="5" fill="#1565c0" stroke="#90caf9" stroke-width="2"/>
+    <ellipse cx="66" cy="16" rx="10" ry="5" fill="url(#fireG)" stroke="#ffe082" stroke-width="2"/>
+  </g>
+</svg>

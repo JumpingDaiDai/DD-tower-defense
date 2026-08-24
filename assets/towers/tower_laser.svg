@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fff176"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </radialGradient>
+  </defs>
+  <g>
+    <ellipse cx="50" cy="74" rx="34" ry="16" fill="rgba(0,0,0,0.25)"/>
+    <ellipse cx="50" cy="70" rx="32" ry="14" fill="#3e2723" stroke="#f57f17" stroke-width="3"/>
+    <!-- 三腳鋼鐵支架 -->
+    <path d="M 50,45 L 24,70 M 50,45 L 76,70 M 50,45 L 50,72" stroke="#ffb300" stroke-width="4" stroke-linecap="round"/>
+    <!-- 星核日光球體 -->
+    <circle cx="50" cy="30" r="20" fill="url(#sunG)" stroke="#ffffff" stroke-width="2.5"/>
+    <circle cx="50" cy="30" r="26" fill="none" stroke="#ffee58" stroke-width="2" stroke-dasharray="6,4"/>
+  </g>
+</svg>

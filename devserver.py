@@ -122,11 +122,29 @@ def get_local_ip():
         s.close()
 
 
+def get_hotspot_ip():
+    """找出 iPhone 個人熱點介面的 IP（子網段固定是 172.20.10.0/28），
+    只綁這個 IP 可避免同時暴露在公司 WiFi/VPN 等其他網卡上。"""
+    import subprocess
+    import re
+    try:
+        out = subprocess.check_output(['ifconfig'], text=True)
+    except Exception:
+        return None
+    for m in re.finditer(r'inet (172\.20\.10\.\d+)', out):
+        return m.group(1)
+    return None
+
+
 if __name__ == '__main__':
     os.chdir(ROOT)
-    ip = get_local_ip()
-    with socketserver.TCPServer(('0.0.0.0', PORT), Handler) as httpd:
-        print(f"手機瀏覽器打開: http://{ip}:{PORT}/index.html")
+    hotspot_ip = get_hotspot_ip()
+    if not hotspot_ip:
+        print("找不到 iPhone 個人熱點網卡（172.20.10.x），請確認熱點已用傳輸線連接並開啟。")
+        raise SystemExit(1)
+    with socketserver.TCPServer((hotspot_ip, PORT), Handler) as httpd:
+        print(f"僅綁定手機熱點網卡: {hotspot_ip}（其他網路/網卡連不進來）")
+        print(f"手機瀏覽器打開: http://{hotspot_ip}:{PORT}/index.html")
         print(f"Log 即時寫入: {LOG_FILE}")
         print(f"截圖存放於: {SHOT_DIR}")
         print(f"驗證 token: {DEBUG_TOKEN}  (需與 game.js 裡的 DEBUG_TOKEN 一致)")

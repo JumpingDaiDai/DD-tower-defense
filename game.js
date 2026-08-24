@@ -31,7 +31,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
 // （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
-const DEBUG_TOKEN = '1a1e476d6158794f';
+const DEBUG_TOKEN = '22c6b3e4249b6201';
 
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身
@@ -75,7 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.1.0',
+  VERSION: 'v1.2.0',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -229,6 +229,59 @@ const TOWER_DATA = {
       { damage: 35, range: 110, fireRate: 0.8, slowFactor: 0.35, slowDuration: 2.5, splashRadius: 50 },
       { damage: 55, range: 125, fireRate: 1.0, slowFactor: 0.3, slowDuration: 3.0, splashRadius: 60, upgradeCost: 180 },
       { damage: 85, range: 140, fireRate: 1.2, slowFactor: 0.2, slowDuration: 3.5, splashRadius: 75, upgradeCost: 350 },
+    ],
+  },
+  cannon: {
+    name: '熔岩熾火巨砲',
+    cost: 300,
+    range: 150,
+    damage: 60,
+    fireRate: 0.6,
+    splashRadius: 70,
+    projectileSpeed: 300,
+    projectileColor: '#ff3d00',
+    description: '熾熱熔岩 · 遠程劇烈重砲轟炸',
+    color: '#ff3d00',
+    levels: [
+      { damage: 60, range: 150, fireRate: 0.6, splashRadius: 70 },
+      { damage: 95, range: 170, fireRate: 0.75, splashRadius: 85, upgradeCost: 220 },
+      { damage: 150, range: 190, fireRate: 0.9, splashRadius: 105, upgradeCost: 400 },
+    ],
+  },
+  ice_crystal: {
+    name: '極光霜藍冰晶',
+    cost: 150,
+    range: 130,
+    damage: 12,
+    fireRate: 1.2,
+    slowFactor: 0.5,
+    slowDuration: 3.0,
+    piercing: 3,
+    projectileSpeed: 380,
+    projectileColor: '#40c4ff',
+    description: '極地冰晶 · 霜雪穿透與集體凍結',
+    color: '#00b0ff',
+    levels: [
+      { damage: 12, range: 130, fireRate: 1.2, slowFactor: 0.5, slowDuration: 3.0, piercing: 3 },
+      { damage: 22, range: 145, fireRate: 1.4, slowFactor: 0.4, slowDuration: 3.5, piercing: 4, upgradeCost: 120 },
+      { damage: 38, range: 160, fireRate: 1.7, slowFactor: 0.3, slowDuration: 4.0, piercing: 6, upgradeCost: 240 },
+    ],
+  },
+  laser: {
+    name: '星核日光雷射塔',
+    cost: 350,
+    range: 160,
+    damage: 40,
+    fireRate: 2.0,
+    piercing: 2,
+    projectileSpeed: 600,
+    projectileColor: '#ffd700',
+    description: '高能光核 · 極速穿透高頻雷射',
+    color: '#ffc107',
+    levels: [
+      { damage: 40, range: 160, fireRate: 2.0, piercing: 2 },
+      { damage: 65, range: 175, fireRate: 2.4, piercing: 3, upgradeCost: 250 },
+      { damage: 105, range: 195, fireRate: 2.8, piercing: 4, upgradeCost: 450 },
     ],
   },
 };
@@ -479,6 +532,60 @@ const Sprites = {
     // 核心綠晶光芒
     ctx.fillStyle = '#66bb6a'; ctx.beginPath(); ctx.arc(0, -6, 3.5, 0, Math.PI * 2); ctx.fill();
 
+    ctx.restore();
+  },
+
+  // 6. 熔岩熾火巨砲 (Volcanic Cannon)
+  drawTower_cannon: function(ctx, time) {
+    ctx.save();
+    // 鋼鐵重砲基座
+    ctx.fillStyle = '#37474f'; ctx.beginPath(); ctx.ellipse(0, 14, 19, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#455a64'; ctx.fillRect(-12, 0, 24, 14);
+    // 巨型砲管
+    ctx.fillStyle = '#263238'; ctx.fillRect(-8, -18, 16, 20);
+    ctx.fillStyle = '#ff3d00'; ctx.fillRect(-9, -22, 18, 5); // 砲口赤紅熱浪
+    // 熾熱熔岩核心脈動
+    const glow = 0.5 + Math.sin(time * 8) * 0.5;
+    ctx.fillStyle = `rgba(255, 112, 67, ${glow})`;
+    ctx.beginPath(); ctx.arc(0, -2, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  },
+
+  // 7. 極光霜藍冰晶 (Aurora Ice Crystal)
+  drawTower_ice_crystal: function(ctx, time) {
+    ctx.save();
+    const floatY = Math.sin(time * 3) * 3;
+    ctx.translate(0, floatY);
+    // 霜雪寒冰底陣
+    ctx.fillStyle = 'rgba(64, 196, 255, 0.2)'; ctx.beginPath(); ctx.ellipse(0, 16 - floatY, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+    // 多稜晶石主體
+    ctx.fillStyle = '#00e5ff';
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.lineTo(12, -4); ctx.lineTo(0, 10); ctx.lineTo(-12, -4); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e0f7fa';
+    ctx.beginPath(); ctx.moveTo(0, -24); ctx.lineTo(6, -4); ctx.lineTo(0, 10); ctx.closePath(); ctx.fill();
+    // 冰晶星芒
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(0, 14); ctx.moveTo(-16, -7); ctx.lineTo(16, -7); ctx.stroke();
+    ctx.restore();
+  },
+
+  // 8. 星核日光雷射塔 (Solar Core Laser)
+  drawTower_laser: function(ctx, time) {
+    ctx.save();
+    const rot = time * 2;
+    // 科技金屬底座
+    ctx.fillStyle = '#212121'; ctx.beginPath(); ctx.ellipse(0, 14, 20, 7, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#424242'; ctx.beginPath(); ctx.arc(0, 6, 14, Math.PI, 0); ctx.fill();
+    // 懸浮黃金日光光環
+    ctx.save();
+    ctx.translate(0, -10);
+    ctx.rotate(rot);
+    ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    // 核心日光聚能球
+    ctx.fillStyle = '#fff176'; ctx.beginPath(); ctx.arc(0, -10, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, -12, 3, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   },
 
@@ -1700,12 +1807,19 @@ class Tower {
     ctx.arc(0, 0, 19, 0, Math.PI * 2);
     ctx.stroke();
 
-    // Draw Canvas Sprite
-    const drawFunc = Sprites['drawTower_' + this.typeKey];
-    if (drawFunc) {
+    // 4. 優先繪製 SVG 超高清貼圖 (GPU 硬體加速省電零失焦)
+    const svgImg = assets.get('tower_' + this.typeKey);
+    if (svgImg) {
       ctx.save();
-      drawFunc.call(Sprites, ctx, this.animTime);
+      ctx.drawImage(svgImg, -24, -28, 48, 48);
       ctx.restore();
+    } else {
+      const drawFunc = Sprites['drawTower_' + this.typeKey];
+      if (drawFunc) {
+        ctx.save();
+        drawFunc.call(Sprites, ctx, this.animTime);
+        ctx.restore();
+      }
     }
 
     // Level stars (hand-drawn)
@@ -1827,6 +1941,57 @@ class WaveManager {
     return WAVE_DATA[this.currentWave]?.bonus || 0;
   }
 }
+
+// ─── 13.5 SVG 圖片資源管理器 (AssetManager - 無限放大絕不失焦) ──────────
+class AssetManager {
+  constructor() {
+    this.images = {};
+    this.loaded = false;
+  }
+
+  loadAll() {
+    const assets = {
+      tower_archer: 'assets/towers/tower_archer.svg',
+      tower_magic: 'assets/towers/tower_magic.svg',
+      tower_cannon: 'assets/towers/tower_cannon.svg',
+      tower_ice_crystal: 'assets/towers/tower_ice_crystal.svg',
+      tower_laser: 'assets/towers/tower_laser.svg',
+      tower_mushroom: 'assets/towers/tower_mushroom.svg',
+      tower_treant: 'assets/towers/tower_treant.svg',
+      skill_meteor: 'assets/skills/skill_meteor.svg',
+      skill_freeze: 'assets/skills/skill_freeze.svg',
+      spawn_badge: 'assets/ui/spawn_badge.svg',
+    };
+
+    const promises = [];
+    for (const [key, src] of Object.entries(assets)) {
+      promises.push(new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          this.images[key] = img;
+          resolve();
+        };
+        img.onerror = () => {
+          dbgLog(`⚠️ SVG 圖片載入失敗: ${src}`);
+          resolve();
+        };
+        img.src = src;
+      }));
+    }
+
+    return Promise.all(promises).then(() => {
+      this.loaded = true;
+      dbgLog('🎨 [AssetManager] 所有 SVG 圖片資源預載完畢！');
+    });
+  }
+
+  get(key) {
+    return this.images[key] || null;
+  }
+}
+
+const assets = new AssetManager();
+assets.loadAll();
 
 // ─── 14. 主遊戲類別 ──────────────────────────
 class Game {
@@ -2398,17 +2563,20 @@ class Game {
       item.className = 'tower-item';
       item.dataset.type = key;
 
-      // 建立專屬 Mini Canvas 進行 3D 繪製 (告別 Emoji)
+      // 建立專屬 Mini Canvas 進行 SVG / 3D 繪製 (無限放大不失焦)
       const iconCanvas = document.createElement('canvas');
       iconCanvas.width = 38;
       iconCanvas.height = 38;
       iconCanvas.className = 'tower-mini-canvas';
       const ictx = iconCanvas.getContext('2d');
-      ictx.translate(19, 21);
-      ictx.scale(0.68, 0.68);
-      const drawFn = Sprites['drawTower_' + key];
-      if (drawFn) {
-        drawFn.call(Sprites, ictx, 0, 1);
+      const svgImg = assets.get('tower_' + key);
+      if (svgImg) {
+        ictx.drawImage(svgImg, 3, 3, 32, 32);
+      } else {
+        ictx.translate(19, 21);
+        ictx.scale(0.68, 0.68);
+        const drawFn = Sprites['drawTower_' + key];
+        if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
       }
 
       item.appendChild(iconCanvas);
@@ -2416,22 +2584,21 @@ class Game {
       const details = document.createElement('div');
       details.className = 'tower-details';
       details.innerHTML = `
-        <div class="tower-name">${data.name}</div>
-        <div class="tower-cost">${data.cost}</div>
+        <div class="tower-cost">💰${data.cost}</div>
       `;
       item.appendChild(details);
 
-      // 支援按下立即顯示資訊、拖曳建立防禦塔
+      // 支援手勢鎖定：'pending' | 'scrolling' | 'dragging' 互斥機制
       let isPressed = false;
       let startX = 0, startY = 0;
-      let isItemDragging = false;
+      let gestureState = 'pending'; // 手勢狀態獨佔鎖
 
       const startPress = (clientX, clientY) => {
         if (this.state !== 'planning' && this.state !== 'wave') return;
         startX = clientX;
         startY = clientY;
         isPressed = true;
-        isItemDragging = false;
+        gestureState = 'pending';
 
         // 按下狀態立即顯示塔的資訊
         this.deselectTower();
@@ -2439,28 +2606,66 @@ class Game {
       };
 
       const movePress = (clientX, clientY, isTouch = false) => {
-        if (!isPressed && !isItemDragging) return;
-        const distMoved = Math.hypot(clientX - startX, clientY - startY);
-        if (distMoved > 8) {
-          // 移動超過閾值，代表開始拖曳，關閉固定資訊面板並進入拖曳狀態
-          document.getElementById('tower-info').classList.add('hidden');
-          if (!isItemDragging) {
+        if (!isPressed) return;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        // 向上位移 (Y 軸) 超過 20pt (deltaY < -20)，不論之前是否在滾動中，立刻轉為「拖曳建塔」
+        if (gestureState !== 'dragging') {
+          if (deltaY < -20) {
             if (this.gold < data.cost) {
               return;
             }
-            isItemDragging = true;
+            gestureState = 'dragging';
+            document.getElementById('tower-info')?.classList.add('hidden');
+            const cancelZone = document.getElementById('tower-cancel-zone');
+            const cancelText = document.getElementById('cancel-zone-text');
+            if (cancelZone) cancelZone.classList.remove('hidden');
+            if (cancelText) cancelText.textContent = '取消建設';
+
             this.draggingTowerType = key;
             this.isDragging = true;
             item.classList.add('is-dragging');
+            document.getElementById('game-viewport')?.classList.add('is-dragging-active');
+          } else if (gestureState === 'pending') {
+            const absX = Math.abs(deltaX);
+            const absY = Math.abs(deltaY);
+            if (absX > absY && absX > 4) {
+              gestureState = 'scrolling';
+            }
           }
-          // 計算 Canvas 內座標 (手機觸控時向上偏移 35px 避免手指遮擋視線)
+        }
+
+        // 2. 已鎖定為建塔狀態：計算拖曳放塔位置與取消區域碰撞
+        if (gestureState === 'dragging') {
+          const panel = document.getElementById('tower-panel');
+          const cancelZone = document.getElementById('tower-cancel-zone');
+          if (panel && cancelZone) {
+            const panelRect = panel.getBoundingClientRect();
+            if (
+              clientX >= panelRect.left &&
+              clientX <= panelRect.right &&
+              clientY >= panelRect.top &&
+              clientY <= panelRect.bottom
+            ) {
+              cancelZone.classList.add('hover-cancel');
+              this.isHoveringCancelZone = true;
+            } else {
+              cancelZone.classList.remove('hover-cancel');
+              this.isHoveringCancelZone = false;
+            }
+          }
+
           const rect = this.canvas.getBoundingClientRect();
           const scaleX = this.canvas.width / rect.width;
           const scaleY = this.canvas.height / rect.height;
+
+          // 計算 Canvas 內座標（手機觸控時向上偏移 35px 避免手指遮擋視線）
           const offsetY = isTouch ? -35 : 0;
           const cx = (clientX - rect.left) * scaleX;
           const cy = (clientY - rect.top + offsetY) * scaleY;
           this.dragPos = { x: cx, y: cy };
+
           const { col, row } = pixelToGrid(cx, cy);
           if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
             this.hoverCell = { col, row };
@@ -2472,64 +2677,86 @@ class Game {
 
       const endPress = (clientX, clientY, isTouch = false) => {
         isPressed = false;
-        if (isItemDragging) {
+        // 隱藏取消覆蓋層
+        const cancelZone = document.getElementById('tower-cancel-zone');
+        if (cancelZone) {
+          cancelZone.classList.add('hidden');
+          cancelZone.classList.remove('hover-cancel');
+        }
+
+        if (gestureState === 'dragging') {
           item.classList.remove('is-dragging');
-          // 嘗試在目標位置放置防禦塔 (若為觸控同步套用向上偏移)
-          const rect = this.canvas.getBoundingClientRect();
-          const scaleX = this.canvas.width / rect.width;
-          const scaleY = this.canvas.height / rect.height;
-          const offsetY = isTouch ? -35 : 0;
-          const cx = (clientX - rect.left) * scaleX;
-          const cy = (clientY - rect.top + offsetY) * scaleY;
-          const { col, row } = pixelToGrid(cx, cy);
-          if (col >= 0 && col < CONFIG.COLS && row >= 0 && row < CONFIG.ROWS) {
-            this.selectedTowerType = key;
-            this.placeTower(col, row);
-            this.selectedTowerType = null;
+
+          if (this.isHoveringCancelZone) {
+            this.isHoveringCancelZone = false;
+            this.showToast('已取消防禦塔建造');
+            this.sfx.play('tap');
+          } else {
+            // 直接沿用拖曳預覽最後一次算出的 hoverCell，確保放置位置與預覽 100% 一致
+            const cell = this.hoverCell;
+            if (cell) {
+              const { col, row } = cell;
+              this.selectedTowerType = key;
+              this.placeTower(col, row);
+              this.selectedTowerType = null;
+            }
           }
           this.draggingTowerType = null;
           this.dragPos = null;
           this.isDragging = false;
           this.hoverCell = null;
+          document.getElementById('game-viewport')?.classList.remove('is-dragging-active');
           this.updateTowerPanel();
-        } else {
-          // 按下放開後關閉預覽資訊
-          document.getElementById('tower-info').classList.add('hidden');
         }
+
+        // 手指放開後隱藏預覽資訊框
+        document.getElementById('tower-info')?.classList.add('hidden');
+        gestureState = 'pending';
       };
 
-      // Touch 事件
+      // Touch 全域監聽（確保手指移出卡片時 100% 能實時追蹤位置）
       item.addEventListener('touchstart', (e) => {
         this.sfx.init();
         this.sfx.resume();
         if (e.touches.length > 0) {
           startPress(e.touches[0].clientX, e.touches[0].clientY);
-        }
-      }, { passive: true });
 
-      item.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) {
-          movePress(e.touches[0].clientX, e.touches[0].clientY, true);
-          if (isItemDragging) {
-            e.preventDefault();
-          }
-        }
-      }, { passive: false });
+          const onTouchMove = (ev) => {
+            if (ev.touches.length > 0) {
+              movePress(ev.touches[0].clientX, ev.touches[0].clientY, true);
+              if (gestureState === 'dragging' && ev.cancelable) {
+                ev.preventDefault();
+              }
+            }
+          };
 
-      item.addEventListener('touchend', (e) => {
-        const touch = e.changedTouches[0];
-        endPress(touch.clientX, touch.clientY, true);
+          const onTouchEnd = (ev) => {
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchcancel', onTouchEnd);
+            const touch = ev.changedTouches[0];
+            endPress(touch.clientX, touch.clientY, true);
+          };
+
+          window.addEventListener('touchmove', onTouchMove, { passive: false });
+          window.addEventListener('touchend', onTouchEnd, { passive: true });
+          window.addEventListener('touchcancel', onTouchEnd, { passive: true });
+        }
       }, { passive: true });
 
       item.addEventListener('touchcancel', () => {
         isPressed = false;
-        if (isItemDragging) {
+        const towerList = document.getElementById('tower-list');
+        if (towerList) towerList.style.overflowX = 'auto';
+
+        if (gestureState === 'dragging') {
           item.classList.remove('is-dragging');
           this.draggingTowerType = null;
           this.dragPos = null;
           this.isDragging = false;
           this.hoverCell = null;
         }
+        gestureState = 'pending';
         document.getElementById('tower-info').classList.add('hidden');
       });
 
@@ -2608,6 +2835,8 @@ class Game {
     bindTap('gameover-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
+    bindTap('lb-tab-score', () => this.switchLeaderboardTab('score'));
+    bindTap('lb-tab-gold', () => this.switchLeaderboardTab('gold'));
     bindTap('speed-btn', () => this.toggleSpeed());
     bindTap('upgrade-btn', () => this.upgradeTower());
     bindTap('sell-btn', () => this.sellTower());
@@ -2819,11 +3048,142 @@ class Game {
       }
     }, { passive: false });
 
-    // Active skill buttons
-    document.getElementById('skill-meteor-btn')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.toggleSkillTargeting('meteor');
-    });
+    // Active skill buttons (流星轟炸拖曳施法 Drag-to-Cast)
+    const meteorBtn = document.getElementById('skill-meteor-btn');
+    if (meteorBtn) {
+      let isDraggingMeteor = false;
+
+      const startMeteorDrag = (clientX, clientY) => {
+        if (this.state !== 'wave') {
+          this.showToast('戰鬥開始後才能施放技能！');
+          this.sfx.play('error');
+          return;
+        }
+        const skill = this.skills.meteor;
+        if (skill.timer > 0) {
+          this.showToast(`技能冷卻中 (${Math.ceil(skill.timer)} 秒)`);
+          this.sfx.play('error');
+          return;
+        }
+
+        isDraggingMeteor = true;
+        this.activeTargetingSkill = 'meteor';
+        meteorBtn.classList.add('targeting');
+        
+        // 動態顯示取消覆蓋層並設定文案
+        const cancelZone = document.getElementById('tower-cancel-zone');
+        const cancelText = document.getElementById('cancel-zone-text');
+        if (cancelZone) cancelZone.classList.remove('hidden');
+        if (cancelText) cancelText.textContent = '取消施放';
+
+        // 計算 Canvas 座標
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        this.mouseX = (clientX - rect.left) * scaleX;
+        this.mouseY = (clientY - rect.top) * scaleY;
+      };
+
+      const moveMeteorDrag = (clientX, clientY) => {
+        if (!isDraggingMeteor) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        this.mouseX = (clientX - rect.left) * scaleX;
+        this.mouseY = (clientY - rect.top) * scaleY;
+
+        // 檢查是否移入底部塔面板取消區域 (#tower-panel / #tower-cancel-zone)
+        const panel = document.getElementById('tower-panel');
+        const cancelZone = document.getElementById('tower-cancel-zone');
+        if (panel && cancelZone) {
+          const panelRect = panel.getBoundingClientRect();
+          if (
+            clientX >= panelRect.left &&
+            clientX <= panelRect.right &&
+            clientY >= panelRect.top &&
+            clientY <= panelRect.bottom
+          ) {
+            cancelZone.classList.add('hover-cancel');
+            this.isHoveringCancelZone = true;
+          } else {
+            cancelZone.classList.remove('hover-cancel');
+            this.isHoveringCancelZone = false;
+          }
+        }
+      };
+
+      const endMeteorDrag = (clientX, clientY) => {
+        if (!isDraggingMeteor) return;
+        isDraggingMeteor = false;
+        meteorBtn.classList.remove('targeting');
+
+        // 隱藏取消覆蓋層
+        const cancelZone = document.getElementById('tower-cancel-zone');
+        if (cancelZone) {
+          cancelZone.classList.add('hidden');
+          cancelZone.classList.remove('hover-cancel');
+        }
+
+        if (this.isHoveringCancelZone) {
+          this.isHoveringCancelZone = false;
+          this.activeTargetingSkill = null;
+          this.showToast('已取消技能施放');
+          this.sfx.play('tap');
+          return;
+        }
+
+        // 判定放開位置是否在 Canvas 有效區域內
+        const rect = this.canvas.getBoundingClientRect();
+        if (
+          clientX >= rect.left &&
+          clientX <= rect.right &&
+          clientY >= rect.top &&
+          clientY <= rect.bottom
+        ) {
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          const px = (clientX - rect.left) * scaleX;
+          const py = (clientY - rect.top) * scaleY;
+          this.castMeteor(px, py);
+        } else {
+          this.activeTargetingSkill = null;
+          this.showToast('取消施放 (請拖曳至戰場區域)');
+        }
+      };
+
+      // 觸控事件
+      meteorBtn.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+          startMeteorDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      meteorBtn.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+          moveMeteorDrag(e.touches[0].clientX, e.touches[0].clientY);
+          if (isDraggingMeteor) e.preventDefault();
+        }
+      }, { passive: false });
+
+      meteorBtn.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        endMeteorDrag(touch.clientX, touch.clientY);
+      }, { passive: true });
+
+      // 滑鼠事件 (桌機測試)
+      meteorBtn.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startMeteorDrag(e.clientX, e.clientY);
+        const onMouseMove = (ev) => moveMeteorDrag(ev.clientX, ev.clientY);
+        const onMouseUp = (ev) => {
+          endMeteorDrag(ev.clientX, ev.clientY);
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
 
     document.getElementById('skill-freeze-btn')?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3153,8 +3513,8 @@ class Game {
     const info = document.getElementById('tower-info');
     info.classList.remove('hidden');
 
-    document.getElementById('tower-info-name').textContent = `${data.emoji} ${data.name} (建造預覽)`;
-    document.getElementById('tower-info-level').textContent = `造價 💰${data.cost} | 點擊地圖空地放置`;
+    document.getElementById('tower-info-name').textContent = `${data.name}`;
+    document.getElementById('tower-info-level').textContent = '';
     document.getElementById('tower-info-actions').style.display = 'none';
 
     let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${data.description}</div>`;
@@ -3314,6 +3674,8 @@ class Game {
     this.score += this.lives * 50; // Bonus for remaining lives
     this.saveGameRecord();
     document.getElementById('victory-score').textContent = this.score;
+    const vicGoldEl = document.getElementById('victory-gold');
+    if (vicGoldEl) vicGoldEl.textContent = `💰 ${this.gold}`;
     document.getElementById('victory-screen').classList.remove('hidden');
     this.enemies = [];
     this.projectiles = [];
@@ -3381,9 +3743,12 @@ class Game {
       }
 
       const mapName = MAP_CONFIGS[this.map.mapId]?.name || '外環道路';
+      const isVictory = (this.state === 'victory');
       const newRecord = {
         score: this.score,
         wave: Math.min(this.currentWave + 1, CONFIG.TOTAL_WAVES),
+        gold: this.gold,
+        isVictory: isVictory,
         map: mapName,
         date: new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
       };
@@ -3395,6 +3760,22 @@ class Game {
 
       localStorage.setItem(recordsKey, JSON.stringify(records));
 
+      // 若勝利通關，額外存入「通關金幣榜」
+      if (isVictory) {
+        const goldKey = 'dd_td_gold_leaderboard_v1';
+        let goldRecords = [];
+        try {
+          goldRecords = JSON.parse(localStorage.getItem(goldKey)) || [];
+        } catch (e) {
+          goldRecords = [];
+        }
+        goldRecords.push(newRecord);
+        // 依剩餘金幣由高到低排序，取 Top 10
+        goldRecords.sort((a, b) => b.gold - a.gold);
+        goldRecords = goldRecords.slice(0, 10);
+        localStorage.setItem(goldKey, JSON.stringify(goldRecords));
+      }
+
       if (this.score > this.bestScore) {
         this.bestScore = this.score;
         localStorage.setItem(CONFIG.LS_KEY, this.bestScore);
@@ -3405,12 +3786,33 @@ class Game {
     this.renderLeaderboards();
   }
 
+  switchLeaderboardTab(type) {
+    this.activeLeaderboardTab = type; // 'score' | 'gold'
+    const btnScore = document.getElementById('lb-tab-score');
+    const btnGold = document.getElementById('lb-tab-gold');
+    if (type === 'gold') {
+      btnGold?.classList.add('active');
+      btnScore?.classList.remove('active');
+    } else {
+      btnScore?.classList.add('active');
+      btnGold?.classList.remove('active');
+    }
+    this.renderLeaderboards();
+  }
+
   renderLeaderboards() {
     let records = [];
+    let goldRecords = [];
     try {
       records = JSON.parse(localStorage.getItem('dd_td_leaderboard_v1')) || [];
+      goldRecords = JSON.parse(localStorage.getItem('dd_td_gold_leaderboard_v1')) || [];
     } catch (e) {
       records = [];
+      goldRecords = [];
+    }
+
+    if (!this.activeLeaderboardTab) {
+      this.activeLeaderboardTab = 'score';
     }
 
     // 1. 榜首精簡預覽更新 (首頁與結算頁)
@@ -3434,19 +3836,27 @@ class Game {
     // 2. 獨立 Top 10 彈窗清單渲染
     const modalListEl = document.getElementById('modal-leaderboard-list');
     if (modalListEl) {
-      if (records.length === 0) {
-        modalListEl.innerHTML = '<div style="color:#888;text-align:center;padding:12px;">尚無歷史戰績，快來挑戰首殺！</div>';
+      const currentList = (this.activeLeaderboardTab === 'gold') ? goldRecords : records;
+      if (currentList.length === 0) {
+        const emptyMsg = (this.activeLeaderboardTab === 'gold') 
+          ? '尚無通關金幣戰績，順利通關即可上榜！' 
+          : '尚無歷史戰績，快來挑戰首殺！';
+        modalListEl.innerHTML = `<div style="color:#888;text-align:center;padding:12px;">${emptyMsg}</div>`;
       } else {
-        modalListEl.innerHTML = records.map((rec, idx) => {
+        modalListEl.innerHTML = currentList.map((rec, idx) => {
           const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
+          const valDisplay = (this.activeLeaderboardTab === 'gold')
+            ? `<span style="color:#d84315;font-weight:bold;">💰 ${rec.gold}</span>`
+            : `<span>⭐ ${rec.score}</span>`;
+          
           return `
             <div class="leaderboard-row ${idx === 0 ? 'rank-1' : ''}">
               <div class="leaderboard-row-left">
                 <span style="font-size:13px;width:18px;">${medal}</span>
-                <span>${rec.map} (W${rec.wave})</span>
+                <span>${rec.map} ${rec.isVictory ? '🏆' : `(W${rec.wave})`}</span>
               </div>
               <div class="leaderboard-row-right">
-                <span>⭐ ${rec.score}</span>
+                ${valDisplay}
                 <span style="font-size:9px;color:#999;">${rec.date || ''}</span>
               </div>
             </div>
@@ -3894,38 +4304,68 @@ class Game {
       proj.render(ctx);
     }
 
-    // Active Skill Targeting Preview (流星轟炸瞄準光圈)
+    // Active Skill Targeting Preview (流星轟炸拖曳瞄準光圈與傷害範圍)
     if (this.activeTargetingSkill === 'meteor' && this.mouseX >= 0 && this.mouseY >= 0) {
       const skill = this.skills.meteor;
       const now = performance.now() / 1000;
+      const isHoverCancel = !!this.isHoveringCancelZone;
       ctx.save();
       ctx.translate(this.mouseX, this.mouseY);
 
-      // 紅色爆炸範圍圈
-      ctx.fillStyle = 'rgba(255, 23, 68, 0.22)';
-      ctx.beginPath();
-      ctx.arc(0, 0, skill.range, 0, Math.PI * 2);
-      ctx.fill();
+      if (isHoverCancel) {
+        // 拖到取消區：呈現灰色廢棄警示風格
+        ctx.fillStyle = 'rgba(120, 120, 120, 0.25)';
+        ctx.beginPath();
+        ctx.arc(0, 0, skill.range, 0, Math.PI * 2);
+        ctx.fill();
 
-      // 旋轉發光虛線外框
-      ctx.strokeStyle = '#ff1744';
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = '#ff1744';
-      ctx.shadowBlur = 10;
-      ctx.setLineDash([8, 8]);
-      ctx.beginPath();
-      ctx.arc(0, 0, skill.range, now * 2, now * 2 + Math.PI * 2);
-      ctx.stroke();
+        ctx.strokeStyle = '#9e9e9e';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(0, 0, skill.range, 0, Math.PI * 2);
+        ctx.stroke();
 
-      // 中央準心十字
-      ctx.setLineDash([]);
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(-12, 0); ctx.lineTo(12, 0);
-      ctx.moveTo(0, -12); ctx.lineTo(0, 12);
-      ctx.stroke();
+        // 畫斜紅叉 X
+        ctx.setLineDash([]);
+        ctx.strokeStyle = '#ef5350';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-16, -16); ctx.lineTo(16, 16);
+        ctx.moveTo(16, -16); ctx.lineTo(-16, 16);
+        ctx.stroke();
+      } else {
+        // 戰場拖曳：呈現極其酷炫的火焰紅色爆炸傷害範圍圈
+        ctx.fillStyle = 'rgba(255, 23, 68, 0.25)';
+        ctx.beginPath();
+        ctx.arc(0, 0, skill.range, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 旋轉發光虛線外框
+        ctx.strokeStyle = '#ff1744';
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = '#ff1744';
+        ctx.shadowBlur = 10;
+        ctx.setLineDash([8, 8]);
+        ctx.beginPath();
+        ctx.arc(0, 0, skill.range, now * 2, now * 2 + Math.PI * 2);
+        ctx.stroke();
+
+        // 中央準心十字與傷害範圍標示
+        ctx.setLineDash([]);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-12, 0); ctx.lineTo(12, 0);
+        ctx.moveTo(0, -12); ctx.lineTo(0, 12);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`💥 傷害範圍 (${skill.range}px)`, 0, skill.range + 16);
+      }
 
       ctx.restore();
     }
@@ -3979,28 +4419,34 @@ class Game {
         ctx.restore();
       }
 
-      // 3. 繪製跟隨手指/滑鼠的立體手繪防禦塔與浮空陰影
+      // 3. 繪製跟隨手指/滑鼠的防禦塔與浮空陰影 (精準跟隨落點，不吸附格子中心)
       ctx.save();
       ctx.translate(x, y);
 
-      // 浮空投影
       ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
       ctx.beginPath();
       ctx.ellipse(0, 16, 16, 7, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // 調用 3D 手繪 Sprite
-      const drawFunc = Sprites['drawTower_' + this.draggingTowerType];
-      if (drawFunc) {
+      const dragSvgImg = assets.get('tower_' + this.draggingTowerType);
+      if (dragSvgImg) {
         ctx.save();
         ctx.globalAlpha = 0.95;
-        drawFunc.call(Sprites, ctx, performance.now() / 1000);
+        ctx.drawImage(dragSvgImg, -24, -28, 48, 48);
         ctx.restore();
       } else {
-        ctx.font = '32px serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(data.emoji, 0, -5);
+        const drawFunc = Sprites['drawTower_' + this.draggingTowerType];
+        if (drawFunc) {
+          ctx.save();
+          ctx.globalAlpha = 0.95;
+          drawFunc.call(Sprites, ctx, performance.now() / 1000);
+          ctx.restore();
+        } else {
+          ctx.font = '32px serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(data.emoji, 0, -5);
+        }
       }
       ctx.restore();
     }
@@ -4113,35 +4559,26 @@ class Game {
       ctx.arc(0, 0, 36, 0, Math.PI * 2);
       ctx.fill();
 
-      // 出怪徽章按鈕主體膠囊
-      const btnW = 68;
-      const btnH = 26;
-      const btnR = 13;
-      const bx = -btnW / 2;
-      const by = 16;
-
-      ctx.fillStyle = 'rgba(255, 107, 0, 0.95)';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetY = 3;
-      ctx.beginPath();
-      ctx.roundRect(bx, by, btnW, btnH, btnR);
-      ctx.fill();
-
-      ctx.shadowColor = 'transparent';
-      ctx.strokeStyle = '#ffe082';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`出怪 第${waveNum}波`, 0, by + btnH / 2 + 1);
-
-      ctx.fillStyle = '#ffeb3b';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.fillText('點擊出怪', 0, -28);
+      // 出怪徽章按鈕：優先使用超高清 SVG 向量貼圖 (100% 絕對不失焦)
+      const badgeImg = assets.get('spawn_badge');
+      if (badgeImg) {
+        ctx.drawImage(badgeImg, -35, 14, 70, 30);
+      } else {
+        const btnW = 68;
+        const btnH = 26;
+        const btnR = 13;
+        const bx = -btnW / 2;
+        const by = 16;
+        ctx.fillStyle = 'rgba(255, 107, 0, 0.95)';
+        ctx.beginPath();
+        ctx.roundRect(bx, by, btnW, btnH, btnR);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`出怪 第${waveNum}波`, 0, by + btnH / 2 + 1);
+      }
 
       ctx.restore();
     }
@@ -4173,18 +4610,6 @@ class Game {
     for (const p of this.particles) {
       p.render(ctx);
     }
-
-    // 6. 全螢幕電影感立體暗角 (Vignette Overlay)
-    ctx.save();
-    const vigGrad = ctx.createRadialGradient(
-      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.35,
-      CANVAS_W / 2, CANVAS_H / 2, CANVAS_W * 0.8
-    );
-    vigGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    vigGrad.addColorStop(1, 'rgba(40, 20, 5, 0.28)');
-    ctx.fillStyle = vigGrad;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.restore();
   }
 }
 

@@ -2,3 +2,4 @@
 debug.log
 screenshots/
 __pycache__/
+devserver.stdout.log
