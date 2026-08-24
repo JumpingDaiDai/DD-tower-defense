@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#deb887">
+  <meta name="theme-color" content="#fffdf5">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?t=202608230422">
+  <link rel="stylesheet" href="style.css?v=1.2.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -71,9 +71,12 @@
       </div>
     </div>
 
-    <!-- 底部專屬防禦塔選擇面板 (100% 空間全給塔卡片，不再被開始按鈕遮擋) -->
+    <!-- 底部專屬防禦塔選擇面板 (拖曳塔或技能時，動態切換為取消區塊) -->
     <div id="tower-panel">
       <div id="tower-list"></div>
+      <div id="tower-cancel-zone" class="hidden">
+        <span id="cancel-zone-text" class="cancel-text">取消建設</span>
+      </div>
     </div>
 
     <!-- 塔資訊面板 -->
@@ -156,11 +159,18 @@
       </div>
     </div>
 
-    <!-- 獨立 Top 10 英雄榜彈窗 -->
+    <!-- 獨立 Top 10 英雄榜彈窗 (支援高分榜與通關金幣榜) -->
     <div id="leaderboard-modal" class="screen hidden">
       <div class="screen-content leaderboard-modal-content">
-        <svg class="ui-icon-gold" viewBox="0 0 24 24" width="36" height="36" style="margin-bottom:6px;"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
-        <h2>榮譽英雄榜 Top 10</h2>
+        <svg class="ui-icon-gold" viewBox="0 0 24 24" width="36" height="36" style="margin-bottom:4px;"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+        <h2 style="margin-bottom:8px;">榮譽英雄榜 Top 10</h2>
+        
+        <!-- 排行榜分頁切換按鈕 -->
+        <div class="leaderboard-tabs">
+          <button id="lb-tab-score" class="lb-tab-btn active">⭐ 高分榜</button>
+          <button id="lb-tab-gold" class="lb-tab-btn">💰 通關金幣榜</button>
+        </div>
+
         <div class="leaderboard-modal-card">
           <div id="modal-leaderboard-list" class="leaderboard-modal-records"></div>
         </div>
@@ -203,8 +213,17 @@
         <h1>花園保衛成功！</h1>
         <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
         <div class="end-score-box">
-          <span class="end-score-label">最終得分</span>
-          <span id="victory-score" class="end-score-val">0</span>
+          <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
+            <div>
+              <span class="end-score-label">最終得分</span>
+              <span id="victory-score" class="end-score-val">0</span>
+            </div>
+            <div style="border-left:1.5px dashed #ffd54f; height:32px; margin:0 8px;"></div>
+            <div>
+              <span class="end-score-label">剩餘金幣</span>
+              <span id="victory-gold" class="end-score-val" style="color:#d84315;">💰 0</span>
+            </div>
+          </div>
         </div>
 
         <div class="end-action-buttons">
@@ -221,6 +240,6 @@
     </div>
   </div>
 
-  <script src="game.js"></script>
+  <script src="game.js?v=1.2.0"></script>
 </body>
 </html>

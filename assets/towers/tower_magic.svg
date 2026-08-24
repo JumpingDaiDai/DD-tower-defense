@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <radialGradient id="crystG" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#ea80fc"/>
+      <stop offset="100%" stop-color="#aa00ff"/>
+    </radialGradient>
+    <linearGradient id="poleG" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4a148c"/>
+      <stop offset="50%" stop-color="#7b1fa2"/>
+      <stop offset="100%" stop-color="#4a148c"/>
+    </linearGradient>
+    <filter id="mglow">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#e040fb" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+  <g>
+    <!-- 底座 -->
+    <ellipse cx="50" cy="74" rx="34" ry="16" fill="rgba(0,0,0,0.25)"/>
+    <ellipse cx="50" cy="70" rx="32" ry="14" fill="#311b92" stroke="#7c4dff" stroke-width="3"/>
+    <!-- 符文柱 -->
+    <path d="M 40,70 L 44,28 L 56,28 L 60,70 Z" fill="url(#poleG)" stroke="#b388ff" stroke-width="2"/>
+    <!-- 懸浮紫水晶 -->
+    <g filter="url(#mglow)">
+      <polygon points="50,6 64,22 50,38 36,22" fill="url(#crystG)" stroke="#ffffff" stroke-width="2"/>
+      <polygon points="50,6 50,38 64,22" fill="rgba(255,255,255,0.3)"/>
+    </g>
+    <!-- 圍繞星芒 -->
+    <circle cx="28" cy="20" r="3" fill="#e040fb"/>
+    <circle cx="72" cy="24" r="4" fill="#80d8ff"/>
+  </g>
+</svg>
