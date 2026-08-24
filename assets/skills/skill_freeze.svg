@@ -1,19 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <defs>
-    <radialGradient id="frzG" cx="50%" cy="50%" r="50%">
+    <radialGradient id="frzGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e1f5fe"/>
+      <stop offset="60%" stop-color="#4fc3f7" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0288d1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frzArm" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="50%" stop-color="#80d8ff"/>
-      <stop offset="100%" stop-color="#0091ea"/>
+      <stop offset="100%" stop-color="#4fc3f7"/>
+    </linearGradient>
+    <radialGradient id="frzCore" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#b3e5fc"/>
+      <stop offset="100%" stop-color="#0288d1"/>
     </radialGradient>
   </defs>
-  <g>
-    <circle cx="50" cy="50" r="42" fill="url(#frzG)" opacity="0.3"/>
-    <!-- 六角雪花光芒 -->
-    <g stroke="#ffffff" stroke-width="4" stroke-linecap="round">
-      <line x1="50" y1="14" x2="50" y2="86"/>
-      <line x1="19" y1="32" x2="81" y2="68"/>
-      <line x1="19" y1="68" x2="81" y2="32"/>
-    </g>
-    <circle cx="50" cy="50" r="10" fill="#ffffff"/>
+
+  <!-- 外圍寒氣光暈 -->
+  <circle cx="50" cy="50" r="45" fill="url(#frzGlow)"/>
+
+  <!-- 六芒冰晶主幹 (深藍描邊加強對比，不會融進背景) -->
+  <g transform="translate(50,50)" stroke="#01579b" stroke-width="2" stroke-linejoin="round">
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)"/>
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)" transform="rotate(60)"/>
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)" transform="rotate(120)"/>
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)" transform="rotate(180)"/>
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)" transform="rotate(240)"/>
+    <path d="M 0,-14 L -5,-30 L 0,-40 L 5,-30 Z" fill="url(#frzArm)" transform="rotate(300)"/>
   </g>
+
+  <!-- 中央冰晶核心 -->
+  <circle cx="50" cy="50" r="15" fill="url(#frzCore)" stroke="#0277bd" stroke-width="2.5"/>
+  <circle cx="45" cy="45" r="4" fill="#ffffff" opacity="0.85"/>
 </svg>

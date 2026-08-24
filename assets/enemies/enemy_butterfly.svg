@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <radialGradient id="wingGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff80ab"/>
+      <stop offset="50%" stop-color="#b388ff"/>
+      <stop offset="100%" stop-color="#80d8ff"/>
+    </radialGradient>
+  </defs>
+  <!-- 陰影 -->
+  <ellipse cx="50" cy="85" rx="22" ry="6" fill="rgba(0,0,0,0.18)"/>
+  <!-- 大雙翅 (四翅) -->
+  <ellipse cx="30" cy="40" rx="22" ry="30" fill="url(#wingGrad)" stroke="#7c4dff" stroke-width="2" transform="rotate(-25 30 40)"/>
+  <ellipse cx="70" cy="40" rx="22" ry="30" fill="url(#wingGrad)" stroke="#7c4dff" stroke-width="2" transform="rotate(25 70 40)"/>
+  <ellipse cx="34" cy="66" rx="16" ry="20" fill="url(#wingGrad)" stroke="#7c4dff" stroke-width="1.8" transform="rotate(-15 34 66)"/>
+  <ellipse cx="66" cy="66" rx="16" ry="20" fill="url(#wingGrad)" stroke="#7c4dff" stroke-width="1.8" transform="rotate(15 66 66)"/>
+  <!-- 翅膀斑紋反光 -->
+  <circle cx="28" cy="34" r="6" fill="#ffffff" opacity="0.7"/>
+  <circle cx="72" cy="34" r="6" fill="#ffffff" opacity="0.7"/>
+  <!-- 纖細軀幹與觸角 -->
+  <ellipse cx="50" cy="52" rx="4" ry="24" fill="#311b92"/>
+  <path d="M 50,30 Q 42,16 38,10" fill="none" stroke="#311b92" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 50,30 Q 58,16 62,10" fill="none" stroke="#311b92" stroke-width="2" stroke-linecap="round"/>
+</svg>

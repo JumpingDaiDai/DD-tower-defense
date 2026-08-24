@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <radialGradient id="beeGrad" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="50%" stop-color="#fbc02d"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </radialGradient>
+  </defs>
+  <!-- 落地陰影 -->
+  <ellipse cx="50" cy="85" rx="28" ry="8" fill="rgba(0,0,0,0.2)"/>
+  <!-- 雙翼 -->
+  <ellipse cx="38" cy="26" rx="12" ry="20" fill="rgba(225, 245, 254, 0.85)" stroke="#81d4fa" stroke-width="1.8" transform="rotate(-20 38 26)"/>
+  <ellipse cx="58" cy="26" rx="12" ry="20" fill="rgba(225, 245, 254, 0.85)" stroke="#81d4fa" stroke-width="1.8" transform="rotate(20 58 26)"/>
+  <!-- 蜜蜂圓潤主體 -->
+  <ellipse cx="50" cy="54" rx="28" ry="22" fill="url(#beeGrad)" stroke="#e65100" stroke-width="2.5"/>
+  <!-- 黑色條紋 -->
+  <path d="M 44,33 L 44,75" stroke="#212121" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 58,34 L 58,74" stroke="#212121" stroke-width="7" stroke-linecap="round"/>
+  <!-- 尾針 -->
+  <polygon points="18,54 26,49 26,59" fill="#212121"/>
+  <!-- 大眼與嘴 -->
+  <circle cx="68" cy="48" r="5" fill="#212121"/>
+  <circle cx="70" cy="46" r="2" fill="#ffffff"/>
+</svg>

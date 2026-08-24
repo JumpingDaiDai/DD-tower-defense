@@ -75,7 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.2.0',
+  VERSION: 'v1.2.15-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -1423,10 +1423,19 @@ class Enemy {
       ctx.globalAlpha = 1;
     }
 
-    // Draw Canvas Sprite
-    const drawFunc = Sprites['drawEnemy_' + this.typeKey];
-    if (drawFunc) {
-      drawFunc.call(Sprites, ctx, this.animTime);
+    // Draw SVG Image or Canvas Sprite
+    const enemyImg = assets.get('enemy_' + this.typeKey);
+    if (enemyImg) {
+      ctx.save();
+      // Wobble walk
+      ctx.rotate(this.wobbleAngle || 0);
+      ctx.drawImage(enemyImg, -20, -20, 40, 40);
+      ctx.restore();
+    } else {
+      const drawFunc = Sprites['drawEnemy_' + this.typeKey];
+      if (drawFunc) {
+        drawFunc.call(Sprites, ctx, this.animTime);
+      }
     }
 
     // Hit flash overlay
@@ -1942,6 +1951,12 @@ class WaveManager {
   }
 }
 
+// 設定面板音效開關圖示 (SVG，隨按鈕文字顏色變化，取代 Emoji)
+const SOUND_ICON_SVG = {
+  on: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
+  off: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.19v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3z"/></svg>',
+};
+
 // ─── 13.5 SVG 圖片資源管理器 (AssetManager - 無限放大絕不失焦) ──────────
 class AssetManager {
   constructor() {
@@ -1951,16 +1966,31 @@ class AssetManager {
 
   loadAll() {
     const assets = {
-      tower_archer: 'assets/towers/tower_archer.svg',
-      tower_magic: 'assets/towers/tower_magic.svg',
+      tower_petal: 'assets/towers/tower_petal.svg',
+      tower_sunflower: 'assets/towers/tower_sunflower.svg',
+      tower_lavender: 'assets/towers/tower_lavender.svg',
       tower_cannon: 'assets/towers/tower_cannon.svg',
       tower_ice_crystal: 'assets/towers/tower_ice_crystal.svg',
       tower_laser: 'assets/towers/tower_laser.svg',
       tower_mushroom: 'assets/towers/tower_mushroom.svg',
       tower_treant: 'assets/towers/tower_treant.svg',
+      enemy_caterpillar: 'assets/enemies/enemy_caterpillar.svg',
+      enemy_bee: 'assets/enemies/enemy_bee.svg',
+      enemy_snail: 'assets/enemies/enemy_snail.svg',
+      enemy_beetle: 'assets/enemies/enemy_beetle.svg',
+      enemy_butterfly: 'assets/enemies/enemy_butterfly.svg',
+      enemy_dragon: 'assets/enemies/enemy_dragon.svg',
       skill_meteor: 'assets/skills/skill_meteor.svg',
       skill_freeze: 'assets/skills/skill_freeze.svg',
+      spawn_portal: 'assets/ui/spawn_portal.svg',
+      sacred_tree: 'assets/ui/sacred_tree.svg',
       spawn_badge: 'assets/ui/spawn_badge.svg',
+      pedestal_tile: 'assets/ui/pedestal_tile.svg',
+      icon_gold: 'assets/ui/icon_gold.svg',
+      icon_heart: 'assets/ui/icon_heart.svg',
+      icon_star: 'assets/ui/icon_star.svg',
+      icon_settings: 'assets/ui/icon_settings.svg',
+      icon_trophy: 'assets/ui/icon_trophy.svg',
     };
 
     const promises = [];
@@ -1975,7 +2005,8 @@ class AssetManager {
           dbgLog(`⚠️ SVG 圖片載入失敗: ${src}`);
           resolve();
         };
-        img.src = src;
+        // 加上版本號做快取破壞，避免改版後瀏覽器（尤其手機）還在吃舊的 SVG 快取
+        img.src = `${src}?v=${CONFIG.VERSION}`;
       }));
     }
 
@@ -1991,7 +2022,14 @@ class AssetManager {
 }
 
 const assets = new AssetManager();
-assets.loadAll();
+assets.loadAll().then(() => {
+  const game = window.gameInstance;
+  if (!game) return;
+  game.refreshIcons();
+  // 地圖（含建造平台、入口傳送門、出口世界樹）是畫在離屏 buffer 上只畫一次，
+  // init() 當下 SVG 通常還沒載入完成，所以載入完後要重畫一次，不然畫面會卡在手繪版本
+  game.renderMapToBuffer();
+});
 
 // ─── 14. 主遊戲類別 ──────────────────────────
 class Game {
@@ -2036,7 +2074,6 @@ class Game {
     // Base & Gate Dynamic Feedback
     this.baseHurtTimer = 0;
     this.gatePulseTimer = 0;
-    this.smokeTimer = 0;
 
     // Interaction
     this.selectedTowerType = null;
@@ -2084,39 +2121,44 @@ class Game {
           const pw = cs - 6;
           const ph = cs - 6;
 
-          // 2.1 底部石台厚度與深色陰影 (3D 側面)
-          ctx.fillStyle = 'rgba(230, 81, 0, 0.15)';
-          ctx.beginPath();
-          ctx.roundRect(px, py + 4, pw, ph, 8);
-          ctx.fill();
-
-          // 2.2 石台主頂面 (純白與暖陽奶霜石磚漸層)
-          const stoneGrad = ctx.createLinearGradient(px, py, px + pw, py + ph);
-          if ((r + c) % 2 === 0) {
-            stoneGrad.addColorStop(0, '#ffffff');
-            stoneGrad.addColorStop(1, '#fff8e7');
+          // 2.2 繪製 2.5D 石頭建造基座
+          const pedestalImg = assets.get('pedestal_tile');
+          if (pedestalImg) {
+            ctx.drawImage(pedestalImg, px, py, pw, ph);
           } else {
-            stoneGrad.addColorStop(0, '#ffffff');
-            stoneGrad.addColorStop(1, '#fff3d6');
+            // 2.1 底部石台厚度與深色陰影 (3D 側面，只有手繪備用版才需要)
+            ctx.fillStyle = 'rgba(230, 81, 0, 0.15)';
+            ctx.beginPath();
+            ctx.roundRect(px, py + 4, pw, ph, 8);
+            ctx.fill();
+
+            const stoneGrad = ctx.createLinearGradient(px, py, px + pw, py + ph);
+            if ((r + c) % 2 === 0) {
+              stoneGrad.addColorStop(0, '#ffffff');
+              stoneGrad.addColorStop(1, '#fff8e7');
+            } else {
+              stoneGrad.addColorStop(0, '#ffffff');
+              stoneGrad.addColorStop(1, '#fff3d6');
+            }
+            ctx.fillStyle = stoneGrad;
+            ctx.beginPath();
+            ctx.roundRect(px, py, pw, ph - 2, 8);
+            ctx.fill();
+
+            // 2.3 石台頂面金色細緻收邊
+            ctx.strokeStyle = 'rgba(255, 167, 38, 0.55)';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.roundRect(px + 1, py + 1, pw - 2, ph - 4, 7);
+            ctx.stroke();
+
+            // 2.4 四角精緻古典鉚釘/刻痕
+            ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
+            ctx.fillRect(px + 4, py + 4, 2, 2);
+            ctx.fillRect(px + pw - 6, py + 4, 2, 2);
+            ctx.fillRect(px + 4, py + ph - 8, 2, 2);
+            ctx.fillRect(px + pw - 6, py + ph - 8, 2, 2);
           }
-          ctx.fillStyle = stoneGrad;
-          ctx.beginPath();
-          ctx.roundRect(px, py, pw, ph - 2, 8);
-          ctx.fill();
-
-          // 2.3 石台頂面金色細緻收邊
-          ctx.strokeStyle = 'rgba(255, 167, 38, 0.55)';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.roundRect(px + 1, py + 1, pw - 2, ph - 4, 7);
-          ctx.stroke();
-
-          // 2.4 四角精緻古典鉚釘/刻痕
-          ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
-          ctx.fillRect(px + 4, py + 4, 2, 2);
-          ctx.fillRect(px + pw - 6, py + 4, 2, 2);
-          ctx.fillRect(px + 4, py + ph - 8, 2, 2);
-          ctx.fillRect(px + pw - 6, py + ph - 8, 2, 2);
         }
       }
     }
@@ -2260,103 +2302,119 @@ class Game {
 
     ctx.save();
     ctx.translate(entry.x, entry.y);
-    // 5.1 魔法陣基座陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.32)';
-    ctx.beginPath(); ctx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ctx.fill();
+    const portalImg = assets.get('spawn_portal');
+    if (portalImg) {
+      ctx.drawImage(portalImg, -36, -36, 72, 72);
+    } else {
+      // 5.1 魔法陣基座陰影
+      ctx.fillStyle = 'rgba(0,0,0,0.32)';
+      ctx.beginPath(); ctx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 5.2 古代紫晶黑石魔法底座 (八角星石陣)
-    const riftBase = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
-    riftBase.addColorStop(0, '#4a148c');
-    riftBase.addColorStop(0.5, '#311b92');
-    riftBase.addColorStop(1, '#1a237e');
-    ctx.fillStyle = riftBase;
-    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#b388ff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // 5.3 內圈神秘符文同心金環
-    ctx.strokeStyle = '#ea80fc';
-    ctx.lineWidth = 1.2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 5.4 傳送門立體紫晶立柱（左右兩側黑曜石尖碑）
-    for (let side of [-1, 1]) {
-      ctx.fillStyle = '#212121';
-      ctx.beginPath();
-      ctx.moveTo(side * 18, 14);
-      ctx.lineTo(side * 22, -18);
-      ctx.lineTo(side * 16, -26);
-      ctx.lineTo(side * 12, -16);
-      ctx.lineTo(side * 14, 14);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = '#7c4dff';
-      ctx.lineWidth = 1;
+      // 5.2 古代紫晶黑石魔法底座 (八角星石陣)
+      const riftBase = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
+      riftBase.addColorStop(0, '#4a148c');
+      riftBase.addColorStop(0.5, '#311b92');
+      riftBase.addColorStop(1, '#1a237e');
+      ctx.fillStyle = riftBase;
+      ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b388ff';
+      ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 尖碑頂端鑲嵌懸浮紫水晶
-      ctx.fillStyle = '#e040fb';
-      ctx.beginPath();
-      ctx.moveTo(side * 16, -28);
-      ctx.lineTo(side * 18, -34);
-      ctx.lineTo(side * 16, -40);
-      ctx.lineTo(side * 14, -34);
-      ctx.closePath();
-      ctx.fill();
+      // 5.3 內圈神秘符文同心金環
+      ctx.strokeStyle = '#ea80fc';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 5.4 傳送門立體紫晶立柱（左右兩側黑曜石尖碑）
+      for (let side of [-1, 1]) {
+        ctx.fillStyle = '#212121';
+        ctx.beginPath();
+        ctx.moveTo(side * 18, 14);
+        ctx.lineTo(side * 22, -18);
+        ctx.lineTo(side * 16, -26);
+        ctx.lineTo(side * 12, -16);
+        ctx.lineTo(side * 14, 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#7c4dff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 尖碑頂端鑲嵌懸浮紫水晶
+        ctx.fillStyle = '#e040fb';
+        ctx.beginPath();
+        ctx.moveTo(side * 16, -28);
+        ctx.lineTo(side * 18, -34);
+        ctx.lineTo(side * 16, -40);
+        ctx.lineTo(side * 14, -34);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
     ctx.restore();
 
-    // 6. 終點主題建築：極光琉璃水晶樹 (Aurora Crystal Tree - 5號設計)
+    // 6. 終點主題建築：極光琉璃水晶樹 (Aurora Crystal Tree)
     ctx.save();
     ctx.translate(exit.x, exit.y);
+    const treeImg = assets.get('sacred_tree');
+    if (treeImg) {
+      // sacred_tree.svg 內已內建地面陰影橢圓，這裡不再重複畫，避免陰影疊加變得混濁
 
-    // 6.1 地面晶光倒影陰影
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.beginPath(); ctx.ellipse(0, 20, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
+      // 青色外光暈，跟暖色調地圖背景拉開對比，避免淺色水晶樹融進背景
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 229, 255, 0.9)';
+      ctx.shadowBlur = 16;
+      ctx.drawImage(treeImg, -36, -36, 72, 72);
+      ctx.restore();
+    } else {
+      // 6.1 地面晶光倒影陰影
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath(); ctx.ellipse(0, 20, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 6.2 冰晶折射基座
-    ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
-    ctx.strokeStyle = '#00e5ff';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(-24, 10, 48, 13, 5);
-    ctx.fill();
-    ctx.stroke();
-
-    // 6.3 極光琉璃水晶主幹 (藍白晶透漸層)
-    const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
-    cGrad.addColorStop(0, '#80d8ff');
-    cGrad.addColorStop(0.5, '#ffffff');
-    cGrad.addColorStop(1, '#00b0ff');
-    ctx.fillStyle = cGrad;
-    ctx.beginPath();
-    ctx.moveTo(-8, 10);
-    ctx.lineTo(-20, -26);
-    ctx.lineTo(0, -38);
-    ctx.lineTo(20, -26);
-    ctx.lineTo(8, 10);
-    ctx.closePath();
-    ctx.fill();
-
-    // 6.4 琉璃棱鏡多面體立體切面
-    const facets = [
-      { p: [[0, -38], [-20, -26], [-11, -11], [0, -20]], c: '#e1f5fe' },
-      { p: [[0, -38], [20, -26], [11, -11], [0, -20]], c: '#b3e5fc' },
-      { p: [[0, -20], [-11, -11], [0, 8]], c: '#4fc3f7' },
-      { p: [[0, -20], [11, -11], [0, 8]], c: '#29b6f6' }
-    ];
-    for (let f of facets) {
-      ctx.fillStyle = f.c;
+      // 6.2 冰晶折射基座
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+      ctx.roundRect(-24, 10, 48, 13, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // 6.3 極光琉璃水晶主幹 (藍白晶透漸層)
+      const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
+      cGrad.addColorStop(0, '#80d8ff');
+      cGrad.addColorStop(0.5, '#ffffff');
+      cGrad.addColorStop(1, '#00b0ff');
+      ctx.fillStyle = cGrad;
+      ctx.beginPath();
+      ctx.moveTo(-8, 10);
+      ctx.lineTo(-20, -26);
+      ctx.lineTo(0, -38);
+      ctx.lineTo(20, -26);
+      ctx.lineTo(8, 10);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
+
+      // 6.4 琉璃棱鏡多面體立體切面
+      const facets = [
+        { p: [[0, -38], [-20, -26], [-11, -11], [0, -20]], c: '#e1f5fe' },
+        { p: [[0, -38], [20, -26], [11, -11], [0, -20]], c: '#b3e5fc' },
+        { p: [[0, -20], [-11, -11], [0, 8]], c: '#4fc3f7' },
+        { p: [[0, -20], [11, -11], [0, 8]], c: '#29b6f6' }
+      ];
+      for (let f of facets) {
+        ctx.fillStyle = f.c;
+        ctx.beginPath();
+        f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
     }
 
     // 6.5 頂端神聖晶核亮點
@@ -2369,129 +2427,182 @@ class Game {
     ctx.restore();
   }
 
+  // 繪製單一防禦塔卡槽圖示：優先用已載入的 SVG，否則退回手繪 Sprite
+  drawTowerIcon(ictx, key) {
+    ictx.setTransform(1, 0, 0, 1, 0, 0);
+    ictx.clearRect(0, 0, 38, 38);
+    const svgImg = assets.get('tower_' + key);
+    if (svgImg) {
+      ictx.drawImage(svgImg, 3, 3, 32, 32);
+    } else {
+      ictx.save();
+      ictx.translate(19, 21);
+      ictx.scale(0.68, 0.68);
+      const drawFn = Sprites['drawTower_' + key];
+      if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
+      ictx.restore();
+    }
+  }
+
+  // 繪製主動技能快捷欄圖示：優先用已載入的 SVG，否則退回手繪 Sprite
+  drawSkillIcon(ctx, key) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, 36, 36);
+    const svgImg = assets.get('skill_' + key);
+    if (svgImg) {
+      ctx.drawImage(svgImg, 2, 2, 32, 32);
+      return;
+    }
+    ctx.save();
+    ctx.translate(18, 18);
+    if (key === 'meteor') {
+      // 燃燒流星火尾
+      const flameGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, 14);
+      flameGrad.addColorStop(0, '#fff59d');
+      flameGrad.addColorStop(0.4, '#ff9800');
+      flameGrad.addColorStop(0.8, '#ff1744');
+      flameGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = flameGrad;
+      ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill();
+      // 火球核心
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-2, -2, 4, 0, Math.PI * 2); ctx.fill();
+      // 隕石坑紋
+      ctx.fillStyle = '#b71c1c';
+      ctx.beginPath(); ctx.arc(3, 3, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-3, 4, 1.8, 0, Math.PI * 2); ctx.fill();
+    } else if (key === 'freeze') {
+      // 冰晶光芒
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 6; i++) {
+        const ang = (i * Math.PI) / 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(ang) * 12, Math.sin(ang) * 12);
+        ctx.stroke();
+        // 冰晶分叉
+        const bx = Math.cos(ang) * 7;
+        const by = Math.sin(ang) * 7;
+        const pAng1 = ang + Math.PI / 4;
+        const pAng2 = ang - Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(pAng1) * 4, by + Math.sin(pAng1) * 4);
+        ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(pAng2) * 4, by + Math.sin(pAng2) * 4);
+        ctx.stroke();
+      }
+      // 冰晶核心亮點
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // 繪製首頁精靈世界樹大插畫：優先用已載入的 SVG，否則退回手繪 Sprite
+  drawTitleTree(tctx) {
+    tctx.setTransform(1, 0, 0, 1, 0, 0);
+    tctx.clearRect(0, 0, 80, 80);
+    tctx.translate(40, 48);
+
+    const treeImg = assets.get('sacred_tree');
+    if (treeImg) {
+      tctx.save();
+      tctx.shadowColor = 'rgba(0, 229, 255, 0.9)';
+      tctx.shadowBlur = 10;
+      tctx.drawImage(treeImg, -38, -46, 76, 76);
+      tctx.restore();
+      return;
+    }
+
+    // 地面晶光微光倒影
+    tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    tctx.beginPath(); tctx.ellipse(0, 22, 28, 10, 0, 0, Math.PI * 2); tctx.fill();
+
+    // 水晶台座
+    tctx.fillStyle = '#26c6da';
+    tctx.strokeStyle = '#00e5ff';
+    tctx.lineWidth = 1.5;
+    tctx.beginPath();
+    tctx.roundRect(-22, 10, 44, 12, 4);
+    tctx.fill();
+    tctx.stroke();
+
+    // 琉璃晶樹主幹
+    const tcGrad = tctx.createLinearGradient(-16, 0, 16, 0);
+    tcGrad.addColorStop(0, '#80d8ff');
+    tcGrad.addColorStop(0.5, '#ffffff');
+    tcGrad.addColorStop(1, '#00b0ff');
+    tctx.fillStyle = tcGrad;
+    tctx.beginPath();
+    tctx.moveTo(-9, 10);
+    tctx.lineTo(-24, -22);
+    tctx.lineTo(0, -38);
+    tctx.lineTo(24, -22);
+    tctx.lineTo(9, 10);
+    tctx.closePath();
+    tctx.fill();
+
+    // 晶芒切面
+    const titleFacets = [
+      { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
+      { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
+      { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
+      { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
+    ];
+    for (let tf of titleFacets) {
+      tctx.fillStyle = tf.c;
+      tctx.beginPath();
+      tf.p.forEach((pt, idx) => idx === 0 ? tctx.moveTo(pt[0], pt[1]) : tctx.lineTo(pt[0], pt[1]));
+      tctx.closePath();
+      tctx.fill();
+      tctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      tctx.lineWidth = 0.8;
+      tctx.stroke();
+    }
+
+    // 頂端神聖守護晶核光芒
+    tctx.shadowColor = '#00e5ff';
+    tctx.shadowBlur = 14;
+    tctx.fillStyle = '#ffffff';
+    tctx.beginPath();
+    tctx.arc(0, -42, 6, 0, Math.PI * 2);
+    tctx.fill();
+  }
+
+  // SVG 資源在塔卡槽/技能欄/首頁插畫建立當下往往還沒載入完成，等全部載入完後重繪一次圖示
+  refreshIcons() {
+    document.querySelectorAll('.tower-item').forEach((item) => {
+      const canvas = item.querySelector('.tower-mini-canvas');
+      if (canvas) this.drawTowerIcon(canvas.getContext('2d'), item.dataset.type);
+    });
+    const meteorCv = document.getElementById('skill-canvas-meteor');
+    if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
+    const freezeCv = document.getElementById('skill-canvas-freeze');
+    if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+    const titleCv = document.getElementById('menu-title-canvas');
+    if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
+  }
+
   // ─── UI Setup ───
   setupUI() {
     // 動態綁定程式設定的版本號
     const versionBadge = document.getElementById('menu-version-badge');
     if (versionBadge) {
       const isDev = CONFIG.VERSION.includes('dev');
-      versionBadge.textContent = `${isDev ? '🛠️ 開發版' : '✨ 正式版'} ${CONFIG.VERSION}`;
+      versionBadge.textContent = `${isDev ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
     }
 
     // 繪製專屬技能 Canvas 圖標 (完全告別 Emoji)
     const meteorCv = document.getElementById('skill-canvas-meteor');
-    if (meteorCv) {
-      const mctx = meteorCv.getContext('2d');
-      mctx.clearRect(0, 0, 36, 36);
-      mctx.translate(18, 18);
-      // 燃燒流星火尾
-      const flameGrad = mctx.createRadialGradient(0, 0, 2, 0, 0, 14);
-      flameGrad.addColorStop(0, '#fff59d');
-      flameGrad.addColorStop(0.4, '#ff9800');
-      flameGrad.addColorStop(0.8, '#ff1744');
-      flameGrad.addColorStop(1, 'transparent');
-      mctx.fillStyle = flameGrad;
-      mctx.beginPath(); mctx.arc(0, 0, 14, 0, Math.PI * 2); mctx.fill();
-      // 火球核心
-      mctx.fillStyle = '#ffffff';
-      mctx.beginPath(); mctx.arc(-2, -2, 4, 0, Math.PI * 2); mctx.fill();
-      // 隕石坑紋
-      mctx.fillStyle = '#b71c1c';
-      mctx.beginPath(); mctx.arc(3, 3, 2.5, 0, Math.PI * 2); mctx.fill();
-      mctx.beginPath(); mctx.arc(-3, 4, 1.8, 0, Math.PI * 2); mctx.fill();
-    }
+    if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
 
     const freezeCv = document.getElementById('skill-canvas-freeze');
-    if (freezeCv) {
-      const fctx = freezeCv.getContext('2d');
-      fctx.clearRect(0, 0, 36, 36);
-      fctx.translate(18, 18);
-      // 冰晶光芒
-      fctx.strokeStyle = '#00e5ff';
-      fctx.lineWidth = 2.5;
-      fctx.lineCap = 'round';
-      for (let i = 0; i < 6; i++) {
-        const ang = (i * Math.PI) / 3;
-        fctx.beginPath();
-        fctx.moveTo(0, 0);
-        fctx.lineTo(Math.cos(ang) * 12, Math.sin(ang) * 12);
-        fctx.stroke();
-        // 冰晶分叉
-        const bx = Math.cos(ang) * 7;
-        const by = Math.sin(ang) * 7;
-        const pAng1 = ang + Math.PI / 4;
-        const pAng2 = ang - Math.PI / 4;
-        fctx.beginPath();
-        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng1) * 4, by + Math.sin(pAng1) * 4);
-        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng2) * 4, by + Math.sin(pAng2) * 4);
-        fctx.stroke();
-      }
-      // 冰晶核心亮點
-      fctx.fillStyle = '#ffffff';
-      fctx.beginPath(); fctx.arc(0, 0, 3, 0, Math.PI * 2); fctx.fill();
-    }
+    if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
 
-    // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree - 5號設計)
+    // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree)
     const titleCv = document.getElementById('menu-title-canvas');
-    if (titleCv) {
-      const tctx = titleCv.getContext('2d');
-      tctx.clearRect(0, 0, 80, 80);
-      tctx.translate(40, 48);
-
-      // 地面晶光微光倒影
-      tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      tctx.beginPath(); tctx.ellipse(0, 22, 28, 10, 0, 0, Math.PI * 2); tctx.fill();
-
-      // 水晶台座
-      tctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
-      tctx.strokeStyle = '#00e5ff';
-      tctx.lineWidth = 1.5;
-      tctx.beginPath();
-      tctx.roundRect(-22, 10, 44, 12, 4);
-      tctx.fill();
-      tctx.stroke();
-
-      // 琉璃晶樹主幹
-      const tcGrad = tctx.createLinearGradient(-16, 0, 16, 0);
-      tcGrad.addColorStop(0, '#80d8ff');
-      tcGrad.addColorStop(0.5, '#ffffff');
-      tcGrad.addColorStop(1, '#00b0ff');
-      tctx.fillStyle = tcGrad;
-      tctx.beginPath();
-      tctx.moveTo(-9, 10);
-      tctx.lineTo(-24, -22);
-      tctx.lineTo(0, -38);
-      tctx.lineTo(24, -22);
-      tctx.lineTo(9, 10);
-      tctx.closePath();
-      tctx.fill();
-
-      // 晶芒切面
-      const titleFacets = [
-        { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
-        { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
-        { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
-        { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
-      ];
-      for (let tf of titleFacets) {
-        tctx.fillStyle = tf.c;
-        tctx.beginPath();
-        tf.p.forEach((pt, idx) => idx === 0 ? tctx.moveTo(pt[0], pt[1]) : tctx.lineTo(pt[0], pt[1]));
-        tctx.closePath();
-        tctx.fill();
-        tctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        tctx.lineWidth = 0.8;
-        tctx.stroke();
-      }
-
-      // 頂端神聖守護晶核光芒
-      tctx.shadowColor = '#00e5ff';
-      tctx.shadowBlur = 14;
-      tctx.fillStyle = '#ffffff';
-      tctx.beginPath();
-      tctx.arc(0, -42, 6, 0, Math.PI * 2);
-      tctx.fill();
-    }
+    if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
 
     // 繪製勝利金冠插畫 Canvas (告別 🎉 Emoji)
     const vicCv = document.getElementById('victory-canvas');
@@ -2568,16 +2679,7 @@ class Game {
       iconCanvas.width = 38;
       iconCanvas.height = 38;
       iconCanvas.className = 'tower-mini-canvas';
-      const ictx = iconCanvas.getContext('2d');
-      const svgImg = assets.get('tower_' + key);
-      if (svgImg) {
-        ictx.drawImage(svgImg, 3, 3, 32, 32);
-      } else {
-        ictx.translate(19, 21);
-        ictx.scale(0.68, 0.68);
-        const drawFn = Sprites['drawTower_' + key];
-        if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
-      }
+      this.drawTowerIcon(iconCanvas.getContext('2d'), key);
 
       item.appendChild(iconCanvas);
 
@@ -2851,7 +2953,7 @@ class Game {
       const statusText = document.getElementById('sound-status-text');
       if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
       const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
-      if (icon) icon.textContent = enabled ? '🔊' : '🔇';
+      if (icon) icon.innerHTML = SOUND_ICON_SVG[enabled ? 'on' : 'off'];
     });
     bindTap('settings-fullscreen-btn', () => this.toggleFullscreen());
     bindTap('settings-retry-btn', () => {
@@ -3285,11 +3387,14 @@ class Game {
   }
 
   castMeteor(px, py) {
+    // 無論是否真的成功施放，都要先清掉瞄準狀態，避免拖曳中途波次結束
+    // 導致 activeTargetingSkill 卡死（畫面範圍圈不消失、點擊畫布被攔截）
+    this.activeTargetingSkill = null;
+    document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
+
     if (this.state !== 'wave') return;
     const skill = this.skills.meteor;
     skill.timer = skill.cd;
-    this.activeTargetingSkill = null;
-    document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
 
     this.sfx.play('explosion');
     this.showToast('流星轟炸降臨！');
@@ -3648,7 +3753,7 @@ class Game {
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('start-wave-btn').disabled = false;
-    document.getElementById('speed-btn').textContent = '⏩ 1x';
+    document.getElementById('speed-btn').textContent = '1x';
 
     this.deselectTower();
     this.updateWavePreview();
@@ -3726,6 +3831,8 @@ class Game {
     this.currentWave = 0;
     this.speedMultiplier = 1;
     this.waveManager = new WaveManager();
+    const speedBtn = document.getElementById('speed-btn');
+    if (speedBtn) speedBtn.textContent = '1x';
 
     const menuScore = document.getElementById('menu-best-score');
     if (menuScore) menuScore.textContent = this.bestScore;
@@ -3899,16 +4006,6 @@ class Game {
   toggleSpeed() {
     this.speedMultiplier = this.speedMultiplier === 1 ? 2 : this.speedMultiplier === 2 ? 3 : 1;
     document.getElementById('speed-btn').textContent = `${this.speedMultiplier}x`;
-  }
-
-  toggleSound() {
-    const enabled = this.sfx.toggle();
-    const soundBtn = document.getElementById('sound-btn');
-    if (soundBtn) soundBtn.textContent = enabled ? '🔊' : '🔇';
-    const statusText = document.getElementById('sound-status-text');
-    if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
-    const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
-    if (icon) icon.textContent = enabled ? '🔊' : '🔇';
   }
 
   toggleFullscreen() {
@@ -4087,22 +4184,9 @@ class Game {
       }
     }
 
-    // 基地受擊計時與煙囪升煙
+    // 基地受擊計時
     if (this.baseHurtTimer > 0) {
       this.baseHurtTimer -= dt;
-    }
-    this.smokeTimer += dt;
-    if (this.smokeTimer >= 1.6 && this.map.pathPixels.length > 0) {
-      this.smokeTimer = 0;
-      const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
-      this.spawnParticle(exit.x + 15, exit.y - 30, {
-        color: 'rgba(240, 240, 245, 0.7)',
-        size: 5 + Math.random() * 3,
-        vx: (Math.random() - 0.5) * 15,
-        vy: -25 - Math.random() * 15,
-        gravity: -5, // 緩緩升空
-        life: 1.2,
-      });
     }
 
     // Update towers
@@ -4451,38 +4535,6 @@ class Game {
       ctx.restore();
     }
 
-    // 4.1 起點傳送門：動態旋轉深淵漩渦 (Dynamic Void Vortex)
-    if (this.map.pathPixels.length > 0) {
-      const entry = this.map.pathPixels[0];
-      const now = performance.now() / 1000;
-      ctx.save();
-      ctx.translate(entry.x, entry.y);
-
-      // 旋轉深淵紫黑星雲
-      ctx.save();
-      ctx.translate(0, -6);
-      ctx.rotate(now * 2);
-      const vortGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 12);
-      vortGrad.addColorStop(0, '#ff4081');
-      vortGrad.addColorStop(0.5, '#7c4dff');
-      vortGrad.addColorStop(0.85, '#311b92');
-      vortGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = vortGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, 12, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 傳送門旋臂火花
-      ctx.strokeStyle = '#ea80fc';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, 7, 0, Math.PI);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.restore();
-    }
-
     // 4.2 終點保衛小屋：懸浮守護水晶與受損紅光警報 (Sanctuary Crystal & Base Shake)
     if (this.map.pathPixels.length > 0) {
       const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
@@ -4563,6 +4615,11 @@ class Game {
       const badgeImg = assets.get('spawn_badge');
       if (badgeImg) {
         ctx.drawImage(badgeImg, -35, 14, 70, 30);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`出怪 第${waveNum}波`, 0, 14 + 30 / 2 + 1);
       } else {
         const btnW = 68;
         const btnH = 26;

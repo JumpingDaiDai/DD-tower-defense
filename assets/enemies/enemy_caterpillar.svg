@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="catBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#aed581"/>
+      <stop offset="50%" stop-color="#7cb342"/>
+      <stop offset="100%" stop-color="#558b2f"/>
+    </linearGradient>
+  </defs>
+  <!-- 落地陰影 -->
+  <ellipse cx="50" cy="82" rx="35" ry="10" fill="rgba(0,0,0,0.25)"/>
+  <!-- 身體多節果凍球 -->
+  <circle cx="28" cy="55" r="14" fill="url(#catBody)" stroke="#33691e" stroke-width="2"/>
+  <circle cx="44" cy="53" r="15" fill="url(#catBody)" stroke="#33691e" stroke-width="2"/>
+  <circle cx="60" cy="50" r="16" fill="url(#catBody)" stroke="#33691e" stroke-width="2"/>
+  <circle cx="76" cy="46" r="17" fill="url(#catBody)" stroke="#33691e" stroke-width="2"/>
+  <!-- 大頭部 -->
+  <circle cx="78" cy="45" r="18" fill="url(#catBody)" stroke="#33691e" stroke-width="2"/>
+  <!-- 可愛大眼睛 -->
+  <circle cx="84" cy="40" r="4.5" fill="#1b5e20"/>
+  <circle cx="86" cy="38" r="1.8" fill="#ffffff"/>
+  <!-- 觸角 -->
+  <path d="M 82,30 Q 86,18 90,14" fill="none" stroke="#33691e" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="90" cy="14" r="3" fill="#81c784"/>
+</svg>

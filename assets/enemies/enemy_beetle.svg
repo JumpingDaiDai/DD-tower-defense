@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="beetleArmor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#80deea"/>
+      <stop offset="40%" stop-color="#00acc1"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </linearGradient>
+  </defs>
+  <!-- 陰影 -->
+  <ellipse cx="50" cy="84" rx="34" ry="10" fill="rgba(0,0,0,0.3)"/>
+  <!-- 腳腿 -->
+  <path d="M 26,50 L 14,38 M 26,60 L 12,62 M 26,70 L 16,78 M 74,50 L 86,38 M 74,60 L 88,62 M 74,70 L 84,78" stroke="#263238" stroke-width="4" stroke-linecap="round"/>
+  <!-- 鐵甲主體 -->
+  <ellipse cx="50" cy="56" rx="28" ry="26" fill="url(#beetleArmor)" stroke="#004d40" stroke-width="3"/>
+  <!-- 背部甲殼分縫線 -->
+  <line x1="50" y1="30" x2="50" y2="82" stroke="#004d40" stroke-width="2.5"/>
+  <!-- 前端巨角 -->
+  <path d="M 50,32 Q 50,12 36,6" fill="none" stroke="#263238" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 50,32 Q 50,12 64,6" fill="none" stroke="#263238" stroke-width="5" stroke-linecap="round"/>
+</svg>
