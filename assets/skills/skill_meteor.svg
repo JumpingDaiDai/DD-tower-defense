@@ -1,17 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
   <defs>
-    <radialGradient id="metG" cx="40%" cy="40%" r="60%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="30%" stop-color="#ffeb3b"/>
-      <stop offset="70%" stop-color="#ff3d00"/>
-      <stop offset="100%" stop-color="#dd2c00"/>
+    <radialGradient id="metCore" cx="38%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="35%" stop-color="#ffee58"/>
+      <stop offset="65%" stop-color="#ff6d00"/>
+      <stop offset="100%" stop-color="#bf360c"/>
     </radialGradient>
+    <linearGradient id="metTailOuter" x1="100%" y1="0%" x2="20%" y2="90%">
+      <stop offset="0%" stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#ff6d00" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="metTailInner" x1="100%" y1="0%" x2="30%" y2="85%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="100%" stop-color="#ffab00" stop-opacity="0"/>
+    </linearGradient>
   </defs>
-  <g>
-    <!-- 火焰拖尾 -->
-    <path d="M 80,10 L 40,45 L 60,65 Z" fill="#ff6d00" opacity="0.8"/>
-    <path d="M 90,20 L 50,55 L 70,75 Z" fill="#ffab00" opacity="0.6"/>
-    <!-- 流星核心 -->
-    <circle cx="36" cy="64" r="26" fill="url(#metG)" stroke="#ffffff" stroke-width="3"/>
-  </g>
+
+  <!-- 外層火焰拖尾 -->
+  <path d="M 94,4 L 44,42 Q 38,50 44,58 L 64,74 Z" fill="url(#metTailOuter)"/>
+  <!-- 內層明亮拖尾 -->
+  <path d="M 90,12 L 52,44 Q 47,50 52,56 L 66,68 Z" fill="url(#metTailInner)"/>
+
+  <!-- 隕石核心 -->
+  <circle cx="36" cy="66" r="27" fill="url(#metCore)" stroke="#8d2c00" stroke-width="3"/>
+  <!-- 核心高光 -->
+  <ellipse cx="27" cy="57" rx="7" ry="5.5" fill="#fffde7" opacity="0.85"/>
+  <!-- 隕石坑紋 -->
+  <circle cx="44" cy="72" r="5" fill="#8d2c00" opacity="0.55"/>
+  <circle cx="28" cy="76" r="3.2" fill="#8d2c00" opacity="0.5"/>
+  <circle cx="47" cy="58" r="2.6" fill="#8d2c00" opacity="0.45"/>
+
+  <!-- 火花星芒 -->
+  <path d="M 80 18 L 82.4 24.6 L 89 27 L 82.4 29.4 L 80 36 L 77.6 29.4 L 71 27 L 77.6 24.6 Z" fill="#fff59d"/>
+  <circle cx="66" cy="14" r="2.4" fill="#fff59d"/>
 </svg>

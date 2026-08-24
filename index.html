@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.2.0">
+  <link rel="stylesheet" href="style.css?v=1.3.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -27,27 +27,27 @@
 </head>
 <body>
   <div id="game-container">
-    <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪，全 SVG 向量無 Emoji) -->
+    <!-- 頂部狀態列 (極簡乾淨：左數值、右出怪 + 設定齒輪) -->
     <div id="top-bar">
       <div class="top-bar-left">
         <div class="stat" title="金幣">
-          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ffd54f" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5h-2v-1.1c-1.3-.25-2.3-1.15-2.4-2.4h1.7c.1.6.5 1 1.2 1 .7 0 1.2-.4 1.2-1 0-.6-.4-.9-1.5-1.2-1.4-.4-2.5-.9-2.5-2.3 0-1.1.9-2 2.3-2.2V6.5h2v1.1c1.1.2 1.9.9 2.1 2h-1.7c-.1-.5-.5-.8-1-.8-.6 0-1.1.3-1.1.8 0 .5.4.8 1.4 1.1 1.6.4 2.6 1 2.6 2.4 0 1.2-.9 2.1-2.4 2.4v1.1z"/></svg>
+          <img class="stat-icon" src="assets/ui/icon_gold.svg" width="14" height="14" alt="金幣" />
           <span id="gold">200</span>
         </div>
         <div class="stat" title="生命">
-          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ff5252" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <img class="stat-icon" src="assets/ui/icon_heart.svg" width="14" height="14" alt="生命" />
           <span id="lives">20</span>
         </div>
         <div class="stat" title="波次"><span id="wave-info">準備中</span></div>
         <div class="stat" title="分數">
-          <svg class="stat-icon" viewBox="0 0 24 24" width="14" height="14"><path fill="#ffca28" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          <img class="stat-icon" src="assets/ui/icon_star.svg" width="14" height="14" alt="分數" />
           <span id="score">0</span>
         </div>
       </div>
       <div class="top-bar-right">
         <button id="speed-btn" title="遊戲速度">1x</button>
         <button id="settings-btn" class="btn-gear" title="設定">
-          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          <img src="assets/ui/icon_settings.svg" width="16" height="16" alt="設定" />
         </button>
       </div>
     </div>
@@ -94,27 +94,30 @@
     <!-- 設定與暫停彈窗 (點擊齒輪時暫停遊戲) -->
     <div id="settings-screen" class="screen hidden">
       <div class="screen-content settings-modal-content">
-        <div class="title-emoji">⚙️</div>
+        <img class="title-emoji" src="assets/ui/icon_settings.svg" width="30" height="30" alt="設定" />
         <h2>遊戲設定</h2>
         <div class="settings-options-list">
           <button id="settings-sound-btn" class="btn-settings-opt">
-            <span class="settings-opt-icon">🔊</span>
+            <span class="settings-opt-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></span>
             <span class="settings-opt-text" id="sound-status-text">音效：開啟</span>
           </button>
           <button id="settings-fullscreen-btn" class="btn-settings-opt">
-            <span class="settings-opt-icon">⛶</span>
+            <span class="settings-opt-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></span>
             <span class="settings-opt-text">切換全螢幕</span>
           </button>
           <button id="settings-retry-btn" class="btn-settings-opt btn-opt-warning">
-            <span class="settings-opt-icon">🔄</span>
+            <span class="settings-opt-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></span>
             <span class="settings-opt-text">重試關卡</span>
           </button>
           <button id="settings-quit-btn" class="btn-settings-opt btn-opt-danger">
-            <span class="settings-opt-icon">🚪</span>
+            <span class="settings-opt-icon"><svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.09 12.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.76 2.59z"/></svg></span>
             <span class="settings-opt-text">退出關卡（返回首頁）</span>
           </button>
         </div>
-        <button id="settings-resume-btn" class="btn-primary" style="margin-top: 14px;">▶️ 繼續遊戲</button>
+        <button id="settings-resume-btn" class="btn-primary" style="margin-top: 14px;">
+          <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          <span>繼續遊戲</span>
+        </button>
       </div>
     </div>
 
@@ -134,7 +137,7 @@
         <!-- 首頁高分榜 (僅展示第一名，點擊開啟完整英雄榜) -->
         <div id="open-leaderboard-btn" class="menu-champion-card" title="點擊查看 Top 10 英雄榜">
           <div class="champion-left">
-            <svg class="ui-icon-gold" viewBox="0 0 24 24" width="22" height="22"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+            <img class="ui-icon-gold" src="assets/ui/icon_trophy.svg" width="22" height="22" alt="獎盃" />
             <div class="champion-info">
               <span class="champion-label">歷史榜首紀錄</span>
               <span id="menu-champion-desc" class="champion-desc">尚無紀錄</span>
@@ -146,10 +149,31 @@
           </div>
         </div>
 
-        <!-- 地圖選擇器 -->
-        <div class="map-selection-container">
-          <div class="map-selection-header">戰場地圖選擇</div>
-          <div id="map-selection-list"></div>
+        <!-- 商店入口 (用永久貨幣「魔法水晶」解鎖塔與技能) -->
+        <div id="open-shop-btn" class="menu-champion-card" title="點擊開啟商店">
+          <div class="champion-left">
+            <span class="shop-crystal-icon">💎</span>
+            <div class="champion-info">
+              <span class="champion-label">魔法水晶</span>
+              <span id="menu-crystal-balance" class="champion-desc">0</span>
+            </div>
+          </div>
+          <div class="champion-right">
+            <span class="champion-score" style="font-size:13px;">商店</span>
+            <span class="champion-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- 關卡輪探 -->
+        <div class="level-carousel">
+          <button id="level-prev-btn" class="level-arrow-btn" aria-label="上一關">‹</button>
+          <div class="level-carousel-card" id="level-carousel-card">
+            <div class="level-card-lock hidden" id="level-lock-overlay">🔒</div>
+            <div class="level-card-name" id="level-card-name"></div>
+            <div class="level-card-stars" id="level-card-stars"></div>
+            <div class="level-star-tip hidden" id="level-star-tip"></div>
+          </div>
+          <button id="level-next-btn" class="level-arrow-btn" aria-label="下一關">›</button>
         </div>
 
         <button id="start-btn" class="btn-primary">
@@ -162,7 +186,7 @@
     <!-- 獨立 Top 10 英雄榜彈窗 (支援高分榜與通關金幣榜) -->
     <div id="leaderboard-modal" class="screen hidden">
       <div class="screen-content leaderboard-modal-content">
-        <svg class="ui-icon-gold" viewBox="0 0 24 24" width="36" height="36" style="margin-bottom:4px;"><path fill="#ffb300" d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1a5.01 5.01 0 003.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>
+        <img class="ui-icon-gold" src="assets/ui/icon_trophy.svg" width="36" height="36" alt="獎盃" style="margin-bottom:4px;" />
         <h2 style="margin-bottom:8px;">榮譽英雄榜 Top 10</h2>
         
         <!-- 排行榜分頁切換按鈕 -->
@@ -175,6 +199,19 @@
           <div id="modal-leaderboard-list" class="leaderboard-modal-records"></div>
         </div>
         <button id="close-leaderboard-btn" class="btn-primary" style="margin-top: 14px;">關閉英雄榜</button>
+      </div>
+    </div>
+
+    <!-- 商店彈窗：用魔法水晶永久解鎖塔與技能 -->
+    <div id="shop-modal" class="screen hidden">
+      <div class="screen-content leaderboard-modal-content">
+        <div class="shop-balance-row">💎 <span id="shop-crystal-balance">0</span></div>
+        <h2 style="margin-bottom:8px;">塔與技能商店</h2>
+        <div class="leaderboard-modal-card">
+          <div id="shop-item-list" class="shop-item-list"></div>
+        </div>
+        <div class="shop-item-info hidden" id="shop-item-info"></div>
+        <button id="close-shop-btn" class="btn-primary" style="margin-top: 14px;">關閉商店</button>
       </div>
     </div>
 
@@ -212,6 +249,8 @@
         </div>
         <h1>花園保衛成功！</h1>
         <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
+        <div id="victory-stars" class="victory-stars"></div>
+        <div id="victory-chest-reward" class="victory-chest-reward hidden"></div>
         <div class="end-score-box">
           <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
             <div>
@@ -240,6 +279,43 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.2.0"></script>
+  <!-- Mobile Debug: 浮動 Log 按鈕、日誌面板、截圖按鈕。 -->
+  <div id="debug-container" style="position:fixed;bottom:10px;right:10px;z-index:99999;">
+    <button id="debug-toggle-btn" style="background:#222;color:#00ff66;border:1px solid #00ff66;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);touch-action:manipulation;" onclick="const l=document.getElementById('debug-log'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
+      🐞 Log
+    </button>
+    <button id="debug-shot-btn" style="background:#222;color:#ffcc00;border:1px solid #ffcc00;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-left:4px;touch-action:manipulation;" onclick="if(window.dbgUploadScreenshot) dbgUploadScreenshot();">
+      📷 傳截圖
+    </button>
+    <button id="debug-test-toggle-btn" style="background:#222;color:#00bcd4;border:1px solid #00bcd4;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-left:4px;touch-action:manipulation;" onclick="const l=document.getElementById('debug-test-panel'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
+      🧪 關卡
+    </button>
+    <div id="debug-log" style="display:none;position:absolute;bottom:32px;right:0;width:280px;max-height:180px;background:rgba(0,0,0,0.92);color:#00ff66;font-family:monospace;font-size:10px;padding:8px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;overflow-y:auto;pointer-events:auto;">
+      <div style="border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:4px;font-weight:bold;">
+        📋 系統偵錯日誌
+      </div>
+    </div>
+    <div id="debug-test-panel" style="display:none;position:absolute;bottom:32px;right:0;width:200px;background:rgba(0,0,0,0.92);color:#fff;font-family:monospace;font-size:11px;padding:10px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;">
+      <div style="border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:6px;font-weight:bold;color:#00bcd4;">
+        🧪 關卡進度測試
+      </div>
+      <select id="debug-level-select" style="width:100%;margin-bottom:6px;padding:3px;">
+        <option value="-1">尚未通關任何關卡</option>
+        <option value="0">通關第 1 關</option>
+        <option value="1">通關第 2 關</option>
+        <option value="2">通關第 3 關</option>
+      </select>
+      <select id="debug-stars-select" style="width:100%;margin-bottom:8px;padding:3px;">
+        <option value="1">1 ★</option>
+        <option value="2">2 ★</option>
+        <option value="3" selected>3 ★</option>
+      </select>
+      <button style="width:100%;background:#00bcd4;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgApplyLevelProgress) window.dbgApplyLevelProgress(parseInt(document.getElementById('debug-level-select').value, 10), parseInt(document.getElementById('debug-stars-select').value, 10));">
+        套用
+      </button>
+    </div>
+  </div>
+
+  <script src="game.js?v=1.3.0"></script>
 </body>
 </html>

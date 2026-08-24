@@ -31,7 +31,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
 // （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
-const DEBUG_TOKEN = '22c6b3e4249b6201';
+const DEBUG_TOKEN = '1a1e476d6158794f';
 
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身
@@ -75,7 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.2.0',
+  VERSION: 'v1.3.0',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -84,6 +84,7 @@ const CONFIG = {
   SELL_RATIO: 0.7,
   MAX_LEVEL: 3,
   TOTAL_WAVES: 15,
+  ENEMY_HP_SCALE_PER_WAVE: 0.15,  // 每波 +15% 血量（第15波約 3.1 倍）
   LS_KEY: 'dd_tower_defense_best',
 };
 
@@ -288,16 +289,17 @@ const TOWER_DATA = {
 
 // ─── 4. 敵人數據 ─────────────────────────────
 const ENEMY_DATA = {
-  caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 50, speed: 50, reward: 10, damage: 1 },
-  bee: { name: '蜜蜂', emoji: '🐝', hp: 35, speed: 90, reward: 12, damage: 1, canEnrage: true },
-  snail: { name: '蝸牛', emoji: '🐌', hp: 160, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 280, speed: 38, reward: 35, damage: 2, armor: 0.5 },
-  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 80, speed: 65, reward: 18, damage: 1, canEnrage: true },
-  dragon: { name: '小龍', emoji: '🐉', hp: 650, speed: 32, reward: 100, damage: 5, isBoss: true },
+  caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
+  bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
+  snail: { name: '蝸牛', emoji: '🐌', hp: 190, speed: 28, reward: 25, damage: 2 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, armor: 0.5 },
+  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 95, speed: 65, reward: 18, damage: 1, canEnrage: true },
+  dragon: { name: '小龍', emoji: '🐉', hp: 750, speed: 32, reward: 100, damage: 5, isBoss: true },
 };
 
-// ─── 5. 波次數據 (15波) ─────────────────────
-const WAVE_DATA = [
+// ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
+// 第一關：沿用原本已調校過的新手曲線，原封不動
+const WAVE_DATA_L1 = [
   { enemies: [{ type: 'caterpillar', count: 5, interval: 1.5 }], bonus: 50 },
   { enemies: [{ type: 'caterpillar', count: 8, interval: 1.2 }], bonus: 60 },
   { enemies: [{ type: 'caterpillar', count: 5, interval: 1.0 }, { type: 'bee', count: 3, interval: 0.8 }], bonus: 80 },
@@ -314,6 +316,287 @@ const WAVE_DATA = [
   { enemies: [{ type: 'beetle', count: 8, interval: 0.6 }, { type: 'butterfly', count: 12, interval: 0.3 }, { type: 'snail', count: 6, interval: 0.6 }], bonus: 320 },
   { enemies: [{ type: 'dragon', count: 3, interval: 4 }, { type: 'beetle', count: 6, interval: 0.8 }, { type: 'butterfly', count: 10, interval: 0.3 }, { type: 'bee', count: 15, interval: 0.15 }], bonus: 500 },
 ];
+
+// 第二關：中階怪提前出場、間隔壓縮、龍波次變多（共 4 波含龍，總龍數 8 隻）
+const WAVE_DATA_L2 = [
+  { enemies: [{ type: 'caterpillar', count: 8, interval: 1.2 }], bonus: 60 },
+  { enemies: [{ type: 'caterpillar', count: 10, interval: 0.9 }, { type: 'bee', count: 4, interval: 0.7 }], bonus: 70 },
+  { enemies: [{ type: 'bee', count: 10, interval: 0.55 }, { type: 'snail', count: 3, interval: 2.0 }], bonus: 100 },
+  { enemies: [{ type: 'bee', count: 12, interval: 0.45 }, { type: 'beetle', count: 3, interval: 1.6 }], bonus: 120 },
+  { enemies: [{ type: 'caterpillar', count: 6, interval: 0.6 }, { type: 'snail', count: 4, interval: 1.6 }, { type: 'beetle', count: 3, interval: 1.4 }], bonus: 150 },
+  { enemies: [{ type: 'bee', count: 12, interval: 0.4 }, { type: 'beetle', count: 5, interval: 1.2 }], bonus: 170 },
+  { enemies: [{ type: 'butterfly', count: 8, interval: 0.5 }, { type: 'bee', count: 10, interval: 0.4 }], bonus: 190 },
+  { enemies: [{ type: 'snail', count: 6, interval: 1.3 }, { type: 'beetle', count: 6, interval: 1.0 }, { type: 'dragon', count: 1, interval: 3 }], bonus: 260 },
+  { enemies: [{ type: 'bee', count: 20, interval: 0.25 }, { type: 'butterfly', count: 10, interval: 0.35 }], bonus: 230 },
+  { enemies: [{ type: 'dragon', count: 1, interval: 3 }, { type: 'beetle', count: 6, interval: 0.9 }, { type: 'caterpillar', count: 10, interval: 0.45 }], bonus: 320 },
+  { enemies: [{ type: 'butterfly', count: 16, interval: 0.28 }, { type: 'beetle', count: 8, interval: 0.7 }], bonus: 280 },
+  { enemies: [{ type: 'bee', count: 26, interval: 0.18 }, { type: 'butterfly', count: 12, interval: 0.28 }], bonus: 300 },
+  { enemies: [{ type: 'snail', count: 10, interval: 0.6 }, { type: 'dragon', count: 2, interval: 3.2 }], bonus: 380 },
+  { enemies: [{ type: 'beetle', count: 10, interval: 0.5 }, { type: 'butterfly', count: 16, interval: 0.25 }, { type: 'snail', count: 8, interval: 0.5 }], bonus: 420 },
+  { enemies: [{ type: 'dragon', count: 4, interval: 3.5 }, { type: 'beetle', count: 8, interval: 0.6 }, { type: 'butterfly', count: 14, interval: 0.22 }, { type: 'bee', count: 20, interval: 0.12 }], bonus: 600 },
+];
+
+// 第三關：從第 1 波就混編各種怪，龍最早第 7 波出現（共 4 波含龍，總龍數 11 隻）
+const WAVE_DATA_L3 = [
+  { enemies: [{ type: 'caterpillar', count: 10, interval: 0.9 }, { type: 'bee', count: 3, interval: 1.0 }], bonus: 70 },
+  { enemies: [{ type: 'caterpillar', count: 10, interval: 0.7 }, { type: 'bee', count: 6, interval: 0.6 }, { type: 'snail', count: 2, interval: 2.0 }], bonus: 90 },
+  { enemies: [{ type: 'bee', count: 12, interval: 0.45 }, { type: 'snail', count: 4, interval: 1.6 }, { type: 'beetle', count: 2, interval: 1.6 }], bonus: 130 },
+  { enemies: [{ type: 'bee', count: 14, interval: 0.35 }, { type: 'beetle', count: 4, interval: 1.3 }, { type: 'butterfly', count: 4, interval: 0.8 }], bonus: 150 },
+  { enemies: [{ type: 'caterpillar', count: 8, interval: 0.5 }, { type: 'snail', count: 5, interval: 1.4 }, { type: 'beetle', count: 4, interval: 1.1 }], bonus: 190 },
+  { enemies: [{ type: 'bee', count: 16, interval: 0.3 }, { type: 'beetle', count: 6, interval: 1.0 }, { type: 'butterfly', count: 6, interval: 0.6 }], bonus: 210 },
+  { enemies: [{ type: 'butterfly', count: 10, interval: 0.4 }, { type: 'bee', count: 14, interval: 0.32 }, { type: 'dragon', count: 1, interval: 3 }], bonus: 300 },
+  { enemies: [{ type: 'snail', count: 8, interval: 1.1 }, { type: 'beetle', count: 8, interval: 0.8 }, { type: 'bee', count: 10, interval: 0.35 }], bonus: 280 },
+  { enemies: [{ type: 'bee', count: 24, interval: 0.2 }, { type: 'butterfly', count: 14, interval: 0.28 }, { type: 'beetle', count: 4, interval: 0.9 }], bonus: 320 },
+  { enemies: [{ type: 'dragon', count: 2, interval: 2.8 }, { type: 'beetle', count: 8, interval: 0.7 }, { type: 'caterpillar', count: 12, interval: 0.35 }], bonus: 420 },
+  { enemies: [{ type: 'butterfly', count: 20, interval: 0.22 }, { type: 'beetle', count: 10, interval: 0.6 }, { type: 'snail', count: 6, interval: 0.9 }], bonus: 380 },
+  { enemies: [{ type: 'bee', count: 30, interval: 0.15 }, { type: 'butterfly', count: 16, interval: 0.22 }, { type: 'beetle', count: 6, interval: 0.6 }], bonus: 420 },
+  { enemies: [{ type: 'snail', count: 12, interval: 0.5 }, { type: 'dragon', count: 3, interval: 2.8 }, { type: 'beetle', count: 8, interval: 0.5 }], bonus: 500 },
+  { enemies: [{ type: 'beetle', count: 14, interval: 0.4 }, { type: 'butterfly', count: 20, interval: 0.2 }, { type: 'snail', count: 10, interval: 0.42 }, { type: 'bee', count: 16, interval: 0.15 }], bonus: 560 },
+  { enemies: [{ type: 'dragon', count: 5, interval: 3.0 }, { type: 'beetle', count: 12, interval: 0.45 }, { type: 'butterfly', count: 20, interval: 0.18 }, { type: 'bee', count: 26, interval: 0.1 }], bonus: 800 },
+];
+
+// ─── 5.1 關卡定義：地圖 + 專屬波次，取代原本的自由選地圖 ─────
+const LEVEL_DATA = [
+  { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1 },
+  { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2 },
+  { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3 },
+];
+let CURRENT_LEVEL_INDEX = 0;
+
+// ─── 5.2 關卡進度存檔 (解鎖狀態 + 星等，只增不減) ─────
+const LEVEL_PROGRESS_KEY = 'dd_td_level_progress_v1';
+let _levelProgressMemoryFallback = null; // 無痕模式/配額滿時的記憶體備援
+
+function defaultLevelProgress() {
+  const levels = {};
+  LEVEL_DATA.forEach((lvl, idx) => {
+    levels[lvl.id] = { stars: 0, unlocked: idx === 0 };
+  });
+  return { version: 1, levels };
+}
+
+function loadLevelProgress() {
+  try {
+    const raw = localStorage.getItem(LEVEL_PROGRESS_KEY);
+    if (!raw) return _levelProgressMemoryFallback || defaultLevelProgress();
+    const data = JSON.parse(raw);
+    if (!data || !data.levels) return defaultLevelProgress();
+    // 確保新增的關卡在舊存檔上也有預設值
+    LEVEL_DATA.forEach((lvl, idx) => {
+      if (!data.levels[lvl.id]) data.levels[lvl.id] = { stars: 0, unlocked: idx === 0 };
+    });
+    return data;
+  } catch (e) {
+    return _levelProgressMemoryFallback || defaultLevelProgress();
+  }
+}
+
+function saveLevelProgress(data) {
+  _levelProgressMemoryFallback = data;
+  try {
+    localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(data));
+  } catch (e) {
+    dbgLog('⚠️ 關卡進度存檔失敗（可能為無痕模式或配額已滿），本次僅暫存於記憶體');
+  }
+}
+
+// 記錄一次關卡結果：星等只增不減，通關（stars>=1）解鎖下一關。
+// 每次「首度達成」某星等門檻會發放一次寶箱水晶獎勵（重玩補到已經拿過的星數不會重複給）。
+function recordLevelResult(levelIndex, stars) {
+  const level = LEVEL_DATA[levelIndex];
+  if (!level) return { crystalsEarned: 0 };
+  const progress = loadLevelProgress();
+  const entry = progress.levels[level.id] || { stars: 0, unlocked: levelIndex === 0 };
+  const previousStars = entry.stars;
+  const newStars = Math.max(previousStars, stars);
+
+  let crystalsEarned = 0;
+  for (let tier = previousStars + 1; tier <= newStars; tier++) {
+    crystalsEarned += CHEST_REWARDS[tier - 1] || 0;
+  }
+
+  entry.stars = newStars;
+  if (stars >= 1) {
+    entry.unlocked = true;
+    const nextLevel = LEVEL_DATA[levelIndex + 1];
+    if (nextLevel) {
+      progress.levels[nextLevel.id] = progress.levels[nextLevel.id] || { stars: 0, unlocked: false };
+      progress.levels[nextLevel.id].unlocked = true;
+    }
+  }
+  progress.levels[level.id] = entry;
+  saveLevelProgress(progress);
+
+  if (crystalsEarned > 0) addCrystals(crystalsEarned);
+  return { entry, crystalsEarned };
+}
+
+// 測試用：直接把關卡進度設成「通關到第 clearedThroughIndex 關、拿 starsOnLast 星」
+// clearedThroughIndex 傳 -1 代表重置成「尚未通關任何關卡」
+function debugApplyLevelProgress(clearedThroughIndex, starsOnLast) {
+  const levels = {};
+  LEVEL_DATA.forEach((lvl, idx) => {
+    if (clearedThroughIndex < 0) {
+      levels[lvl.id] = { stars: 0, unlocked: idx === 0 };
+    } else if (idx < clearedThroughIndex) {
+      levels[lvl.id] = { stars: 3, unlocked: true };
+    } else if (idx === clearedThroughIndex) {
+      levels[lvl.id] = { stars: starsOnLast, unlocked: true };
+    } else if (idx === clearedThroughIndex + 1) {
+      levels[lvl.id] = { stars: 0, unlocked: true };
+    } else {
+      levels[lvl.id] = { stars: 0, unlocked: false };
+    }
+  });
+  saveLevelProgress({ version: 1, levels });
+  CURRENT_LEVEL_INDEX = Math.max(0, clearedThroughIndex);
+  if (window.gameInstance && window.gameInstance.renderLevelCarousel) {
+    window.gameInstance.renderLevelCarousel();
+  }
+  dbgLog(`🧪 測試進度已套用：clearedThroughIndex=${clearedThroughIndex}, starsOnLast=${starsOnLast}`);
+}
+window.dbgApplyLevelProgress = debugApplyLevelProgress;
+
+// ─── 5.3 商店：永久貨幣、塔與技能解鎖 ─────────────────
+// 一開始就能用的塔（不用商店解鎖）；其餘的塔與 2 個主動技能都要用「魔法水晶」在商店解鎖
+const FREE_STARTER_TOWERS = ['petal'];
+
+const SHOP_ITEMS = {
+  towers: {
+    sunflower: { cost: 30 },
+    ice_crystal: { cost: 40 },
+    mushroom: { cost: 45 },
+    lavender: { cost: 55 },
+    treant: { cost: 65 },
+    cannon: { cost: 75 },
+    laser: { cost: 90 },
+  },
+  skills: {
+    meteor: { cost: 50, name: '流星轟炸', desc: '對指定範圍造成大量爆炸傷害，冷卻 30 秒' },
+    freeze: { cost: 50, name: '絕對零度', desc: '全場敵人短暫凍結減速，冷卻 45 秒' },
+  },
+};
+
+// 通關關卡「首度達成」1★/2★/3★ 各發放一次的水晶獎勵（寶箱）
+const CHEST_REWARDS = [10, 20, 40];
+
+// 商店商品按住顯示的詳細資訊卡內容
+function buildShopItemInfoHTML(kind, key) {
+  if (kind === 'skill') {
+    const item = SHOP_ITEMS.skills[key];
+    if (!item) return '';
+    return `
+      <div class="shop-info-title">${item.name}</div>
+      <div class="shop-info-desc">${item.desc || ''}</div>
+    `;
+  }
+  const data = TOWER_DATA[key];
+  if (!data) return '';
+  const stats = [];
+  if (data.damage) stats.push(`傷害 ${data.damage}`);
+  if (data.range) stats.push(`射程 ${data.range}`);
+  if (data.fireRate) stats.push(`射速 ${data.fireRate}/s`);
+  if (data.goldPerSecond) stats.push(`金幣 +${data.goldPerSecond}/s`);
+  return `
+    <div class="shop-info-title">${data.name}</div>
+    <div class="shop-info-desc">${data.description || ''}</div>
+    <div class="shop-info-stats">${stats.join(' · ')}</div>
+  `;
+}
+
+const CRYSTALS_KEY = 'dd_td_crystals_v1';
+let _crystalsMemoryFallback = null;
+
+function loadCrystals() {
+  try {
+    const raw = localStorage.getItem(CRYSTALS_KEY);
+    if (raw === null) return _crystalsMemoryFallback ?? 0;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : 0;
+  } catch (e) {
+    return _crystalsMemoryFallback ?? 0;
+  }
+}
+
+function saveCrystals(n) {
+  _crystalsMemoryFallback = n;
+  try {
+    localStorage.setItem(CRYSTALS_KEY, String(n));
+  } catch (e) {
+    dbgLog('⚠️ 水晶存檔失敗（可能為無痕模式或配額已滿），本次僅暫存於記憶體');
+  }
+}
+
+function addCrystals(n) {
+  const total = loadCrystals() + n;
+  saveCrystals(total);
+  return total;
+}
+
+const UNLOCKS_KEY = 'dd_td_unlocks_v1';
+let _unlocksMemoryFallback = null;
+
+function defaultUnlocks() {
+  return { towers: [...FREE_STARTER_TOWERS], skills: [] };
+}
+
+function loadUnlocks() {
+  try {
+    const raw = localStorage.getItem(UNLOCKS_KEY);
+    if (!raw) return _unlocksMemoryFallback || defaultUnlocks();
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.towers) || !Array.isArray(data.skills)) return defaultUnlocks();
+    return data;
+  } catch (e) {
+    return _unlocksMemoryFallback || defaultUnlocks();
+  }
+}
+
+function saveUnlocks(data) {
+  _unlocksMemoryFallback = data;
+  try {
+    localStorage.setItem(UNLOCKS_KEY, JSON.stringify(data));
+  } catch (e) {
+    dbgLog('⚠️ 解鎖狀態存檔失敗（可能為無痕模式或配額已滿），本次僅暫存於記憶體');
+  }
+}
+
+function isTowerUnlocked(typeKey) {
+  if (FREE_STARTER_TOWERS.includes(typeKey)) return true;
+  return loadUnlocks().towers.includes(typeKey);
+}
+
+function isSkillUnlocked(skillKey) {
+  return loadUnlocks().skills.includes(skillKey);
+}
+
+// 用水晶購買永久解鎖一座塔；回傳 { ok, reason? }
+function purchaseTower(typeKey) {
+  const item = SHOP_ITEMS.towers[typeKey];
+  if (!item) return { ok: false, reason: 'not-found' };
+  if (isTowerUnlocked(typeKey)) return { ok: false, reason: 'already-unlocked' };
+  const balance = loadCrystals();
+  if (balance < item.cost) return { ok: false, reason: 'insufficient' };
+  saveCrystals(balance - item.cost);
+  const unlocks = loadUnlocks();
+  unlocks.towers.push(typeKey);
+  saveUnlocks(unlocks);
+  return { ok: true };
+}
+
+// 用水晶購買永久解鎖一個主動技能；回傳 { ok, reason? }
+function purchaseSkill(skillKey) {
+  const item = SHOP_ITEMS.skills[skillKey];
+  if (!item) return { ok: false, reason: 'not-found' };
+  if (isSkillUnlocked(skillKey)) return { ok: false, reason: 'already-unlocked' };
+  const balance = loadCrystals();
+  if (balance < item.cost) return { ok: false, reason: 'insufficient' };
+  saveCrystals(balance - item.cost);
+  const unlocks = loadUnlocks();
+  unlocks.skills.push(skillKey);
+  saveUnlocks(unlocks);
+  return { ok: true };
+}
 
 // ─── 5.5 Canvas 手繪角色系統 ─────────────────
 const Sprites = {
@@ -589,326 +872,449 @@ const Sprites = {
     ctx.restore();
   },
 
-  // ─── 怪物立體繪製 ──────────────────────────
+  // ─── 怪物立體繪製 (Q 版輕量幾何 Sprite) ──────────────────────────
 
-  // 1. 毛毛蟲 (多節立體果凍圓球 + 彈簧蠕動波浪)
-  drawEnemy_caterpillar: function(ctx, time) {
+  // 小皇冠輔助
+  drawMiniCrown: function(ctx, ox, oy) {
     ctx.save();
-    const wave1 = Math.sin(time * 8) * 2;
-    const wave2 = Math.sin(time * 8 - 1) * 2;
-    const wave3 = Math.sin(time * 8 - 2) * 2;
-
-    const drawSegment = (cx, cy, r, isHead = false) => {
-      const segGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 1, cx, cy, r);
-      segGrad.addColorStop(0, '#e8f5e9');
-      segGrad.addColorStop(0.4, '#a5d6a7');
-      segGrad.addColorStop(0.85, '#66bb6a');
-      segGrad.addColorStop(1, '#388e3c');
-      ctx.fillStyle = segGrad;
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#2e7d32';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    };
-
-    // 尾節 -> 中節 -> 頭節
-    drawSegment(9 + wave3, 0, 5);
-    drawSegment(1 + wave2, wave2 * 0.5, 6.5);
-    drawSegment(-8 + wave1, 0, 8, true);
-
-    // 頭頂觸角 (粉紅發光小圓球)
-    ctx.strokeStyle = '#2e7d32';
-    ctx.lineWidth = 1.2;
+    ctx.fillStyle = '#ffd600';
+    ctx.strokeStyle = '#e65100';
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.moveTo(-9 + wave1, -6); ctx.lineTo(-13 + wave1, -12);
-    ctx.moveTo(-6 + wave1, -6); ctx.lineTo(-3 + wave1, -12);
-    ctx.stroke();
-    ctx.fillStyle = '#ff4081';
-    ctx.beginPath(); ctx.arc(-13 + wave1, -12, 1.8, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-3 + wave1, -12, 1.8, 0, Math.PI * 2); ctx.fill();
-
-    // 水汪汪萌大眼
-    ctx.save();
-    ctx.translate(-8 + wave1, 0);
-    this.drawFace(ctx, -1);
-    ctx.restore();
+    ctx.moveTo(ox - 6, oy + 3); ctx.lineTo(ox - 6, oy - 3);
+    ctx.lineTo(ox - 3, oy);     ctx.lineTo(ox, oy - 4);
+    ctx.lineTo(ox + 3, oy);     ctx.lineTo(ox + 6, oy - 3);
+    ctx.lineTo(ox + 6, oy + 3); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ff1744';
+    ctx.beginPath(); ctx.arc(ox, oy - 4, 1.2, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   },
 
-  // 2. 蜜蜂 (金黃黑條紋立體毛茸身軀 + 半透明振翅高光)
-  drawEnemy_bee: function(ctx, time) {
+  // 1. 毛毛蟲
+  drawEnemy_caterpillar: function(ctx, time, isBoss) {
     ctx.save();
-    const flap = Math.sin(time * 30) * 5;
+    const w1 = Math.sin(time * 8) * 1.5;
+    const w2 = Math.sin(time * 8 - 1) * 1.5;
+    const w3 = Math.sin(time * 8 - 2) * 1.5;
 
-    // 半透明發光翅膀
-    ctx.fillStyle = 'rgba(225, 245, 254, 0.8)';
-    ctx.strokeStyle = '#81d4fa';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.ellipse(-3, -7 - flap, 5, 8, Math.PI / 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(4, -7 - flap, 5, 8, -Math.PI / 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    if (isBoss) {
+      const seg = (cx, cy, r) => {
+        const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 1, cx, cy, r);
+        g.addColorStop(0, '#fffde7'); g.addColorStop(0.5, '#ffd600'); g.addColorStop(1, '#e65100');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1; ctx.stroke();
+      };
+      seg(9 + w3, 0, 5); seg(1 + w2, w2 * 0.4, 6.5); seg(-8 + w1, 0, 8);
+      this.drawMiniCrown(ctx, -8 + w1, -12);
+      ctx.save(); ctx.translate(-8 + w1, 0); this.drawFace(ctx, 0); ctx.restore();
+    } else {
+      const seg = (cx, cy, r, c1, c2) => {
+        const g = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 1, cx, cy, r);
+        g.addColorStop(0, c1); g.addColorStop(1, c2);
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 0.8; ctx.stroke();
+      };
+      seg(7 + w3, 0, 4, '#e8f5e9', '#66bb6a');
+      seg(1 + w2, w2 * 0.4, 5.5, '#e8f5e9', '#4caf50');
+      seg(-7 + w1, 0, 7, '#e8f5e9', '#388e3c');
 
-    // 蜜蜂立體橢圓主體
-    const beeGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 12);
-    beeGrad.addColorStop(0, '#fffde7');
-    beeGrad.addColorStop(0.4, '#fff176');
-    beeGrad.addColorStop(0.8, '#fbc02d');
-    beeGrad.addColorStop(1, '#f57f17');
-    ctx.fillStyle = beeGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 11, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#f57f17';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
+      ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-8 + w1, -5); ctx.lineTo(-11 + w1, -10);
+      ctx.moveTo(-5 + w1, -5); ctx.lineTo(-2 + w1, -10); ctx.stroke();
+      ctx.fillStyle = '#ff4081';
+      ctx.beginPath(); ctx.arc(-11 + w1, -10, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2 + w1, -10, 1.5, 0, Math.PI * 2); ctx.fill();
 
-    // 黑色紋路
-    ctx.fillStyle = '#212121';
-    ctx.fillRect(-2, -8.5, 4, 17);
-    ctx.fillRect(4, -7, 3.5, 14);
-
-    // 尾部小毒針
-    ctx.fillStyle = '#212121';
-    ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(14, -1.5); ctx.lineTo(14, 1.5); ctx.closePath(); ctx.fill();
-
-    this.drawFace(ctx, -1);
+      ctx.save(); ctx.translate(-7 + w1, 0); this.drawFace(ctx, 0); ctx.restore();
+    }
     ctx.restore();
   },
 
-  // 3. 蝸牛 (立體旋轉焦糖蝸牛殼 + Q 彈黏液肉身)
-  drawEnemy_snail: function(ctx, time) {
+  // 2. 蜜蜂 (圓滾萌蜂 / 黃金蜂王)
+  drawEnemy_bee: function(ctx, time, isBoss) {
     ctx.save();
-    const squish = Math.sin(time * 4) * 0.8;
-
-    // 身體底座 (草綠果凍感)
-    const bodyGrad = ctx.createLinearGradient(-12, 6, 12, 6);
-    bodyGrad.addColorStop(0, '#c8e6c9');
-    bodyGrad.addColorStop(1, '#81c784');
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.ellipse(-2 + squish, 5, 13, 4.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#4caf50';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // 蝸牛殼 (焦糖金黃立體同心螺紋)
-    const shellGrad = ctx.createRadialGradient(2, -3, 2, 4, 0, 10);
-    shellGrad.addColorStop(0, '#ffe082');
-    shellGrad.addColorStop(0.5, '#ffb300');
-    shellGrad.addColorStop(1, '#e65100');
-    ctx.fillStyle = shellGrad;
-    ctx.beginPath();
-    ctx.arc(3, -1, 9.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#bf360c';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // 旋渦紋
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.arc(3, -1, 5, 0.2, Math.PI * 1.6);
-    ctx.stroke();
-
-    // 眼睛觸角
-    ctx.strokeStyle = '#4caf50';
-    ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    ctx.moveTo(-9 + squish, 4); ctx.lineTo(-14 + squish, -3);
-    ctx.moveTo(-5 + squish, 4); ctx.lineTo(-8 + squish, -5);
-    ctx.stroke();
-
-    ctx.fillStyle = '#1b5e20';
-    ctx.beginPath(); ctx.arc(-14 + squish, -3, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(-8 + squish, -5, 1.5, 0, Math.PI * 2); ctx.fill();
-    ctx.restore();
-  },
-
-  // 4. 蝴蝶 (夢幻漸層雙翅 + 揮翅流光 + 纖細觸鬚)
-  drawEnemy_butterfly: function(ctx, time) {
-    ctx.save();
-    const flap = Math.sin(time * 12);
-    const scaleX = 0.5 + Math.abs(flap) * 0.5;
-
-    // 左右大翅膀 (紫粉到天藍雙色漸層)
-    ctx.save();
-    ctx.scale(scaleX, 1);
-    const drawWing = (dir) => {
-      const wingGrad = ctx.createRadialGradient(dir * 8, -4, 2, dir * 8, 0, 14);
-      wingGrad.addColorStop(0, '#f8bbd0');
-      wingGrad.addColorStop(0.5, '#b388ff');
-      wingGrad.addColorStop(1, '#80d8ff');
-      ctx.fillStyle = wingGrad;
-      ctx.beginPath();
-      ctx.ellipse(dir * 9, -4, 9, 12, dir * Math.PI / 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#7c4dff';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // 翅膀花紋亮斑
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(dir * 9, -5, 2.5, 0, Math.PI * 2); ctx.fill();
-    };
-    drawWing(-1);
-    drawWing(1);
-    ctx.restore();
-
-    // 細長身體
-    const bGrad = ctx.createLinearGradient(0, -8, 0, 8);
-    bGrad.addColorStop(0, '#ff80ab');
-    bGrad.addColorStop(1, '#c51162');
-    ctx.fillStyle = bGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, 3, 10, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 弧形觸角
-    ctx.strokeStyle = '#4a148c';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(-1, -8); ctx.quadraticCurveTo(-5, -14, -8, -12);
-    ctx.moveTo(1, -8); ctx.quadraticCurveTo(5, -14, 8, -12);
-    ctx.stroke();
-
-    this.drawFace(ctx, -2);
-    ctx.restore();
-  },
-
-  // 5. 小龍 Boss (霸氣立體紅寶石身軀 + 龍角金鱗 + 霸氣龍翼)
-  drawEnemy_dragon: function(ctx, time) {
-    ctx.save();
-    const floatY = Math.sin(time * 4) * 2;
-    const flap = Math.sin(time * 10) * 4;
-    ctx.translate(0, floatY);
-
-    // 兩側龍翼
-    const wingGrad = ctx.createLinearGradient(-16, -10, 16, 10);
-    wingGrad.addColorStop(0, '#ff1744');
-    wingGrad.addColorStop(1, '#b71c1c');
-    ctx.fillStyle = wingGrad;
-    ctx.beginPath();
-    ctx.moveTo(-6, -3); ctx.lineTo(-18, -12 - flap); ctx.lineTo(-14, 2); ctx.closePath();
-    ctx.moveTo(6, -3); ctx.lineTo(18, -12 - flap); ctx.lineTo(14, 2); ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = '#880e4f';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-
-    // 龍身 (紅寶石立體漸層球)
-    const bodyGrad = ctx.createRadialGradient(-3, -3, 2, 0, 2, 14);
-    bodyGrad.addColorStop(0, '#ff8a80');
-    bodyGrad.addColorStop(0.4, '#ff5252');
-    bodyGrad.addColorStop(0.8, '#d50000');
-    bodyGrad.addColorStop(1, '#8b0000');
-    ctx.fillStyle = bodyGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 2, 12, 14, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#b71c1c';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // 龍肚皮 (金黃鱗甲)
-    const bellyGrad = ctx.createLinearGradient(0, -2, 0, 12);
-    bellyGrad.addColorStop(0, '#fff59d');
-    bellyGrad.addColorStop(1, '#fbc02d');
-    ctx.fillStyle = bellyGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 5, 7, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // 頭頂金色龍角
-    ctx.fillStyle = '#ffd700';
-    ctx.strokeStyle = '#ff8f00';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-6, -8); ctx.lineTo(-10, -17); ctx.lineTo(-3, -10); ctx.closePath();
-    ctx.moveTo(6, -8); ctx.lineTo(10, -17); ctx.lineTo(3, -10); ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    // 龍的小獠牙與霸氣眼睛
-    this.drawFace(ctx, -2);
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.moveTo(-3, 2); ctx.lineTo(-1.5, 4.5); ctx.lineTo(0, 2); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(3, 2); ctx.lineTo(1.5, 4.5); ctx.lineTo(0, 2); ctx.fill();
-    ctx.restore();
-  },
-
-  // 6. 鐵甲甲蟲 (立體重裝黑曜石/青銅金屬甲殼 + 金屬高光 + 鋼鐵巨角)
-  drawEnemy_beetle: function(ctx, time) {
-    ctx.save();
-    const bob = Math.sin(time * 6) * 1.2;
+    const bob = Math.sin(time * 6) * 2;
+    const flap = Math.sin(time * 30) * 0.4;
     ctx.translate(0, bob);
 
-    // 6 隻步足 (金屬爪)
-    ctx.strokeStyle = '#37474f';
-    ctx.lineWidth = 2.2;
-    ctx.lineCap = 'round';
-    for (let side = -1; side <= 1; side += 2) {
-      ctx.beginPath();
-      ctx.moveTo(side * 8, -6); ctx.lineTo(side * 15, -11);
-      ctx.moveTo(side * 9, 0);  ctx.lineTo(side * 16, 0);
-      ctx.moveTo(side * 8, 6);  ctx.lineTo(side * 15, 11);
-      ctx.stroke();
+    if (isBoss) {
+      ctx.save();
+      ctx.translate(5, -9);
+      ctx.rotate(flap);
+      ctx.fillStyle = 'rgba(255, 249, 196, 0.9)'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(5, -5, 6, 9, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(-2, 0, 4.5, 7, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.rotate(-0.1);
+      const bg = ctx.createRadialGradient(-3, -3, 2, 0, 0, 15);
+      bg.addColorStop(0, '#fffde7'); bg.addColorStop(0.4, '#ffee58'); bg.addColorStop(1, '#e65100');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.ellipse(0, 0, 14, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, 0, 14, 12, 0, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = 'rgba(80, 30, 0, 0.75)';
+      ctx.fillRect(0, -13, 5, 26); ctx.fillRect(9, -13, 6, 26);
+      ctx.restore();
+
+      ctx.strokeStyle = '#b23c00'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(0, 0, 14, 12, -0.1, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.moveTo(13, 1); ctx.lineTo(18, 2); ctx.lineTo(13, 4); ctx.fill();
+      this.drawMiniCrown(ctx, -4, -13);
+
+      ctx.fillStyle = 'rgba(255, 64, 129, 0.75)';
+      ctx.beginPath(); ctx.ellipse(-9, 2, 2.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#7f0000';
+      ctx.beginPath(); ctx.arc(-7, -1, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2, 0, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-7.5, -1.6, 0.7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2.5, -0.6, 0.7, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.save();
+      ctx.translate(4, -8);
+      ctx.rotate(flap);
+      ctx.fillStyle = 'rgba(179, 229, 252, 0.85)'; ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(4, -4, 5, 8, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(-2, 0, 4, 6, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.rotate(-0.1);
+      const bg = ctx.createRadialGradient(-3, -3, 2, 0, 0, 14);
+      bg.addColorStop(0, '#fff9c4'); bg.addColorStop(0.4, '#ffeb3b'); bg.addColorStop(1, '#f57f17');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.ellipse(0, 0, 13, 11, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(0, 0, 13, 11, 0, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = '#3e2723';
+      ctx.fillRect(0, -12, 4.5, 24); ctx.fillRect(8, -12, 5, 24);
+      ctx.restore();
+
+      ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(0, 0, 13, 11, -0.1, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.fillStyle = '#3e2723';
+      ctx.beginPath(); ctx.moveTo(12, 1); ctx.lineTo(16, 2); ctx.lineTo(12, 4); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-4, 11, 1.5, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(3, 11, 1.5, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-6, -9); ctx.quadraticCurveTo(-9, -15, -7, -17); ctx.stroke();
+      ctx.beginPath(); ctx.arc(-7, -17, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0, -10); ctx.quadraticCurveTo(0, -16, 3, -18); ctx.stroke();
+      ctx.beginPath(); ctx.arc(3, -18, 1.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = 'rgba(255, 107, 129, 0.75)';
+      ctx.beginPath(); ctx.ellipse(-9, 2, 2.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-1, 3, 2.5, 2, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = '#2d2013';
+      ctx.beginPath(); ctx.arc(-7, -1, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2, 0, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(-7.5, -1.6, 0.7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-2.5, -0.6, 0.7, 0, Math.PI * 2); ctx.fill();
     }
+    ctx.restore();
+  },
 
-    // 甲蟲背部立體青銅金屬硬殼 (深邃金屬漸層)
-    const shellGrad = ctx.createRadialGradient(-3, -3, 2, 0, 0, 14);
-    shellGrad.addColorStop(0, '#78909c');
-    shellGrad.addColorStop(0.4, '#455a64');
-    shellGrad.addColorStop(0.85, '#263238');
-    shellGrad.addColorStop(1, '#0d161a');
-    ctx.fillStyle = shellGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, 2, 12, 13, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#90a4ae';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+  // 3. 蝸牛 (焦糖旋殼 / 黃金蝸牛王)
+  drawEnemy_snail: function(ctx, time, isBoss) {
+    ctx.save();
+    const sq = Math.sin(time * 4) * 0.6;
 
-    // 硬殼中央金屬中縫與高光脊線
-    ctx.strokeStyle = '#cfd8dc';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(0, -10);
-    ctx.lineTo(0, 14);
-    ctx.stroke();
+    if (isBoss) {
+      ctx.fillStyle = '#ffd54f';
+      ctx.beginPath(); ctx.ellipse(-2 + sq, 4, 11, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1; ctx.stroke();
 
-    // 頭部重裝甲與巨角
-    const headGrad = ctx.createRadialGradient(-2, -10, 1, 0, -8, 6);
-    headGrad.addColorStop(0, '#90a4ae');
-    headGrad.addColorStop(1, '#263238');
-    ctx.fillStyle = headGrad;
-    ctx.beginPath();
-    ctx.ellipse(0, -9, 7, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
+      const shG = ctx.createRadialGradient(2, -2, 1, 3, 0, 9);
+      shG.addColorStop(0, '#fffde7'); shG.addColorStop(0.5, '#ffd600'); shG.addColorStop(1, '#e65100');
+      ctx.fillStyle = shG;
+      ctx.beginPath(); ctx.arc(3, -2, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
 
-    // 鋼鐵巨角 (金色分叉大角)
-    ctx.fillStyle = '#ffb300';
-    ctx.strokeStyle = '#ff6f00';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(-3, -12);
-    ctx.lineTo(-6, -20);
-    ctx.lineTo(-2, -18);
-    ctx.lineTo(0, -22);
-    ctx.lineTo(2, -18);
-    ctx.lineTo(6, -20);
-    ctx.lineTo(3, -12);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+      this.drawMiniCrown(ctx, 3, -14);
 
-    // 發光紅眼
-    ctx.fillStyle = '#ff1744';
-    ctx.beginPath(); ctx.arc(-3.5, -9, 1.8, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(3.5, -9, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(-8 + sq, 3); ctx.lineTo(-12 + sq, -3);
+      ctx.moveTo(-4 + sq, 3); ctx.lineTo(-7 + sq, -5); ctx.stroke();
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-12 + sq, -3, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-7 + sq, -5, 1.8, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#a5d6a7';
+      ctx.beginPath(); ctx.ellipse(-2 + sq, 4, 10, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#388e3c'; ctx.lineWidth = 0.8; ctx.stroke();
 
+      const shG = ctx.createRadialGradient(2, -2, 1, 3, 0, 8);
+      shG.addColorStop(0, '#ffe082'); shG.addColorStop(0.5, '#ffb300'); shG.addColorStop(1, '#e65100');
+      ctx.fillStyle = shG;
+      ctx.beginPath(); ctx.arc(2, -1, 7.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#bf360c'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(2, -1, 4, 0.2, Math.PI * 1.5); ctx.stroke();
+
+      ctx.strokeStyle = '#388e3c'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(-7 + sq, 3); ctx.lineTo(-10 + sq, -2);
+      ctx.moveTo(-4 + sq, 3); ctx.lineTo(-6 + sq, -4); ctx.stroke();
+      ctx.fillStyle = '#1b5e20';
+      ctx.beginPath(); ctx.arc(-10 + sq, -2, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-6 + sq, -4, 1.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  },
+
+  // 4. 蝴蝶 (紫粉彩蝶 / 黃金蝶王)
+  drawEnemy_butterfly: function(ctx, time, isBoss) {
+    ctx.save();
+    if (isBoss) {
+      const flap = Math.sin(time * 10);
+      const scaleX = 0.45 + Math.abs(flap) * 0.55;
+      ctx.save(); ctx.scale(scaleX, 1);
+      const drawWing = (dir) => {
+        const wg = ctx.createRadialGradient(dir * 7, -3, 1, dir * 7, 0, 11);
+        wg.addColorStop(0, '#fffde7'); wg.addColorStop(0.5, '#ffee58'); wg.addColorStop(1, '#e65100');
+        ctx.fillStyle = wg;
+        ctx.beginPath(); ctx.ellipse(dir * 8, -3, 8, 10, dir * Math.PI / 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#e65100'; ctx.lineWidth = 0.9; ctx.stroke();
+      };
+      drawWing(-1); drawWing(1); ctx.restore();
+
+      ctx.fillStyle = '#e65100';
+      ctx.beginPath(); ctx.ellipse(0, 0, 3, 8, 0, 0, Math.PI * 2); ctx.fill();
+      this.drawMiniCrown(ctx, 0, -12);
+      this.drawFace(ctx, -1);
+    } else {
+      const flap = Math.sin(time * 12);
+      const scaleX = 0.5 + Math.abs(flap) * 0.5;
+      ctx.save(); ctx.scale(scaleX, 1);
+      const drawWing = (dir) => {
+        const wg = ctx.createRadialGradient(dir * 6, -3, 1, dir * 6, 0, 10);
+        wg.addColorStop(0, '#f8bbd0'); wg.addColorStop(0.5, '#b388ff'); wg.addColorStop(1, '#80d8ff');
+        ctx.fillStyle = wg;
+        ctx.beginPath(); ctx.ellipse(dir * 7, -3, 7, 9, dir * Math.PI / 8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#7c4dff'; ctx.lineWidth = 0.8; ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath(); ctx.arc(dir * 7, -4, 1.8, 0, Math.PI * 2); ctx.fill();
+      };
+      drawWing(-1); drawWing(1); ctx.restore();
+
+      ctx.fillStyle = '#c51162';
+      ctx.beginPath(); ctx.ellipse(0, 0, 2.5, 7, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#4a148c'; ctx.lineWidth = 0.9;
+      ctx.beginPath(); ctx.moveTo(-1, -6); ctx.quadraticCurveTo(-4, -11, -6, -9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(1, -6); ctx.quadraticCurveTo(4, -11, 6, -9); ctx.stroke();
+
+      this.drawFace(ctx, -1);
+    }
+    ctx.restore();
+  },
+
+  // 5. 幼龍 (青碧生肖幼龍 / 黃金真龍王 - 生肖圖重繪)
+  drawEnemy_dragon: function(ctx, time, isBoss) {
+    ctx.save();
+    const bob = Math.sin(time * 4) * 1.5;
+    const whiskerWave = Math.sin(time * 6) * 2;
+    const tailWave = Math.sin(time * 5) * 1.5;
+    ctx.translate(0, bob);
+
+    if (isBoss) {
+      // 尾巴
+      ctx.save();
+      ctx.translate(9, 6);
+      ctx.rotate(tailWave * 0.1);
+      ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(9, 4, 9, -7); ctx.stroke();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#ff6f00';
+      ctx.beginPath(); ctx.moveTo(9, -7); ctx.quadraticCurveTo(14, -11, 9, -15); ctx.quadraticCurveTo(6, -11, 9, -7); ctx.closePath(); ctx.fill();
+      ctx.restore();
+
+      // 金身
+      const bg = ctx.createRadialGradient(-2, 6, 1, 0, 8, 10);
+      bg.addColorStop(0, '#fffde7'); bg.addColorStop(0.5, '#ffd600'); bg.addColorStop(1, '#e65100');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.ellipse(0, 8, 10, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
+
+      ctx.fillStyle = '#fffde7';
+      ctx.beginPath(); ctx.ellipse(0, 8.5, 6.5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+
+      // 耳與角
+      ctx.fillStyle = '#ffd600'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.ellipse(-12, -3, 3.5, 2, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(12, -3, 3.5, 2, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = '#ff5722'; ctx.strokeStyle = '#b71c1c'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(-7, -9); ctx.quadraticCurveTo(-12, -16, -9, -18); ctx.quadraticCurveTo(-6, -14, -5, -9); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(7, -9); ctx.quadraticCurveTo(12, -16, 9, -18); ctx.quadraticCurveTo(6, -14, 5, -9); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      this.drawMiniCrown(ctx, 0, -17);
+
+      // 金龍頭
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.ellipse(0, -3, 12, 10, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
+
+      ctx.fillStyle = '#fffde7';
+      ctx.beginPath(); ctx.ellipse(0, -0.5, 10, 6.5, 0, 0, Math.PI); ctx.fill();
+
+      // 龍鬚
+      ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 1.5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-8, 0); ctx.quadraticCurveTo(-15, 2 + whiskerWave, -18, 9 + whiskerWave); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(8, 0); ctx.quadraticCurveTo(15, 2 - whiskerWave, 18, 9 - whiskerWave); ctx.stroke();
+
+      // 腮紅 & 琉璃赤瞳
+      ctx.fillStyle = 'rgba(255, 64, 129, 0.75)';
+      ctx.beginPath(); ctx.ellipse(-7, 0, 2.2, 1.2, -0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(7, 0, 2.2, 1.2, 0.2, 0, Math.PI * 2); ctx.fill();
+
+      const drawKingDragonEye = (ex, ey, flip) => {
+        ctx.fillStyle = '#b71c1c';
+        ctx.beginPath(); ctx.ellipse(ex, ey, 2.4, 3.2, flip ? 0.15 : -0.15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(ex - 0.6, ey - 1, 1, 0, Math.PI * 2); ctx.fill();
+      };
+      drawKingDragonEye(-6, -4, false);
+      drawKingDragonEye(6, -4, true);
+
+      ctx.fillStyle = '#bf360c';
+      ctx.beginPath(); ctx.arc(-1.5, 0, 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5, 0, 0.6, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // 尾巴 + 黃毛
+      ctx.save();
+      ctx.translate(8, 6);
+      ctx.rotate(tailWave * 0.1);
+      ctx.strokeStyle = '#5dbbb0'; ctx.lineWidth = 4.5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(8, 4, 8, -6); ctx.stroke();
+      ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = '#fff59d'; ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(8, -6); ctx.quadraticCurveTo(12, -10, 8, -13); ctx.quadraticCurveTo(5, -10, 8, -6); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+
+      // 青碧身
+      ctx.fillStyle = '#5dbbb0';
+      ctx.beginPath(); ctx.ellipse(0, 8, 9, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 1; ctx.stroke();
+
+      ctx.fillStyle = '#cbf3ed';
+      ctx.beginPath(); ctx.ellipse(0, 8.5, 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+
+      ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-3, 6); ctx.lineTo(-3, 9); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(3, 6); ctx.lineTo(3, 9); ctx.stroke();
+
+      // 耳與角
+      ctx.fillStyle = '#5dbbb0'; ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.ellipse(-11, -3, 3.5, 2, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(11, -3, 3.5, 2, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffcdd2';
+      ctx.beginPath(); ctx.ellipse(-11, -3, 2, 1, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(11, -3, 2, 1, 0.3, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = '#ffab91'; ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(-7, -9); ctx.quadraticCurveTo(-11, -15, -8, -17); ctx.quadraticCurveTo(-6, -14, -5, -9); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(7, -9); ctx.quadraticCurveTo(11, -15, 8, -17); ctx.quadraticCurveTo(6, -14, 5, -9); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = '#fff59d'; ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 0.8;
+      ctx.beginPath(); ctx.moveTo(-2, -10); ctx.lineTo(0, -15); ctx.lineTo(2, -10); ctx.closePath(); ctx.fill(); ctx.stroke();
+
+      // 青碧頭
+      ctx.fillStyle = '#5dbbb0';
+      ctx.beginPath(); ctx.ellipse(0, -3, 11, 9.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#2b6e66'; ctx.lineWidth = 1; ctx.stroke();
+
+      ctx.fillStyle = '#cbf3ed';
+      ctx.beginPath(); ctx.ellipse(0, -0.5, 9.5, 6, 0, 0, Math.PI); ctx.fill();
+
+      // 龍鬚
+      ctx.strokeStyle = '#fff176'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-7, 0); ctx.quadraticCurveTo(-14, 2 + whiskerWave, -16, 8 + whiskerWave); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(7, 0); ctx.quadraticCurveTo(14, 2 - whiskerWave, 16, 8 - whiskerWave); ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255, 107, 129, 0.7)';
+      ctx.beginPath(); ctx.ellipse(-7, 0, 2.2, 1.2, -0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(7, 0, 2.2, 1.2, 0.2, 0, Math.PI * 2); ctx.fill();
+
+      const drawChibiEye = (ex, ey, flip) => {
+        ctx.fillStyle = '#3e2723';
+        ctx.beginPath(); ctx.ellipse(ex, ey, 2.2, 3, flip ? 0.15 : -0.15, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(ex - 0.6, ey - 1, 0.9, 0, Math.PI * 2); ctx.fill();
+      };
+      drawChibiEye(-5.5, -4, false);
+      drawChibiEye(5.5, -4, true);
+
+      ctx.fillStyle = '#3e7a72';
+      ctx.beginPath(); ctx.arc(-1.5, 0, 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5, 0, 0.6, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  },
+
+  // 6. 鐵甲甲蟲 (黑曜石甲蟲 / 黃金甲蟲王)
+  drawEnemy_beetle: function(ctx, time, isBoss) {
+    ctx.save();
+    if (isBoss) {
+      const bob = Math.sin(time * 5) * 1.2; ctx.translate(0, bob);
+      ctx.strokeStyle = '#f9a825'; ctx.lineWidth = 2;
+      for (let s = -1; s <= 1; s += 2) {
+        ctx.beginPath();
+        ctx.moveTo(s * 6, -4); ctx.lineTo(s * 10, -7);
+        ctx.moveTo(s * 6, 0);  ctx.lineTo(s * 11, 0);
+        ctx.moveTo(s * 6, 4);  ctx.lineTo(s * 10, 7);
+        ctx.stroke();
+      }
+      const shG = ctx.createRadialGradient(-2, -2, 1, 0, 0, 10);
+      shG.addColorStop(0, '#fffde7'); shG.addColorStop(0.5, '#ffd600'); shG.addColorStop(1, '#e65100');
+      ctx.fillStyle = shG; ctx.beginPath(); ctx.ellipse(0, 1, 8.5, 9.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
+
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath();
+      ctx.moveTo(-2, -8); ctx.lineTo(-5, -15); ctx.lineTo(-1, -12);
+      ctx.lineTo(0, -16); ctx.lineTo(1, -12); ctx.lineTo(5, -15); ctx.lineTo(2, -8);
+      ctx.closePath(); ctx.fill();
+
+      this.drawMiniCrown(ctx, 0, -18);
+
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-3, -5, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -5, 1.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#b71c1c';
+      ctx.beginPath(); ctx.arc(-3, -5, 0.7, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -5, 0.7, 0, Math.PI * 2); ctx.fill();
+    } else {
+      const bob = Math.sin(time * 6) * 1; ctx.translate(0, bob);
+      ctx.strokeStyle = '#37474f'; ctx.lineWidth = 1.5;
+      for (let s = -1; s <= 1; s += 2) {
+        ctx.beginPath();
+        ctx.moveTo(s * 5, -4); ctx.lineTo(s * 9, -7);
+        ctx.moveTo(s * 5, 0);  ctx.lineTo(s * 10, 0);
+        ctx.moveTo(s * 5, 4);  ctx.lineTo(s * 9, 7);
+        ctx.stroke();
+      }
+      const shG = ctx.createRadialGradient(-2, -2, 1, 0, 0, 9);
+      shG.addColorStop(0, '#78909c'); shG.addColorStop(1, '#263238');
+      ctx.fillStyle = shG; ctx.beginPath(); ctx.ellipse(0, 1, 7.5, 8.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#90a4ae'; ctx.lineWidth = 1; ctx.stroke();
+
+      ctx.fillStyle = '#ffb300';
+      ctx.beginPath();
+      ctx.moveTo(-2, -7); ctx.lineTo(-4, -13); ctx.lineTo(-1, -11);
+      ctx.lineTo(0, -14); ctx.lineTo(1, -11); ctx.lineTo(4, -13); ctx.lineTo(2, -7);
+      ctx.closePath(); ctx.fill();
+
+      ctx.fillStyle = '#ff1744';
+      ctx.beginPath(); ctx.arc(-2.5, -5, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.5, -5, 1.2, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.restore();
   }
 };
@@ -1204,13 +1610,16 @@ class GameMap {
 
 // ─── 9. 敵人類別 ─────────────────────────────
 class Enemy {
-  constructor(typeKey, gameMap) {
+  constructor(typeKey, gameMap, waveIndex = 0) {
     const data = ENEMY_DATA[typeKey];
+    // 波次強度成長：越晚出現的波次，敵人血量越高，避免後期塔火力遠遠壓過敵人
+    const hpMult = 1 + waveIndex * CONFIG.ENEMY_HP_SCALE_PER_WAVE;
     this.typeKey = typeKey;
+    this.waveIndex = waveIndex;
     this.name = data.name;
     this.emoji = data.emoji;
-    this.maxHp = data.hp;
-    this.hp = data.hp;
+    this.maxHp = Math.round(data.hp * hpMult);
+    this.hp = this.maxHp;
     this.baseSpeed = data.speed;
     this.speed = data.speed;
     this.reward = data.reward;
@@ -1352,7 +1761,7 @@ class Enemy {
           });
           // 召喚 2 隻蜜蜂護衛
           for (let i = 0; i < 2; i++) {
-            const minion = new Enemy('bee', this.map);
+            const minion = new Enemy('bee', this.map, this.waveIndex);
             minion.distance = Math.max(0, this.distance - (i + 1) * 20);
             const mPos = this.map.getPositionAtDistance(minion.distance);
             minion.x = mPos.x;
@@ -1423,10 +1832,19 @@ class Enemy {
       ctx.globalAlpha = 1;
     }
 
-    // Draw Canvas Sprite
-    const drawFunc = Sprites['drawEnemy_' + this.typeKey];
-    if (drawFunc) {
-      drawFunc.call(Sprites, ctx, this.animTime);
+    // Draw SVG Image or Canvas Sprite
+    const enemyImg = assets.get('enemy_' + this.typeKey);
+    if (enemyImg) {
+      ctx.save();
+      // Wobble walk
+      ctx.rotate(this.wobbleAngle || 0);
+      ctx.drawImage(enemyImg, -20, -20, 40, 40);
+      ctx.restore();
+    } else {
+      const drawFunc = Sprites['drawEnemy_' + this.typeKey];
+      if (drawFunc) {
+        drawFunc.call(Sprites, ctx, this.animTime, !!this.isBoss);
+      }
     }
 
     // Hit flash overlay
@@ -1881,7 +2299,8 @@ class Tower {
 
 // ─── 13. 波次管理器 ──────────────────────────
 class WaveManager {
-  constructor() {
+  constructor(waveData = WAVE_DATA_L1) {
+    this.waveData = waveData;
     this.currentWave = -1;
     this.spawnQueue = [];
     this.spawnTimer = 0;
@@ -1891,7 +2310,7 @@ class WaveManager {
 
   startWave(waveIndex) {
     this.currentWave = waveIndex;
-    const wave = WAVE_DATA[waveIndex];
+    const wave = this.waveData[waveIndex];
     this.spawnQueue = [];
     if (!wave) {
       dbgLog(`⚠️ WaveData not found for wave ${waveIndex}`);
@@ -1927,7 +2346,7 @@ class WaveManager {
         dbgLog(`✨ [Wave] 第 ${this.currentWave + 1} 波出怪完畢 (allSpawned = true)`);
       }
 
-      return new Enemy(spawn.type, gameMap);
+      return new Enemy(spawn.type, gameMap, this.currentWave);
     }
     return null;
   }
@@ -1938,9 +2357,15 @@ class WaveManager {
   }
 
   getWaveBonus() {
-    return WAVE_DATA[this.currentWave]?.bonus || 0;
+    return this.waveData[this.currentWave]?.bonus || 0;
   }
 }
+
+// 設定面板音效開關圖示 (SVG，隨按鈕文字顏色變化，取代 Emoji)
+const SOUND_ICON_SVG = {
+  on: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
+  off: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.19v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73 4.27 3z"/></svg>',
+};
 
 // ─── 13.5 SVG 圖片資源管理器 (AssetManager - 無限放大絕不失焦) ──────────
 class AssetManager {
@@ -1951,16 +2376,23 @@ class AssetManager {
 
   loadAll() {
     const assets = {
-      tower_archer: 'assets/towers/tower_archer.svg',
-      tower_magic: 'assets/towers/tower_magic.svg',
+      tower_petal: 'assets/towers/tower_petal.svg',
+      tower_sunflower: 'assets/towers/tower_sunflower.svg',
+      tower_lavender: 'assets/towers/tower_lavender.svg',
       tower_cannon: 'assets/towers/tower_cannon.svg',
       tower_ice_crystal: 'assets/towers/tower_ice_crystal.svg',
       tower_laser: 'assets/towers/tower_laser.svg',
       tower_mushroom: 'assets/towers/tower_mushroom.svg',
       tower_treant: 'assets/towers/tower_treant.svg',
-      skill_meteor: 'assets/skills/skill_meteor.svg',
-      skill_freeze: 'assets/skills/skill_freeze.svg',
+      spawn_portal: 'assets/ui/spawn_portal.svg',
+      sacred_tree: 'assets/ui/sacred_tree.svg',
       spawn_badge: 'assets/ui/spawn_badge.svg',
+      pedestal_tile: 'assets/ui/pedestal_tile.svg',
+      icon_gold: 'assets/ui/icon_gold.svg',
+      icon_heart: 'assets/ui/icon_heart.svg',
+      icon_star: 'assets/ui/icon_star.svg',
+      icon_settings: 'assets/ui/icon_settings.svg',
+      icon_trophy: 'assets/ui/icon_trophy.svg',
     };
 
     const promises = [];
@@ -1975,7 +2407,8 @@ class AssetManager {
           dbgLog(`⚠️ SVG 圖片載入失敗: ${src}`);
           resolve();
         };
-        img.src = src;
+        // 加上版本號做快取破壞，避免改版後瀏覽器（尤其手機）還在吃舊的 SVG 快取
+        img.src = `${src}?v=${CONFIG.VERSION}`;
       }));
     }
 
@@ -1991,7 +2424,14 @@ class AssetManager {
 }
 
 const assets = new AssetManager();
-assets.loadAll();
+assets.loadAll().then(() => {
+  const game = window.gameInstance;
+  if (!game) return;
+  game.refreshIcons();
+  // 地圖（含建造平台、入口傳送門、出口世界樹）是畫在離屏 buffer 上只畫一次，
+  // init() 當下 SVG 通常還沒載入完成，所以載入完後要重畫一次，不然畫面會卡在手繪版本
+  game.renderMapToBuffer();
+});
 
 // ─── 14. 主遊戲類別 ──────────────────────────
 class Game {
@@ -2009,7 +2449,7 @@ class Game {
 
     this.map = new GameMap();
     this.sfx = new SoundManager();
-    this.waveManager = new WaveManager();
+    this.waveManager = new WaveManager(LEVEL_DATA[CURRENT_LEVEL_INDEX].waves);
 
     // Game state
     this.state = 'menu'; // menu, planning, wave, gameover, victory
@@ -2036,7 +2476,6 @@ class Game {
     // Base & Gate Dynamic Feedback
     this.baseHurtTimer = 0;
     this.gatePulseTimer = 0;
-    this.smokeTimer = 0;
 
     // Interaction
     this.selectedTowerType = null;
@@ -2084,39 +2523,48 @@ class Game {
           const pw = cs - 6;
           const ph = cs - 6;
 
-          // 2.1 底部石台厚度與深色陰影 (3D 側面)
-          ctx.fillStyle = 'rgba(230, 81, 0, 0.15)';
-          ctx.beginPath();
-          ctx.roundRect(px, py + 4, pw, ph, 8);
-          ctx.fill();
-
-          // 2.2 石台主頂面 (純白與暖陽奶霜石磚漸層)
-          const stoneGrad = ctx.createLinearGradient(px, py, px + pw, py + ph);
-          if ((r + c) % 2 === 0) {
-            stoneGrad.addColorStop(0, '#ffffff');
-            stoneGrad.addColorStop(1, '#fff8e7');
+          // 2.2 繪製 2.5D 石頭/草皮建造基座 (#5 露珠草皮丘)
+          const pedestalImg = assets.get('pedestal_tile');
+          if (pedestalImg) {
+            ctx.drawImage(pedestalImg, px, py, pw, ph);
           } else {
-            stoneGrad.addColorStop(0, '#ffffff');
-            stoneGrad.addColorStop(1, '#fff3d6');
+            // 2.1 底部草丘厚度陰影
+            ctx.fillStyle = 'rgba(85, 139, 47, 0.42)';
+            ctx.beginPath();
+            ctx.roundRect(px, py + 4, pw, ph, 10);
+            ctx.fill();
+
+            const grassGrad = ctx.createRadialGradient(px + pw * 0.35, py + ph * 0.3, 1, px + pw * 0.5, py + ph * 0.5, pw * 0.75);
+            grassGrad.addColorStop(0, '#c5e1a5');
+            grassGrad.addColorStop(1, '#8bc34a');
+            ctx.fillStyle = grassGrad;
+            ctx.beginPath();
+            ctx.roundRect(px, py, pw, ph, 10);
+            ctx.fill();
+
+            // 2.3 內細邊框
+            ctx.strokeStyle = 'rgba(104, 159, 56, 0.55)';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.roundRect(px + 1, py + 1, pw - 2, ph - 2, 8);
+            ctx.stroke();
+
+            // 2.4 草尖細節
+            ctx.strokeStyle = '#558b2f';
+            ctx.lineWidth = 1.5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(px + pw * 0.2, py + ph * 0.85); ctx.lineTo(px + pw * 0.18, py + ph * 0.75);
+            ctx.moveTo(px + pw * 0.25, py + ph * 0.85); ctx.lineTo(px + pw * 0.27, py + ph * 0.73);
+            ctx.moveTo(px + pw * 0.75, py + ph * 0.25); ctx.lineTo(px + pw * 0.78, py + ph * 0.15);
+            ctx.stroke();
+
+            // 2.5 水滴露珠
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+            ctx.beginPath(); ctx.arc(px + pw * 0.6, py + ph * 0.55, 3.5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath(); ctx.arc(px + pw * 0.59, py + ph * 0.53, 1.2, 0, Math.PI * 2); ctx.fill();
           }
-          ctx.fillStyle = stoneGrad;
-          ctx.beginPath();
-          ctx.roundRect(px, py, pw, ph - 2, 8);
-          ctx.fill();
-
-          // 2.3 石台頂面金色細緻收邊
-          ctx.strokeStyle = 'rgba(255, 167, 38, 0.55)';
-          ctx.lineWidth = 1.2;
-          ctx.beginPath();
-          ctx.roundRect(px + 1, py + 1, pw - 2, ph - 4, 7);
-          ctx.stroke();
-
-          // 2.4 四角精緻古典鉚釘/刻痕
-          ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
-          ctx.fillRect(px + 4, py + 4, 2, 2);
-          ctx.fillRect(px + pw - 6, py + 4, 2, 2);
-          ctx.fillRect(px + 4, py + ph - 8, 2, 2);
-          ctx.fillRect(px + pw - 6, py + ph - 8, 2, 2);
         }
       }
     }
@@ -2260,103 +2708,119 @@ class Game {
 
     ctx.save();
     ctx.translate(entry.x, entry.y);
-    // 5.1 魔法陣基座陰影
-    ctx.fillStyle = 'rgba(0,0,0,0.32)';
-    ctx.beginPath(); ctx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ctx.fill();
+    const portalImg = assets.get('spawn_portal');
+    if (portalImg) {
+      ctx.drawImage(portalImg, -36, -36, 72, 72);
+    } else {
+      // 5.1 魔法陣基座陰影
+      ctx.fillStyle = 'rgba(0,0,0,0.32)';
+      ctx.beginPath(); ctx.ellipse(0, 16, 28, 12, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 5.2 古代紫晶黑石魔法底座 (八角星石陣)
-    const riftBase = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
-    riftBase.addColorStop(0, '#4a148c');
-    riftBase.addColorStop(0.5, '#311b92');
-    riftBase.addColorStop(1, '#1a237e');
-    ctx.fillStyle = riftBase;
-    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#b388ff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    // 5.3 內圈神秘符文同心金環
-    ctx.strokeStyle = '#ea80fc';
-    ctx.lineWidth = 1.2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
-    ctx.setLineDash([]);
-
-    // 5.4 傳送門立體紫晶立柱（左右兩側黑曜石尖碑）
-    for (let side of [-1, 1]) {
-      ctx.fillStyle = '#212121';
-      ctx.beginPath();
-      ctx.moveTo(side * 18, 14);
-      ctx.lineTo(side * 22, -18);
-      ctx.lineTo(side * 16, -26);
-      ctx.lineTo(side * 12, -16);
-      ctx.lineTo(side * 14, 14);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = '#7c4dff';
-      ctx.lineWidth = 1;
+      // 5.2 古代紫晶黑石魔法底座 (八角星石陣)
+      const riftBase = ctx.createRadialGradient(0, 0, 2, 0, 0, 24);
+      riftBase.addColorStop(0, '#4a148c');
+      riftBase.addColorStop(0.5, '#311b92');
+      riftBase.addColorStop(1, '#1a237e');
+      ctx.fillStyle = riftBase;
+      ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#b388ff';
+      ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 尖碑頂端鑲嵌懸浮紫水晶
-      ctx.fillStyle = '#e040fb';
-      ctx.beginPath();
-      ctx.moveTo(side * 16, -28);
-      ctx.lineTo(side * 18, -34);
-      ctx.lineTo(side * 16, -40);
-      ctx.lineTo(side * 14, -34);
-      ctx.closePath();
-      ctx.fill();
+      // 5.3 內圈神秘符文同心金環
+      ctx.strokeStyle = '#ea80fc';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 5.4 傳送門立體紫晶立柱（左右兩側黑曜石尖碑）
+      for (let side of [-1, 1]) {
+        ctx.fillStyle = '#212121';
+        ctx.beginPath();
+        ctx.moveTo(side * 18, 14);
+        ctx.lineTo(side * 22, -18);
+        ctx.lineTo(side * 16, -26);
+        ctx.lineTo(side * 12, -16);
+        ctx.lineTo(side * 14, 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#7c4dff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 尖碑頂端鑲嵌懸浮紫水晶
+        ctx.fillStyle = '#e040fb';
+        ctx.beginPath();
+        ctx.moveTo(side * 16, -28);
+        ctx.lineTo(side * 18, -34);
+        ctx.lineTo(side * 16, -40);
+        ctx.lineTo(side * 14, -34);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
     ctx.restore();
 
-    // 6. 終點主題建築：極光琉璃水晶樹 (Aurora Crystal Tree - 5號設計)
+    // 6. 終點主題建築：極光琉璃水晶樹 (Aurora Crystal Tree)
     ctx.save();
     ctx.translate(exit.x, exit.y);
+    const treeImg = assets.get('sacred_tree');
+    if (treeImg) {
+      // sacred_tree.svg 內已內建地面陰影橢圓，這裡不再重複畫，避免陰影疊加變得混濁
 
-    // 6.1 地面晶光倒影陰影
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.beginPath(); ctx.ellipse(0, 20, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
+      // 青色外光暈，跟暖色調地圖背景拉開對比，避免淺色水晶樹融進背景
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 229, 255, 0.9)';
+      ctx.shadowBlur = 16;
+      ctx.drawImage(treeImg, -36, -36, 72, 72);
+      ctx.restore();
+    } else {
+      // 6.1 地面晶光倒影陰影
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.beginPath(); ctx.ellipse(0, 20, 28, 10, 0, 0, Math.PI * 2); ctx.fill();
 
-    // 6.2 冰晶折射基座
-    ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
-    ctx.strokeStyle = '#00e5ff';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.roundRect(-24, 10, 48, 13, 5);
-    ctx.fill();
-    ctx.stroke();
-
-    // 6.3 極光琉璃水晶主幹 (藍白晶透漸層)
-    const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
-    cGrad.addColorStop(0, '#80d8ff');
-    cGrad.addColorStop(0.5, '#ffffff');
-    cGrad.addColorStop(1, '#00b0ff');
-    ctx.fillStyle = cGrad;
-    ctx.beginPath();
-    ctx.moveTo(-8, 10);
-    ctx.lineTo(-20, -26);
-    ctx.lineTo(0, -38);
-    ctx.lineTo(20, -26);
-    ctx.lineTo(8, 10);
-    ctx.closePath();
-    ctx.fill();
-
-    // 6.4 琉璃棱鏡多面體立體切面
-    const facets = [
-      { p: [[0, -38], [-20, -26], [-11, -11], [0, -20]], c: '#e1f5fe' },
-      { p: [[0, -38], [20, -26], [11, -11], [0, -20]], c: '#b3e5fc' },
-      { p: [[0, -20], [-11, -11], [0, 8]], c: '#4fc3f7' },
-      { p: [[0, -20], [11, -11], [0, 8]], c: '#29b6f6' }
-    ];
-    for (let f of facets) {
-      ctx.fillStyle = f.c;
+      // 6.2 冰晶折射基座
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+      ctx.roundRect(-24, 10, 48, 13, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      // 6.3 極光琉璃水晶主幹 (藍白晶透漸層)
+      const cGrad = ctx.createLinearGradient(-15, 0, 15, 0);
+      cGrad.addColorStop(0, '#80d8ff');
+      cGrad.addColorStop(0.5, '#ffffff');
+      cGrad.addColorStop(1, '#00b0ff');
+      ctx.fillStyle = cGrad;
+      ctx.beginPath();
+      ctx.moveTo(-8, 10);
+      ctx.lineTo(-20, -26);
+      ctx.lineTo(0, -38);
+      ctx.lineTo(20, -26);
+      ctx.lineTo(8, 10);
       ctx.closePath();
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
+
+      // 6.4 琉璃棱鏡多面體立體切面
+      const facets = [
+        { p: [[0, -38], [-20, -26], [-11, -11], [0, -20]], c: '#e1f5fe' },
+        { p: [[0, -38], [20, -26], [11, -11], [0, -20]], c: '#b3e5fc' },
+        { p: [[0, -20], [-11, -11], [0, 8]], c: '#4fc3f7' },
+        { p: [[0, -20], [11, -11], [0, 8]], c: '#29b6f6' }
+      ];
+      for (let f of facets) {
+        ctx.fillStyle = f.c;
+        ctx.beginPath();
+        f.p.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt[0], pt[1]) : ctx.lineTo(pt[0], pt[1]));
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
     }
 
     // 6.5 頂端神聖晶核亮點
@@ -2369,129 +2833,244 @@ class Game {
     ctx.restore();
   }
 
+  // 繪製單一防禦塔卡槽圖示：優先用已載入的 SVG，否則退回手繪 Sprite
+  drawTowerIcon(ictx, key) {
+    ictx.setTransform(1, 0, 0, 1, 0, 0);
+    ictx.clearRect(0, 0, 38, 38);
+    const svgImg = assets.get('tower_' + key);
+    if (svgImg) {
+      ictx.drawImage(svgImg, 3, 3, 32, 32);
+    } else {
+      ictx.save();
+      ictx.translate(19, 21);
+      ictx.scale(0.68, 0.68);
+      const drawFn = Sprites['drawTower_' + key];
+      if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
+      ictx.restore();
+    }
+  }
+
+  // 繪製主動技能快捷欄圖示：#1 卡通天火隕石 & #4 永凍雪花晶核 (Canvas 動態 Sprite)
+  drawSkillIcon(ctx, key, time = 0) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, 36, 36);
+    ctx.save();
+    ctx.translate(18, 18);
+
+    if (key === 'meteor') {
+      // ─── #1 卡通天火隕石 (縮小適配 36x36 HUD 圖示) ───
+      ctx.save();
+      ctx.scale(0.55, 0.55);
+      ctx.rotate(-0.65);
+
+      // 1. 最外層深藍氣流光環
+      ctx.fillStyle = 'rgba(74, 107, 160, 0.35)';
+      ctx.beginPath();
+      ctx.arc(-8, 0, 19, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.lineTo(24, -14);
+      ctx.lineTo(20, 14);
+      ctx.closePath();
+      ctx.fill();
+
+      // 2. 外層亮橘火焰本體 (#ff732c)
+      ctx.fillStyle = '#ff732c';
+      ctx.beginPath();
+      ctx.arc(-8, 0, 16, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.lineTo(2, -16);
+      ctx.lineTo(14, -13);
+      ctx.lineTo(22, -10);
+      ctx.lineTo(16, -6);
+      ctx.lineTo(28, 0);
+      ctx.lineTo(18, 4);
+      ctx.lineTo(24, 8);
+      ctx.lineTo(10, 12);
+      ctx.lineTo(18, 15);
+      ctx.lineTo(-8, 16);
+      ctx.closePath();
+      ctx.fill();
+
+      // 3. 亮橘色火滴
+      [[26, -15, 2.5, 1.8], [29, 10, 2.2, 1.6], [10, -18, 2, 1.5], [12, 18, 2, 1.5]].forEach(([dx, dy, rx, ry]) => {
+        ctx.beginPath(); ctx.ellipse(dx, dy, rx, ry, -0.3, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // 4. 內層金黃火焰包覆 (#ffc926)
+      ctx.fillStyle = '#ffc926';
+      ctx.beginPath();
+      ctx.arc(-8, 0, 13, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.quadraticCurveTo(-1, -13, 1, -8);
+      ctx.quadraticCurveTo(8, -4, 4, 0);
+      ctx.quadraticCurveTo(9, 6, 2, 9);
+      ctx.quadraticCurveTo(-2, 13, -8, 13);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. 橘色火尾內部的黃色亮斑
+      [[10, -6, 3, 2], [16, -3, 2.5, 1.8], [12, 4, 2.2, 1.5]].forEach(([gx, gy, rx, ry]) => {
+        ctx.beginPath(); ctx.ellipse(gx, gy, rx, ry, -0.2, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // 6. 灰褐色隕石核心 (#8e7c75)
+      ctx.fillStyle = '#8e7c75';
+      ctx.beginPath(); ctx.arc(-8, 0, 10, 0, Math.PI * 2); ctx.fill();
+
+      // 7. 隕石坑洞細節 (#63534d)
+      ctx.fillStyle = '#63534d';
+      ctx.beginPath(); ctx.ellipse(-6, 2, 2.6, 2.2, 0.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(-10, 4, 1.8, 1.4, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-9, -4, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-5, -3, 1, 0, Math.PI * 2); ctx.fill();
+
+      ctx.restore();
+    } else if (key === 'freeze') {
+      // ─── #4 永凍雪花晶核 (六角青藍雪花 + 冰晶分叉 + 冰霜微粒) ───
+      ctx.save();
+      ctx.scale(0.85, 0.85);
+
+      // 六角雪花主幹與分叉
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < 6; i++) {
+        const ang = (i * Math.PI) / 3;
+        const x = Math.cos(ang) * 15;
+        const y = Math.sin(ang) * 15;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        // 冰晶分叉
+        const bx = Math.cos(ang) * 8;
+        const by = Math.sin(ang) * 8;
+        const a1 = ang + Math.PI / 4;
+        const a2 = ang - Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(a1) * 4.5, by + Math.sin(a1) * 4.5);
+        ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(a2) * 4.5, by + Math.sin(a2) * 4.5);
+        ctx.stroke();
+      }
+
+      // 冰核光芒光環
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+      ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = '#e0f7fa';
+      ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // 繪製首頁精靈世界樹大插畫：優先用已載入的 SVG，否則退回手繪 Sprite
+  drawTitleTree(tctx) {
+    tctx.setTransform(1, 0, 0, 1, 0, 0);
+    tctx.clearRect(0, 0, 80, 80);
+    tctx.translate(40, 48);
+
+    const treeImg = assets.get('sacred_tree');
+    if (treeImg) {
+      tctx.save();
+      tctx.shadowColor = 'rgba(0, 229, 255, 0.9)';
+      tctx.shadowBlur = 10;
+      tctx.drawImage(treeImg, -38, -46, 76, 76);
+      tctx.restore();
+      return;
+    }
+
+    // 地面晶光微光倒影
+    tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    tctx.beginPath(); tctx.ellipse(0, 22, 28, 10, 0, 0, Math.PI * 2); tctx.fill();
+
+    // 水晶台座
+    tctx.fillStyle = '#26c6da';
+    tctx.strokeStyle = '#00e5ff';
+    tctx.lineWidth = 1.5;
+    tctx.beginPath();
+    tctx.roundRect(-22, 10, 44, 12, 4);
+    tctx.fill();
+    tctx.stroke();
+
+    // 琉璃晶樹主幹
+    const tcGrad = tctx.createLinearGradient(-16, 0, 16, 0);
+    tcGrad.addColorStop(0, '#80d8ff');
+    tcGrad.addColorStop(0.5, '#ffffff');
+    tcGrad.addColorStop(1, '#00b0ff');
+    tctx.fillStyle = tcGrad;
+    tctx.beginPath();
+    tctx.moveTo(-9, 10);
+    tctx.lineTo(-24, -22);
+    tctx.lineTo(0, -38);
+    tctx.lineTo(24, -22);
+    tctx.lineTo(9, 10);
+    tctx.closePath();
+    tctx.fill();
+
+    // 晶芒切面
+    const titleFacets = [
+      { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
+      { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
+      { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
+      { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
+    ];
+    for (let tf of titleFacets) {
+      tctx.fillStyle = tf.c;
+      tctx.beginPath();
+      tf.p.forEach((pt, idx) => idx === 0 ? tctx.moveTo(pt[0], pt[1]) : tctx.lineTo(pt[0], pt[1]));
+      tctx.closePath();
+      tctx.fill();
+      tctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+      tctx.lineWidth = 0.8;
+      tctx.stroke();
+    }
+
+    // 頂端神聖守護晶核光芒
+    tctx.shadowColor = '#00e5ff';
+    tctx.shadowBlur = 14;
+    tctx.fillStyle = '#ffffff';
+    tctx.beginPath();
+    tctx.arc(0, -42, 6, 0, Math.PI * 2);
+    tctx.fill();
+  }
+
+  // SVG 資源在塔卡槽/技能欄/首頁插畫建立當下往往還沒載入完成，等全部載入完後重繪一次圖示
+  refreshIcons() {
+    document.querySelectorAll('.tower-item').forEach((item) => {
+      const canvas = item.querySelector('.tower-mini-canvas');
+      if (canvas) this.drawTowerIcon(canvas.getContext('2d'), item.dataset.type);
+    });
+    const meteorCv = document.getElementById('skill-canvas-meteor');
+    if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
+    const freezeCv = document.getElementById('skill-canvas-freeze');
+    if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+    const titleCv = document.getElementById('menu-title-canvas');
+    if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
+  }
+
   // ─── UI Setup ───
   setupUI() {
     // 動態綁定程式設定的版本號
     const versionBadge = document.getElementById('menu-version-badge');
     if (versionBadge) {
       const isDev = CONFIG.VERSION.includes('dev');
-      versionBadge.textContent = `${isDev ? '🛠️ 開發版' : '✨ 正式版'} ${CONFIG.VERSION}`;
+      versionBadge.textContent = `${isDev ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
     }
 
     // 繪製專屬技能 Canvas 圖標 (完全告別 Emoji)
     const meteorCv = document.getElementById('skill-canvas-meteor');
-    if (meteorCv) {
-      const mctx = meteorCv.getContext('2d');
-      mctx.clearRect(0, 0, 36, 36);
-      mctx.translate(18, 18);
-      // 燃燒流星火尾
-      const flameGrad = mctx.createRadialGradient(0, 0, 2, 0, 0, 14);
-      flameGrad.addColorStop(0, '#fff59d');
-      flameGrad.addColorStop(0.4, '#ff9800');
-      flameGrad.addColorStop(0.8, '#ff1744');
-      flameGrad.addColorStop(1, 'transparent');
-      mctx.fillStyle = flameGrad;
-      mctx.beginPath(); mctx.arc(0, 0, 14, 0, Math.PI * 2); mctx.fill();
-      // 火球核心
-      mctx.fillStyle = '#ffffff';
-      mctx.beginPath(); mctx.arc(-2, -2, 4, 0, Math.PI * 2); mctx.fill();
-      // 隕石坑紋
-      mctx.fillStyle = '#b71c1c';
-      mctx.beginPath(); mctx.arc(3, 3, 2.5, 0, Math.PI * 2); mctx.fill();
-      mctx.beginPath(); mctx.arc(-3, 4, 1.8, 0, Math.PI * 2); mctx.fill();
-    }
+    if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
 
     const freezeCv = document.getElementById('skill-canvas-freeze');
-    if (freezeCv) {
-      const fctx = freezeCv.getContext('2d');
-      fctx.clearRect(0, 0, 36, 36);
-      fctx.translate(18, 18);
-      // 冰晶光芒
-      fctx.strokeStyle = '#00e5ff';
-      fctx.lineWidth = 2.5;
-      fctx.lineCap = 'round';
-      for (let i = 0; i < 6; i++) {
-        const ang = (i * Math.PI) / 3;
-        fctx.beginPath();
-        fctx.moveTo(0, 0);
-        fctx.lineTo(Math.cos(ang) * 12, Math.sin(ang) * 12);
-        fctx.stroke();
-        // 冰晶分叉
-        const bx = Math.cos(ang) * 7;
-        const by = Math.sin(ang) * 7;
-        const pAng1 = ang + Math.PI / 4;
-        const pAng2 = ang - Math.PI / 4;
-        fctx.beginPath();
-        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng1) * 4, by + Math.sin(pAng1) * 4);
-        fctx.moveTo(bx, by); fctx.lineTo(bx + Math.cos(pAng2) * 4, by + Math.sin(pAng2) * 4);
-        fctx.stroke();
-      }
-      // 冰晶核心亮點
-      fctx.fillStyle = '#ffffff';
-      fctx.beginPath(); fctx.arc(0, 0, 3, 0, Math.PI * 2); fctx.fill();
-    }
+    if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
 
-    // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree - 5號設計)
+    // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree)
     const titleCv = document.getElementById('menu-title-canvas');
-    if (titleCv) {
-      const tctx = titleCv.getContext('2d');
-      tctx.clearRect(0, 0, 80, 80);
-      tctx.translate(40, 48);
-
-      // 地面晶光微光倒影
-      tctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      tctx.beginPath(); tctx.ellipse(0, 22, 28, 10, 0, 0, Math.PI * 2); tctx.fill();
-
-      // 水晶台座
-      tctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
-      tctx.strokeStyle = '#00e5ff';
-      tctx.lineWidth = 1.5;
-      tctx.beginPath();
-      tctx.roundRect(-22, 10, 44, 12, 4);
-      tctx.fill();
-      tctx.stroke();
-
-      // 琉璃晶樹主幹
-      const tcGrad = tctx.createLinearGradient(-16, 0, 16, 0);
-      tcGrad.addColorStop(0, '#80d8ff');
-      tcGrad.addColorStop(0.5, '#ffffff');
-      tcGrad.addColorStop(1, '#00b0ff');
-      tctx.fillStyle = tcGrad;
-      tctx.beginPath();
-      tctx.moveTo(-9, 10);
-      tctx.lineTo(-24, -22);
-      tctx.lineTo(0, -38);
-      tctx.lineTo(24, -22);
-      tctx.lineTo(9, 10);
-      tctx.closePath();
-      tctx.fill();
-
-      // 晶芒切面
-      const titleFacets = [
-        { p: [[0, -38], [-24, -22], [-12, -8], [0, -18]], c: '#e1f5fe' },
-        { p: [[0, -38], [24, -22], [12, -8], [0, -18]], c: '#b3e5fc' },
-        { p: [[0, -18], [-12, -8], [0, 8]], c: '#4fc3f7' },
-        { p: [[0, -18], [12, -8], [0, 8]], c: '#29b6f6' }
-      ];
-      for (let tf of titleFacets) {
-        tctx.fillStyle = tf.c;
-        tctx.beginPath();
-        tf.p.forEach((pt, idx) => idx === 0 ? tctx.moveTo(pt[0], pt[1]) : tctx.lineTo(pt[0], pt[1]));
-        tctx.closePath();
-        tctx.fill();
-        tctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        tctx.lineWidth = 0.8;
-        tctx.stroke();
-      }
-
-      // 頂端神聖守護晶核光芒
-      tctx.shadowColor = '#00e5ff';
-      tctx.shadowBlur = 14;
-      tctx.fillStyle = '#ffffff';
-      tctx.beginPath();
-      tctx.arc(0, -42, 6, 0, Math.PI * 2);
-      tctx.fill();
-    }
+    if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
 
     // 繪製勝利金冠插畫 Canvas (告別 🎉 Emoji)
     const vicCv = document.getElementById('victory-canvas');
@@ -2568,16 +3147,7 @@ class Game {
       iconCanvas.width = 38;
       iconCanvas.height = 38;
       iconCanvas.className = 'tower-mini-canvas';
-      const ictx = iconCanvas.getContext('2d');
-      const svgImg = assets.get('tower_' + key);
-      if (svgImg) {
-        ictx.drawImage(svgImg, 3, 3, 32, 32);
-      } else {
-        ictx.translate(19, 21);
-        ictx.scale(0.68, 0.68);
-        const drawFn = Sprites['drawTower_' + key];
-        if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
-      }
+      this.drawTowerIcon(iconCanvas.getContext('2d'), key);
 
       item.appendChild(iconCanvas);
 
@@ -2595,6 +3165,10 @@ class Game {
 
       const startPress = (clientX, clientY) => {
         if (this.state !== 'planning' && this.state !== 'wave') return;
+        if (!isTowerUnlocked(key)) {
+          this.showToast('🔒 這座塔尚未在商店解鎖');
+          return;
+        }
         startX = clientX;
         startY = clientY;
         isPressed = true;
@@ -2780,31 +3354,9 @@ class Game {
       list.appendChild(item);
     }
 
-    // Map selector setup (極簡純文字卡片，無任何圖標)
-    const mapSelectContainer = document.getElementById('map-selection-list');
-    if (mapSelectContainer) {
-      mapSelectContainer.innerHTML = '';
-      for (const [key, mapCfg] of Object.entries(MAP_CONFIGS)) {
-        const card = document.createElement('div');
-        card.className = `map-select-card ${key === this.map.mapId ? 'active' : ''}`;
-        card.dataset.mapId = key;
-
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'map-card-info';
-        infoDiv.innerHTML = `
-          <div class="map-card-title">${mapCfg.name}</div>
-          <div class="map-card-desc">${mapCfg.desc}</div>
-        `;
-        card.appendChild(infoDiv);
-
-        const radioDiv = document.createElement('div');
-        radioDiv.className = 'map-card-radio';
-        card.appendChild(radioDiv);
-
-        card.addEventListener('click', () => this.selectMap(key));
-        mapSelectContainer.appendChild(card);
-      }
-    }
+    // 關卡輪探初始化
+    this.renderLevelCarousel();
+    this.setupLevelStarTip();
 
     // Buttons (使用 pointer/click 防重複觸發機制)
     const bindTap = (btnId, handler) => {
@@ -2826,6 +3378,8 @@ class Game {
     };
 
     bindTap('start-btn', () => this.startGame());
+    bindTap('level-prev-btn', () => this.changeLevel(-1));
+    bindTap('level-next-btn', () => this.changeLevel(1));
     bindTap('start-wave-btn', () => this.startNextWave());
     bindTap('retry-btn', () => this.restartGame());
     bindTap('replay-btn', () => this.restartGame());
@@ -2835,6 +3389,8 @@ class Game {
     bindTap('gameover-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
+    bindTap('open-shop-btn', () => this.openShopModal());
+    bindTap('close-shop-btn', () => this.closeShopModal());
     bindTap('lb-tab-score', () => this.switchLeaderboardTab('score'));
     bindTap('lb-tab-gold', () => this.switchLeaderboardTab('gold'));
     bindTap('speed-btn', () => this.toggleSpeed());
@@ -2851,7 +3407,7 @@ class Game {
       const statusText = document.getElementById('sound-status-text');
       if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
       const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
-      if (icon) icon.textContent = enabled ? '🔊' : '🔇';
+      if (icon) icon.innerHTML = SOUND_ICON_SVG[enabled ? 'on' : 'off'];
     });
     bindTap('settings-fullscreen-btn', () => this.toggleFullscreen());
     bindTap('settings-retry-btn', () => {
@@ -2876,23 +3432,90 @@ class Game {
     if (menuScore) menuScore.textContent = this.bestScore;
   }
 
-  selectMap(mapId) {
-    if (!MAP_CONFIGS[mapId]) return;
-    CURRENT_MAP_ID = mapId;
-    this.map = new GameMap(mapId);
-    this.renderMapToBuffer();
-    
-    // Update map selection card UI
-    document.querySelectorAll('.map-select-card').forEach(card => {
-      if (card.dataset.mapId === mapId) {
-        card.classList.add('active');
+  // 解鎖是連續的（解鎖第 N 關必先通關第 N-1 關）。可瀏覽範圍 = 已解鎖的關卡，
+  // 再加上緊接在解鎖前線後面的「下一個尚未解鎖」關卡（讓玩家能預覽鎖著的下一關），
+  // 但不能再往後預覽更遠的關卡。
+  getMaxBrowsableLevelIndex() {
+    const progress = loadLevelProgress();
+    let lastUnlockedIndex = -1;
+    for (let i = 0; i < LEVEL_DATA.length; i++) {
+      const entry = progress.levels[LEVEL_DATA[i].id];
+      if (entry && entry.unlocked) {
+        lastUnlockedIndex = i;
       } else {
-        card.classList.remove('active');
+        break;
       }
-    });
+    }
+    return Math.min(lastUnlockedIndex + 1, LEVEL_DATA.length - 1);
+  }
 
+  // 切換關卡輪探目前顯示的關卡（只能瀏覽已通關關卡，或緊接著的下一個未通關關卡）
+  changeLevel(delta) {
+    const next = CURRENT_LEVEL_INDEX + delta;
+    if (next < 0 || next > this.getMaxBrowsableLevelIndex()) return;
+    CURRENT_LEVEL_INDEX = next;
     this.sfx.play('tap');
-    this.showToast(`🗺️ 已切換地圖：${MAP_CONFIGS[mapId].name}`);
+    this.renderLevelCarousel();
+  }
+
+  renderLevelCarousel() {
+    this.updateCrystalBalanceUI();
+    const level = LEVEL_DATA[CURRENT_LEVEL_INDEX];
+    const progress = loadLevelProgress();
+    const entry = progress.levels[level.id] || { stars: 0, unlocked: CURRENT_LEVEL_INDEX === 0 };
+
+    // 套用該關卡的地圖（僅預覽用途，實際遊玩以 startGame() 的檢查為準）
+    CURRENT_MAP_ID = level.mapId;
+    this.map = new GameMap(level.mapId);
+    this.renderMapToBuffer();
+
+    const nameEl = document.getElementById('level-card-name');
+    if (nameEl) nameEl.textContent = `${level.name}${entry.unlocked ? '' : '（尚未解鎖）'}`;
+
+    const starsEl = document.getElementById('level-card-stars');
+    if (starsEl) {
+      starsEl.innerHTML = [1, 2, 3].map(i => `<span class="${i <= entry.stars ? 'star-filled' : 'star-empty'}">★</span>`).join('');
+    }
+
+    const lockEl = document.getElementById('level-lock-overlay');
+    if (lockEl) lockEl.classList.toggle('hidden', entry.unlocked);
+
+    dbgLog(`🗺️ 關卡輪探顯示：index=${CURRENT_LEVEL_INDEX} (${level.id}) unlocked=${entry.unlocked}`);
+
+    const prevBtn = document.getElementById('level-prev-btn');
+    if (prevBtn) prevBtn.disabled = (CURRENT_LEVEL_INDEX === 0);
+    const nextBtn = document.getElementById('level-next-btn');
+    if (nextBtn) nextBtn.disabled = (CURRENT_LEVEL_INDEX >= this.getMaxBrowsableLevelIndex());
+
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) startBtn.classList.toggle('btn-locked', !entry.unlocked);
+  }
+
+  // 按住關卡卡片顯示每顆星的寶箱獎勵，放開就消失（只綁一次，內容每次按下時即時計算）
+  setupLevelStarTip() {
+    const card = document.getElementById('level-carousel-card');
+    const tip = document.getElementById('level-star-tip');
+    if (!card || !tip) return;
+
+    const showTip = () => {
+      const level = LEVEL_DATA[CURRENT_LEVEL_INDEX];
+      const progress = loadLevelProgress();
+      const entry = progress.levels[level.id] || { stars: 0 };
+      tip.innerHTML = [1, 2, 3].map(tier => {
+        const reward = CHEST_REWARDS[tier - 1];
+        const done = entry.stars >= tier;
+        return `<div class="star-tip-row${done ? ' star-tip-done' : ''}">★${tier} 💎${reward}${done ? ' ✅' : ''}</div>`;
+      }).join('');
+      tip.classList.remove('hidden');
+    };
+    const hideTip = () => tip.classList.add('hidden');
+
+    card.addEventListener('mousedown', showTip);
+    card.addEventListener('mouseup', hideTip);
+    card.addEventListener('mouseleave', hideTip);
+    card.addEventListener('touchstart', showTip, { passive: true });
+    card.addEventListener('touchend', hideTip);
+    card.addEventListener('touchcancel', hideTip);
   }
 
   setupEvents() {
@@ -3008,16 +3631,22 @@ class Game {
     document.addEventListener('touchstart', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 350) {
+        // 商店裡一律禁止雙擊縮放，不論點到什麼元件
+        const inShopModal = e.target && e.target.closest('#shop-modal');
         // 如果不是按鈕或卡片元件，阻止雙擊放大行為
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
+          e.target.tagName === 'SELECT' ||
+          e.target.tagName === 'OPTION' ||
           e.target.closest('button') ||
-          e.target.closest('.map-select-card') ||
+          e.target.closest('select') ||
+          e.target.closest('.level-carousel-card') ||
           e.target.closest('.tower-item') ||
           e.target.closest('.menu-champion-card') ||
-          e.target.closest('.leaderboard-modal-content')
+          e.target.closest('.leaderboard-modal-content') ||
+          e.target.closest('#debug-container')
         );
-        if (!isClickable && e.cancelable) {
+        if ((inShopModal || !isClickable) && e.cancelable) {
           e.preventDefault();
         }
       }
@@ -3027,23 +3656,34 @@ class Game {
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 300) {
+        const inShopModal = e.target && e.target.closest('#shop-modal');
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
+          e.target.tagName === 'SELECT' ||
+          e.target.tagName === 'OPTION' ||
           e.target.closest('button') ||
-          e.target.closest('.map-select-card') ||
+          e.target.closest('select') ||
+          e.target.closest('.level-carousel-card') ||
           e.target.closest('.tower-item') ||
           e.target.closest('.menu-champion-card') ||
-          e.target.closest('.leaderboard-modal-content')
+          e.target.closest('.leaderboard-modal-content') ||
+          e.target.closest('#debug-container')
         );
-        if (!isClickable && e.cancelable) {
+        if ((inShopModal || !isClickable) && e.cancelable) {
           e.preventDefault();
         }
       }
     }, { passive: false });
 
-    // 防止多指縮放手勢 (Pinch to zoom)
+    // 防止多指縮放手勢 (Pinch to zoom)，以及阻止 iOS 整頁被拖曳彈跳捲動
+    // （overflow:hidden 對 iOS Safari 的整頁橡皮筋捲動無效，只有在允許捲動的區塊內才放行）
     document.addEventListener('touchmove', (e) => {
       if (e.touches && e.touches.length > 1) {
+        e.preventDefault();
+        return;
+      }
+      const inScrollableArea = e.target && e.target.closest('.screen, #tower-list, #debug-log, #debug-test-panel');
+      if (!inScrollableArea && e.cancelable) {
         e.preventDefault();
       }
     }, { passive: false });
@@ -3054,6 +3694,11 @@ class Game {
       let isDraggingMeteor = false;
 
       const startMeteorDrag = (clientX, clientY) => {
+        if (!isSkillUnlocked('meteor')) {
+          this.showToast('🔒 這個技能尚未在商店解鎖');
+          this.sfx.play('error');
+          return;
+        }
         if (this.state !== 'wave') {
           this.showToast('戰鬥開始後才能施放技能！');
           this.sfx.play('error');
@@ -3252,6 +3897,11 @@ class Game {
 
   // ─── Active Skills (主動技能系統) ───
   toggleSkillTargeting(skillKey) {
+    if (!isSkillUnlocked(skillKey)) {
+      this.showToast('🔒 這個技能尚未在商店解鎖');
+      this.sfx.play('error');
+      return;
+    }
     if (this.state !== 'wave') {
       this.showToast('戰鬥開始後才能施放技能！');
       this.sfx.play('error');
@@ -3285,11 +3935,14 @@ class Game {
   }
 
   castMeteor(px, py) {
+    // 無論是否真的成功施放，都要先清掉瞄準狀態，避免拖曳中途波次結束
+    // 導致 activeTargetingSkill 卡死（畫面範圍圈不消失、點擊畫布被攔截）
+    this.activeTargetingSkill = null;
+    document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
+
     if (this.state !== 'wave') return;
     const skill = this.skills.meteor;
     skill.timer = skill.cd;
-    this.activeTargetingSkill = null;
-    document.getElementById('skill-meteor-btn')?.classList.remove('targeting');
 
     this.sfx.play('explosion');
     this.showToast('流星轟炸降臨！');
@@ -3601,6 +4254,17 @@ class Game {
 
   // ─── Game state ───
   startGame() {
+    const level = LEVEL_DATA[CURRENT_LEVEL_INDEX];
+    const progress = loadLevelProgress();
+    const entry = progress.levels[level.id] || { unlocked: CURRENT_LEVEL_INDEX === 0 };
+    if (!entry.unlocked) {
+      this.showToast('🔒 請先通關上一關才能解鎖！');
+      return;
+    }
+    // 確保本局波次資料對應目前選擇的關卡（切換關卡輪探時 this.map 已同步，這裡補上 waveManager）
+    this.waveManager = new WaveManager(level.waves);
+    this.updateSkillBarLockState();
+
     dbgLog('🎮 startGame triggered!');
     try {
       this.sfx.init();
@@ -3642,13 +4306,13 @@ class Game {
     this.towerGrid = {};
     this.selectedTower = null;
     this.selectedTowerType = null;
-    this.waveManager = new WaveManager();
+    this.waveManager = new WaveManager(LEVEL_DATA[CURRENT_LEVEL_INDEX].waves);
     this.state = 'planning';
 
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('start-wave-btn').disabled = false;
-    document.getElementById('speed-btn').textContent = '⏩ 1x';
+    document.getElementById('speed-btn').textContent = '1x';
 
     this.deselectTower();
     this.updateWavePreview();
@@ -3672,10 +4336,25 @@ class Game {
     this.state = 'victory';
     this.sfx.play('victory');
     this.score += this.lives * 50; // Bonus for remaining lives
+
+    const lifeRatio = this.lives / CONFIG.STARTING_LIVES;
+    const stars = lifeRatio >= 1 ? 3 : (lifeRatio >= 0.5 ? 2 : 1);
+    const { crystalsEarned } = recordLevelResult(CURRENT_LEVEL_INDEX, stars);
+    this.lastVictoryStars = stars;
+
     this.saveGameRecord();
     document.getElementById('victory-score').textContent = this.score;
     const vicGoldEl = document.getElementById('victory-gold');
     if (vicGoldEl) vicGoldEl.textContent = `💰 ${this.gold}`;
+    const vicStarsEl = document.getElementById('victory-stars');
+    if (vicStarsEl) {
+      vicStarsEl.innerHTML = [1, 2, 3].map(i => `<span class="${i <= stars ? 'star-filled' : 'star-empty'}">★</span>`).join('');
+    }
+    const vicChestEl = document.getElementById('victory-chest-reward');
+    if (vicChestEl) {
+      vicChestEl.textContent = crystalsEarned > 0 ? `🎁 寶箱獎勵：💎${crystalsEarned}` : '';
+      vicChestEl.classList.toggle('hidden', crystalsEarned <= 0);
+    }
     document.getElementById('victory-screen').classList.remove('hidden');
     this.enemies = [];
     this.projectiles = [];
@@ -3725,10 +4404,13 @@ class Game {
     this.score = 0;
     this.currentWave = 0;
     this.speedMultiplier = 1;
-    this.waveManager = new WaveManager();
+    this.waveManager = new WaveManager(LEVEL_DATA[CURRENT_LEVEL_INDEX].waves);
+    const speedBtn = document.getElementById('speed-btn');
+    if (speedBtn) speedBtn.textContent = '1x';
 
     const menuScore = document.getElementById('menu-best-score');
     if (menuScore) menuScore.textContent = this.bestScore;
+    this.renderLevelCarousel(); // 回首頁時刷新關卡輪探（可能剛解鎖新關卡或拿到新星等）
     this.showToast('🏠 已返回首頁');
   }
 
@@ -3877,6 +4559,103 @@ class Game {
     this.sfx.play('tap');
   }
 
+  updateCrystalBalanceUI() {
+    const balance = loadCrystals();
+    const menuEl = document.getElementById('menu-crystal-balance');
+    if (menuEl) menuEl.textContent = balance;
+    const shopEl = document.getElementById('shop-crystal-balance');
+    if (shopEl) shopEl.textContent = balance;
+  }
+
+  openShopModal() {
+    this.renderShopItems();
+    document.getElementById('shop-modal')?.classList.remove('hidden');
+    this.sfx.play('tap');
+  }
+
+  closeShopModal() {
+    document.getElementById('shop-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
+  }
+
+  renderShopItems() {
+    this.updateCrystalBalanceUI();
+    const list = document.getElementById('shop-item-list');
+    if (!list) return;
+    const balance = loadCrystals();
+
+    const rows = [];
+    for (const [key, item] of Object.entries(SHOP_ITEMS.towers)) {
+      const unlocked = isTowerUnlocked(key);
+      const name = TOWER_DATA[key]?.name || key;
+      rows.push({ kind: 'tower', key, name, cost: item.cost, unlocked });
+    }
+    for (const [key, item] of Object.entries(SHOP_ITEMS.skills)) {
+      const unlocked = isSkillUnlocked(key);
+      rows.push({ kind: 'skill', key, name: item.name, cost: item.cost, unlocked });
+    }
+
+    list.innerHTML = rows.map(row => {
+      if (row.unlocked) {
+        return `
+          <div class="shop-item shop-item-owned" data-kind="${row.kind}" data-key="${row.key}">
+            <span class="shop-item-name">${row.name}</span>
+            <span class="shop-item-status">✅ 已解鎖</span>
+          </div>
+        `;
+      }
+      const canAfford = balance >= row.cost;
+      return `
+        <div class="shop-item" data-kind="${row.kind}" data-key="${row.key}">
+          <span class="shop-item-name">${row.name}</span>
+          <button class="shop-buy-btn" data-kind="${row.kind}" data-key="${row.key}" ${canAfford ? '' : 'disabled'}>
+            💎${row.cost}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.shop-buy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.buyShopItem(btn.dataset.kind, btn.dataset.key);
+      });
+    });
+
+    // 按住商品卡片顯示詳細資訊，放開就消失
+    const infoEl = document.getElementById('shop-item-info');
+    list.querySelectorAll('.shop-item').forEach(row => {
+      const showInfo = () => {
+        if (!infoEl) return;
+        infoEl.innerHTML = buildShopItemInfoHTML(row.dataset.kind, row.dataset.key);
+        infoEl.classList.remove('hidden');
+      };
+      const hideInfo = () => infoEl?.classList.add('hidden');
+      row.addEventListener('mousedown', showInfo);
+      row.addEventListener('mouseup', hideInfo);
+      row.addEventListener('mouseleave', hideInfo);
+      row.addEventListener('touchstart', showInfo, { passive: true });
+      row.addEventListener('touchend', hideInfo);
+      row.addEventListener('touchcancel', hideInfo);
+    });
+  }
+
+  buyShopItem(kind, key) {
+    const result = kind === 'skill' ? purchaseSkill(key) : purchaseTower(key);
+    if (result.ok) {
+      this.sfx.play('upgrade');
+      this.showToast('✅ 解鎖成功！');
+    } else if (result.reason === 'insufficient') {
+      this.sfx.play('error');
+      this.showToast('💎 水晶不足');
+    } else {
+      this.sfx.play('error');
+      this.showToast('⚠️ 購買失敗');
+    }
+    this.renderShopItems();
+    this.updateTowerPanel();
+    this.updateSkillBarLockState();
+  }
+
   // ─── Helpers ───
   addGold(amount) {
     this.gold += amount;
@@ -3899,16 +4678,6 @@ class Game {
   toggleSpeed() {
     this.speedMultiplier = this.speedMultiplier === 1 ? 2 : this.speedMultiplier === 2 ? 3 : 1;
     document.getElementById('speed-btn').textContent = `${this.speedMultiplier}x`;
-  }
-
-  toggleSound() {
-    const enabled = this.sfx.toggle();
-    const soundBtn = document.getElementById('sound-btn');
-    if (soundBtn) soundBtn.textContent = enabled ? '🔊' : '🔇';
-    const statusText = document.getElementById('sound-status-text');
-    if (statusText) statusText.textContent = enabled ? '音效：開啟' : '音效：靜音';
-    const icon = document.querySelector('#settings-sound-btn .settings-opt-icon');
-    if (icon) icon.textContent = enabled ? '🔊' : '🔇';
   }
 
   toggleFullscreen() {
@@ -3996,14 +4765,29 @@ class Game {
     this.updateTowerPanel();
   }
 
+  updateSkillBarLockState() {
+    const meteorBtn = document.getElementById('skill-meteor-btn');
+    if (meteorBtn) meteorBtn.classList.toggle('locked', !isSkillUnlocked('meteor'));
+    const freezeBtn = document.getElementById('skill-freeze-btn');
+    if (freezeBtn) freezeBtn.classList.toggle('locked', !isSkillUnlocked('freeze'));
+  }
+
   updateTowerPanel() {
     const items = document.querySelectorAll('.tower-item');
     items.forEach((item) => {
       const type = item.dataset.type;
       const cost = TOWER_DATA[type].cost;
+      const unlocked = isTowerUnlocked(type);
       const canAfford = this.gold >= cost;
-      item.classList.toggle('disabled', !canAfford);
+      item.classList.toggle('disabled', !canAfford || !unlocked);
+      item.classList.toggle('locked', !unlocked);
       item.classList.remove('selected');
+      const details = item.querySelector('.tower-details');
+      if (details) {
+        details.innerHTML = unlocked
+          ? `<div class="tower-cost">💰${cost}</div>`
+          : `<div class="tower-cost tower-cost-locked">🔒 商店解鎖</div>`;
+      }
     });
   }
 
@@ -4087,22 +4871,9 @@ class Game {
       }
     }
 
-    // 基地受擊計時與煙囪升煙
+    // 基地受擊計時
     if (this.baseHurtTimer > 0) {
       this.baseHurtTimer -= dt;
-    }
-    this.smokeTimer += dt;
-    if (this.smokeTimer >= 1.6 && this.map.pathPixels.length > 0) {
-      this.smokeTimer = 0;
-      const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
-      this.spawnParticle(exit.x + 15, exit.y - 30, {
-        color: 'rgba(240, 240, 245, 0.7)',
-        size: 5 + Math.random() * 3,
-        vx: (Math.random() - 0.5) * 15,
-        vy: -25 - Math.random() * 15,
-        gravity: -5, // 緩緩升空
-        life: 1.2,
-      });
     }
 
     // Update towers
@@ -4451,38 +5222,6 @@ class Game {
       ctx.restore();
     }
 
-    // 4.1 起點傳送門：動態旋轉深淵漩渦 (Dynamic Void Vortex)
-    if (this.map.pathPixels.length > 0) {
-      const entry = this.map.pathPixels[0];
-      const now = performance.now() / 1000;
-      ctx.save();
-      ctx.translate(entry.x, entry.y);
-
-      // 旋轉深淵紫黑星雲
-      ctx.save();
-      ctx.translate(0, -6);
-      ctx.rotate(now * 2);
-      const vortGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 12);
-      vortGrad.addColorStop(0, '#ff4081');
-      vortGrad.addColorStop(0.5, '#7c4dff');
-      vortGrad.addColorStop(0.85, '#311b92');
-      vortGrad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = vortGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, 12, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 傳送門旋臂火花
-      ctx.strokeStyle = '#ea80fc';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, 7, 0, Math.PI);
-      ctx.stroke();
-      ctx.restore();
-
-      ctx.restore();
-    }
-
     // 4.2 終點保衛小屋：懸浮守護水晶與受損紅光警報 (Sanctuary Crystal & Base Shake)
     if (this.map.pathPixels.length > 0) {
       const exit = this.map.pathPixels[this.map.pathPixels.length - 1];
@@ -4563,6 +5302,11 @@ class Game {
       const badgeImg = assets.get('spawn_badge');
       if (badgeImg) {
         ctx.drawImage(badgeImg, -35, 14, 70, 30);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`出怪 第${waveNum}波`, 0, 14 + 30 / 2 + 1);
       } else {
         const btnW = 68;
         const btnH = 26;

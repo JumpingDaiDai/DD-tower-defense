@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- #5 露珠草皮丘 放射漸層 -->
+    <radialGradient id="grassGrad" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#c5e1a5"/>
+      <stop offset="100%" stop-color="#8bc34a"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 貼地草丘厚度陰影 -->
+  <rect x="6" y="12" width="88" height="82" rx="14" fill="rgba(85,139,47,0.42)"/>
+
+  <!-- 綠色草皮丘本體 -->
+  <rect x="6" y="6" width="88" height="82" rx="14" fill="url(#grassGrad)"/>
+
+  <!-- 草皮內邊框 -->
+  <rect x="8" y="8" width="84" height="76" rx="12" fill="none" stroke="rgba(104,159,56,0.55)" stroke-width="1.6"/>
+
+  <!-- 左下草叢葉尖 -->
+  <path d="M20,82 L18,73" stroke="#558b2f" stroke-width="2" stroke-linecap="round"/>
+  <path d="M25,82 L27,71" stroke="#558b2f" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30,82 L30,74" stroke="#558b2f" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- 右上草叢葉尖 -->
+  <path d="M72,26 L70,17" stroke="#558b2f" stroke-width="2" stroke-linecap="round"/>
+  <path d="M77,26 L79,15" stroke="#558b2f" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- 晶瑩剔透露珠 -->
+  <circle cx="60" cy="55" r="4.5" fill="rgba(255,255,255,0.75)"/>
+  <circle cx="59" cy="53" r="1.5" fill="#ffffff"/>
+</svg>

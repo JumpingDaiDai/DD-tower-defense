@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>✨ 主動技能 HUD 視覺風格提案 - Skill Showcase</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC",sans-serif;
+       background:#1a1b26; color:#c0caf5; padding:28px 20px 80px; }
+header { max-width:1100px; margin:0 auto 28px; text-align:center; }
+header h1 { font-size:24px; color:#ff9e64; margin-bottom:6px; }
+header p { color:#7a8299; font-size:13px; }
+.section { max-width:1100px; margin:0 auto 36px; }
+.section-title { font-size:15px; font-weight:700; color:#7aa2f7; letter-spacing:1px;
+                 text-transform:uppercase; margin-bottom:14px;
+                 border-left:3px solid #7aa2f7; padding-left:10px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
+.card { background:#24283b; border:1.5px solid rgba(255,200,80,.18);
+        border-radius:14px; padding:14px; transition:all .2s; text-align:center; }
+.card:hover { border-color:rgba(255,200,80,.5); box-shadow:0 6px 20px rgba(255,158,64,.15); transform:translateY(-2px); }
+.num { display:inline-block; background:#ff9e64; color:#1a1b26;
+       font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; margin-bottom:6px; }
+.card h2 { font-size:14px; margin-bottom:2px; color:#e0e4f0; }
+.tag { font-size:10px; color:#7a8299; font-weight:600; margin-bottom:6px; letter-spacing:.5px; }
+.desc { font-size:11px; color:#7a8299; margin-bottom:10px; line-height:1.4; }
+.preview { display:flex; justify-content:center; align-items:center; background:#0d0e17; border-radius:10px; padding:12px 0; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>✨ 玩家主動技能 HUD 視覺風格提案</h1>
+  <p>共 4 大核心技能，每種提供 3 款專屬視覺流派（高光微粒、純淨簡約、魔導符文）✦ 全部即時 Canvas 動畫</p>
+</header>
+
+<!-- 1. 流星轟炸 -->
+<div class="section">
+  <div class="section-title">☄️ 技能一：流星轟炸 (Meteor Strike - 範圍高傷)</div>
+  <div class="grid">
+    <div class="card">
+      <span class="num">#1</span>
+      <h2>天火烈焰星</h2>
+      <div class="tag">FLAME BURST</div>
+      <p class="desc">經典烈焰拖尾、滾燙白熾核心、火花微粒</p>
+      <div class="preview"><canvas id="c1" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#2</span>
+      <h2>暗物質紫曜星</h2>
+      <div class="tag">VOID DARK METEOR</div>
+      <p class="desc">深紫黑曜石核心、霓虹電光裂痕、重力吸引光環</p>
+      <div class="preview"><canvas id="c2" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#3</span>
+      <h2>星輝落櫻流星</h2>
+      <div class="tag">SAKURA STAR FALL</div>
+      <p class="desc">粉金星芒、夢幻光之塵埃、可愛童話感</p>
+      <div class="preview"><canvas id="c3" width="70" height="70"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. 絕對零度 -->
+<div class="section">
+  <div class="section-title">❄️ 技能二：絕對零度 (Absolute Zero - 全體凍結)</div>
+  <div class="grid">
+    <div class="card">
+      <span class="num">#4</span>
+      <h2>永凍雪花晶核</h2>
+      <div class="tag">FROST SNOWFLAKE</div>
+      <p class="desc">六角雪花芒、透亮青藍折射、旋轉冰霜粒子</p>
+      <div class="preview"><canvas id="c4" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#5</span>
+      <h2>極光冰晶稜鏡</h2>
+      <div class="tag">AURORA PRISM ICE</div>
+      <p class="desc">多面鑽石切面、極光彩暈、高冷琉璃質感</p>
+      <div class="preview"><canvas id="c5" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#6</span>
+      <h2>時空急凍魔時鐘</h2>
+      <div class="tag">CHRONO TIME FREEZE</div>
+      <p class="desc">定格冰鐘指針、藍光鎖鏈、時空暫停氛圍</p>
+      <div class="preview"><canvas id="c6" width="70" height="70"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. 黃金雨 -->
+<div class="section">
+  <div class="section-title">💰 技能三：幸運黃金雨 (Gold Rush - 經濟暴擊/吸金)</div>
+  <div class="grid">
+    <div class="card">
+      <span class="num">#7</span>
+      <h2>滿溢四葉金幣袋</h2>
+      <div class="tag">LUCKY GOLD POUCH</div>
+      <p class="desc">皮革金幣福袋、金光閃閃金幣、幸運四葉草</p>
+      <div class="preview"><canvas id="c7" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#8</span>
+      <h2>點金術賢者寶球</h2>
+      <div class="tag">MIDAS ALCHEMY ORB</div>
+      <p class="desc">浮空黃金能量球、煉金符文環繞、聚財光芒</p>
+      <div class="preview"><canvas id="c8" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#9</span>
+      <h2>財富招財貓鈴鐺</h2>
+      <div class="tag">FORTUNE CAT BELL</div>
+      <p class="desc">日系金鈴鐺、紅結繩、金幣噴湧特效</p>
+      <div class="preview"><canvas id="c9" width="70" height="70"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 戰吼加速 / 森林鼓舞 -->
+<div class="section">
+  <div class="section-title">⚡ 技能四：戰歌狂熱 / 森林鼓舞 (Heroic Frenzy - 全塔攻速倍增)</div>
+  <div class="grid">
+    <div class="card">
+      <span class="num">#10</span>
+      <h2>狂怒雷霆戰角</h2>
+      <div class="tag">THUNDER WAR HORN</div>
+      <p class="desc">金屬狂暴戰角、電光四射、衝鋒音波</p>
+      <div class="preview"><canvas id="c10" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#11</span>
+      <h2>生命精靈祈願蝶</h2>
+      <div class="tag">SPIRIT FAIRY WISH</div>
+      <p class="desc">翡翠光之精靈、生命葉脈光環、療癒加速風暴</p>
+      <div class="preview"><canvas id="c11" width="70" height="70"></canvas></div>
+    </div>
+    <div class="card">
+      <span class="num">#12</span>
+      <h2>超載齒輪之心</h2>
+      <div class="tag">OVERDRIVE GEAR CORE</div>
+      <p class="desc">旋轉黃銅雙齒輪、蒸汽噴射、極限過載火花</p>
+      <div class="preview"><canvas id="c12" width="70" height="70"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function loop(id, fn) {
+  const cv = document.getElementById(id);
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, 70, 70);
+    ctx.save();
+    ctx.translate(35, 35);
+    fn(ctx, t);
+    ctx.restore();
+    t += 0.016;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ── #1 卡通天火隕石 (純粹還原參考圖：圓形灰褐隕石 + 雙層橘黃火焰尾巴 + 火滴) ── */
+loop('c1', function(ctx, t) {
+  const bob = Math.sin(t * 8) * 1.5;
+  const flameWobble = Math.sin(t * 14) * 1.5;
+
+  ctx.save();
+  // 旋轉 -38 度，使其由右上往左下衝（或左下往右上拖尾）
+  ctx.rotate(-0.65);
+  ctx.translate(bob, 0);
+
+  // 1. 最外層深藍透明氣流光環
+  ctx.fillStyle = 'rgba(74, 107, 160, 0.28)';
+  ctx.beginPath();
+  ctx.arc(-8, 0, 19, Math.PI * 0.5, Math.PI * 1.5);
+  ctx.lineTo(24, -14);
+  ctx.lineTo(20, 14);
+  ctx.closePath();
+  ctx.fill();
+
+  // 2. 外層亮橘色火焰本體 (#ff732c)
+  ctx.fillStyle = '#ff732c';
+  ctx.beginPath();
+  // 前端半圓包覆
+  ctx.arc(-8, 0, 16, Math.PI * 0.5, Math.PI * 1.5);
+  // 上方火尾齒
+  ctx.lineTo(2 + flameWobble, -16);
+  ctx.lineTo(14, -13);
+  ctx.lineTo(22 + flameWobble, -10);
+  ctx.lineTo(16, -6);
+  ctx.lineTo(28 + flameWobble * 1.2, 0);
+  ctx.lineTo(18, 4);
+  ctx.lineTo(24 + flameWobble, 8);
+  ctx.lineTo(10, 12);
+  ctx.lineTo(18 + flameWobble, 15);
+  ctx.lineTo(-8, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  // 3. 亮橘色飛散火滴 (Droplets)
+  [
+    [26 + flameWobble, -15, 2.5, 1.8],
+    [29 + flameWobble, 10, 2.2, 1.6],
+    [10, -18, 2, 1.5],
+    [12, 18, 2, 1.5]
+  ].forEach(([dx, dy, rx, ry]) => {
+    ctx.beginPath();
+    ctx.ellipse(dx, dy, rx, ry, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 4. 內層金黃色火焰包覆 (#ffc926)
+  ctx.fillStyle = '#ffc926';
+  ctx.beginPath();
+  ctx.arc(-8, 0, 13, Math.PI * 0.5, Math.PI * 1.5);
+  // 黃色內火尾凹凸起伏
+  ctx.quadraticCurveTo(-1, -13, 1 + flameWobble * 0.5, -8);
+  ctx.quadraticCurveTo(8, -4, 4, 0);
+  ctx.quadraticCurveTo(9, 6, 2, 9);
+  ctx.quadraticCurveTo(-2, 13, -8, 13);
+  ctx.closePath();
+  ctx.fill();
+
+  // 5. 橘色火尾內部的黃色水滴亮斑
+  [
+    [10 + flameWobble * 0.4, -6, 3, 2],
+    [16 + flameWobble * 0.4, -3, 2.5, 1.8],
+    [12 + flameWobble * 0.4, 4, 2.2, 1.5]
+  ].forEach(([gx, gy, rx, ry]) => {
+    ctx.beginPath();
+    ctx.ellipse(gx, gy, rx, ry, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // 6. 核心圓形灰褐色隕石主體 (#8e7c75)
+  ctx.fillStyle = '#8e7c75';
+  ctx.beginPath();
+  ctx.arc(-8, 0, 10, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 7. 隕石坑洞細節 (深棕色 #63534d 圓形與橢圓坑)
+  ctx.fillStyle = '#63534d';
+  // 大坑
+  ctx.beginPath(); ctx.ellipse(-6, 2, 2.6, 2.2, 0.2, 0, Math.PI * 2); ctx.fill();
+  // 中坑
+  ctx.beginPath(); ctx.ellipse(-10, 4, 1.8, 1.4, -0.3, 0, Math.PI * 2); ctx.fill();
+  // 小坑
+  ctx.beginPath(); ctx.arc(-9, -4, 1.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-5, -3, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(-13, 0, 0.9, 0, Math.PI * 2); ctx.fill();
+
+  ctx.restore();
+});
+
+/* ── #2 暗物質紫曜星 ── */
+loop('c2', function(ctx, t) {
+  const rot = t * 2;
+  // 紫黑引力光環
+  ctx.save(); ctx.rotate(rot);
+  ctx.strokeStyle = '#e040fb'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(0, 0, 18, 7, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = '#7c4dff'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.ellipse(0, 0, 7, 18, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+
+  // 暗物質星體
+  const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, 14);
+  g.addColorStop(0, '#ea80fc'); g.addColorStop(0.4, '#7b1fa2'); g.addColorStop(1, '#12005e');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1; ctx.stroke();
+
+  // 裂痕霓虹電芒
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-6, -4); ctx.lineTo(-1, 0); ctx.lineTo(4, -2); ctx.lineTo(7, 3); ctx.stroke();
+});
+
+/* ── #3 星輝落櫻流星 ── */
+loop('c3', function(ctx, t) {
+  const pulse = Math.sin(t * 5) * 1.2;
+  // 夢幻粉金拖尾粒子
+  for (let i = 0; i < 4; i++) {
+    const a = -Math.PI*0.75 + i * 0.2;
+    const d = 12 + ((t * 20 + i * 8) % 16);
+    ctx.fillStyle = i % 2 === 0 ? '#ff80ab' : '#ffd54f';
+    ctx.beginPath(); ctx.arc(Math.cos(a) * d, Math.sin(a) * d, 1.5, 0, Math.PI * 2); ctx.fill();
+  }
+  // 四角星芒
+  ctx.save(); ctx.rotate(t);
+  ctx.fillStyle = '#fff9c4';
+  for (let i = 0; i < 4; i++) {
+    ctx.rotate(Math.PI / 2);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(3, 4); ctx.lineTo(16 + pulse, 0); ctx.lineTo(3, -4); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+  // 櫻粉核心
+  ctx.fillStyle = '#ff4081';
+  ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-1.5, -1.5, 2.5, 0, Math.PI * 2); ctx.fill();
+});
+
+/* ── #4 永凍雪花晶核 ── */
+loop('c4', function(ctx, t) {
+  const rot = t * 0.8;
+  ctx.save(); ctx.rotate(rot);
+  // 六芒雪花
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  for (let i = 0; i < 6; i++) {
+    const ang = (i * Math.PI) / 3;
+    const x = Math.cos(ang) * 15, y = Math.sin(ang) * 15;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(x, y); ctx.stroke();
+    // 分叉
+    const bx = Math.cos(ang) * 8, by = Math.sin(ang) * 8;
+    const a1 = ang + Math.PI/4, a2 = ang - Math.PI/4;
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(a1)*4.5, by + Math.sin(a1)*4.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(a2)*4.5, by + Math.sin(a2)*4.5); ctx.stroke();
+  }
+  ctx.restore();
+  // 冰核光芒
+  ctx.fillStyle = '#e0f7fa';
+  ctx.beginPath(); ctx.arc(0, 0, 4.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
+});
+
+/* ── #5 極光冰晶稜鏡 ── */
+loop('c5', function(ctx, t) {
+  const pulse = Math.sin(t * 4) * 1;
+  // 外圍極光切面八邊形
+  ctx.save(); ctx.rotate(Math.sin(t * 2) * 0.1);
+  const g = ctx.createLinearGradient(-15, -15, 15, 15);
+  g.addColorStop(0, '#80d8ff'); g.addColorStop(0.5, '#b388ff'); g.addColorStop(1, '#00b0ff');
+  ctx.fillStyle = g;
+  // 寶石幾何切面
+  ctx.beginPath();
+  ctx.moveTo(0, -16 - pulse); ctx.lineTo(12, -7); ctx.lineTo(12, 7);
+  ctx.lineTo(0, 16 + pulse); ctx.lineTo(-12, 7); ctx.lineTo(-12, -7);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // 內部稜線
+  ctx.beginPath();
+  ctx.moveTo(0, -16 - pulse); ctx.lineTo(0, 16 + pulse);
+  ctx.moveTo(-12, -7); ctx.lineTo(12, 7);
+  ctx.moveTo(-12, 7); ctx.lineTo(12, -7);
+  ctx.stroke();
+  ctx.restore();
+
+  // 亮點
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(-3, -5, 2, 0, Math.PI * 2); ctx.fill();
+});
+
+/* ── #6 時空急凍魔時鐘 ── */
+loop('c6', function(ctx, t) {
+  // 冰圈外殼
+  ctx.strokeStyle = '#80d8ff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.stroke();
+  // 12 個時標點
+  ctx.fillStyle = '#00e5ff';
+  for (let i = 0; i < 4; i++) {
+    const a = (i * Math.PI) / 2;
+    ctx.beginPath(); ctx.arc(Math.cos(a) * 11, Math.sin(a) * 11, 1.2, 0, Math.PI * 2); ctx.fill();
+  }
+  // 指針 (急速抖動急停)
+  ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(5, 3); ctx.stroke();
+  // 時鐘頂部掛環
+  ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(0, -16, 3, 0, Math.PI * 2); ctx.stroke();
+});
+
+/* ── #7 滿溢四葉金幣袋 ── */
+loop('c7', function(ctx, t) {
+  const hop = Math.sin(t * 6) * 1.5;
+  ctx.translate(0, hop);
+  // 束口袋身 (深棕皮革)
+  const g = ctx.createRadialGradient(-3, 2, 2, 0, 4, 14);
+  g.addColorStop(0, '#ffe082'); g.addColorStop(0.5, '#ffa000'); g.addColorStop(1, '#ff6f00');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(-10, -2); ctx.quadraticCurveTo(-14, 14, 0, 14);
+  ctx.quadraticCurveTo(14, 14, 10, -2); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#bf360c'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // 袋口紅繩結
+  ctx.strokeStyle = '#d50000'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-10, -2); ctx.lineTo(10, -2); ctx.stroke();
+
+  // 溢出金幣
+  ctx.fillStyle = '#ffd600'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 0.8;
+  [[-4, -6, 3.5], [4, -5, 3.5], [0, -9, 4]].forEach(([gx, gy, gr]) => {
+    ctx.beginPath(); ctx.arc(gx, gy, gr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  });
+
+  // 四葉草圖騰
+  ctx.fillStyle = '#4caf50';
+  [[-2, 5], [2, 5], [0, 3], [0, 7]].forEach(([px, py]) => {
+    ctx.beginPath(); ctx.arc(px, py, 1.8, 0, Math.PI * 2); ctx.fill();
+  });
+});
+
+/* ── #8 點金術賢者寶球 ── */
+loop('c8', function(ctx, t) {
+  const rot = t * 1.5;
+  // 環繞金環
+  ctx.save(); ctx.rotate(rot);
+  ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(0, 0, 17, 6, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+
+  // 賢者寶球
+  const g = ctx.createRadialGradient(-3, -3, 2, 0, 0, 13);
+  g.addColorStop(0, '#fffde7'); g.addColorStop(0.3, '#ffee58');
+  g.addColorStop(0.7, '#f9a825'); g.addColorStop(1, '#e65100');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // 閃爍星芒
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-3, -3, 3, 0, Math.PI * 2); ctx.fill();
+});
+
+/* ── #9 財富招財貓鈴鐺 ── */
+loop('c9', function(ctx, t) {
+  const sway = Math.sin(t * 8) * 0.2;
+  ctx.rotate(sway);
+  // 紅結繩
+  ctx.fillStyle = '#d50000';
+  ctx.beginPath(); ctx.ellipse(0, -11, 8, 3, 0, 0, Math.PI * 2); ctx.fill();
+
+  // 金鈴鐺本體
+  const g = ctx.createRadialGradient(-3, -2, 2, 0, 2, 13);
+  g.addColorStop(0, '#fffde7'); g.addColorStop(0.4, '#ffd600'); g.addColorStop(1, '#ff8f00');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0, 2, 11, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // 鈴鐺中橫縫
+  ctx.strokeStyle = '#bf360c'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(-10, 3); ctx.lineTo(10, 3); ctx.stroke();
+  ctx.fillStyle = '#bf360c';
+  ctx.beginPath(); ctx.arc(0, 7, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(0, 7); ctx.lineTo(0, 13); ctx.stroke();
+});
+
+/* ── #10 狂怒雷霆戰角 ── */
+loop('c10', function(ctx, t) {
+  const vib = Math.sin(t * 20) * 0.8;
+  // 電芒火花
+  for (let i = 0; i < 3; i++) {
+    const rx = 12 + Math.random() * 6;
+    const ry = (Math.random() - 0.5) * 12;
+    ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(rx, ry); ctx.stroke();
+  }
+  // 戰角本體 (弧形號角)
+  ctx.save(); ctx.translate(-2, 0);
+  const g = ctx.createLinearGradient(-12, 10, 10, -10);
+  g.addColorStop(0, '#ff9800'); g.addColorStop(0.5, '#f44336'); g.addColorStop(1, '#b71c1c');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(-10, 10); ctx.quadraticCurveTo(0, 8, 10, -8);
+  ctx.lineTo(12, -4);  ctx.quadraticCurveTo(4, 12, -8, 13);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  // 喇叭口
+  ctx.fillStyle = '#ffd600';
+  ctx.beginPath(); ctx.ellipse(11, -6, 2.5, 4.5, Math.PI/4, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+});
+
+/* ── #11 生命精靈祈願蝶 ── */
+loop('c11', function(ctx, t) {
+  const flap = Math.sin(t * 12);
+  const sx = 0.5 + Math.abs(flap) * 0.5;
+  // 綠葉雙翅
+  ctx.save(); ctx.scale(sx, 1);
+  const wg = ctx.createRadialGradient(0, 0, 1, 0, 0, 14);
+  wg.addColorStop(0, '#e8f5e9'); wg.addColorStop(0.5, '#69f0ae'); wg.addColorStop(1, '#00c853');
+  ctx.fillStyle = wg;
+  ctx.beginPath(); ctx.ellipse(-8, -4, 8, 11, -Math.PI/6, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8, -4, 8, 11, Math.PI/6, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#b9f6ca'; ctx.lineWidth = 1.2; ctx.stroke();
+  ctx.restore();
+
+  // 發光身軀
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.ellipse(0, 0, 2.5, 8, 0, 0, Math.PI * 2); ctx.fill();
+  // 聖光光環
+  ctx.strokeStyle = '#69f0ae'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(0, -11, 3.5, 0, Math.PI * 2); ctx.stroke();
+});
+
+/* ── #12 超載齒輪之心 ── */
+loop('c12', function(ctx, t) {
+  const rot1 = t * 3;
+  const rot2 = -t * 3;
+
+  function drawGear(gx, gy, r, rot, c1, c2) {
+    ctx.save(); ctx.translate(gx, gy); ctx.rotate(rot);
+    const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, r);
+    g.addColorStop(0, c1); g.addColorStop(1, c2);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1; ctx.stroke();
+    // 齒牙
+    ctx.fillStyle = c2;
+    for (let i = 0; i < 6; i++) {
+      ctx.rotate(Math.PI / 3);
+      ctx.fillRect(-1.5, -r - 2, 3, 3);
+    }
+    // 軸心
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.35, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  drawGear(-6, -4, 9, rot1, '#ffe082', '#ff8f00');
+  drawGear(7, 6, 7.5, rot2, '#ffcc80', '#e65100');
+
+  // 電火花
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.sin(t*15)*4, Math.cos(t*15)*4); ctx.stroke();
+});
+</script>
+</body>
+</html>

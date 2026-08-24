@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏰 可愛塔防 - 全遊戲視覺圖片資源清單 (Assets Manifest)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #12131c;
+      --card-bg: #1a1c29;
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent-pink: #ff4081;
+      --accent-gold: #ffd54f;
+      --accent-cyan: #00e5ff;
+      --text: #ffffff;
+      --text-dim: #9fa8da;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      padding: 24px 16px;
+      line-height: 1.6;
+    }
+    header {
+      max-width: 1200px;
+      margin: 0 auto 28px auto;
+      text-align: center;
+      padding: 24px;
+      background: linear-gradient(135deg, rgba(255, 64, 129, 0.2), rgba(0, 229, 255, 0.2));
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+    }
+    header h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+    header p { font-size: 14px; color: var(--text-dim); }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent-pink);
+      margin-bottom: 16px;
+    }
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent-cyan);
+    }
+    .preview-box {
+      width: 100px;
+      height: 100px;
+      background: rgba(0,0,0,0.3);
+      border: 1.5px dashed rgba(255,255,255,0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .preview-box canvas { display: block; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .card-path {
+      font-size: 12px;
+      color: var(--accent-gold);
+      font-family: monospace;
+      background: rgba(0,0,0,0.4);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .status-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .status-svg { background: #00c853; color: #fff; }
+    .status-canvas { background: #ff9100; color: #fff; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🏰 可愛塔防 (DD Tower Defense) - 遊戲圖片資源 Manifest 清單</h1>
+    <p>以下為遊戲中所有將全面採用獨立圖片（SVG / PNG 向量素材）替換之元件完整清單</p>
+  </header>
+
+  <div class="container">
+
+    <!-- 1. 防禦塔 (Towers) -->
+    <section>
+      <div class="section-title">🏰 防禦塔類別 (Towers) - 8 種</div>
+      <div class="grid-cards">
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-petal" width="80" height="80"></canvas></div>
+          <div class="card-title">粉櫻花靈之箭 (Petal)</div>
+          <div class="card-path">assets/towers/tower_petal.svg</div>
+          <div class="card-desc">單體翡翠速射花靈箭</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-sunflower" width="80" height="80"></canvas></div>
+          <div class="card-title">暖陽向日葵金壇 (Sunflower)</div>
+          <div class="card-path">assets/towers/tower_sunflower.svg</div>
+          <div class="card-desc">陽光金幣生產塔</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-lavender" width="80" height="80"></canvas></div>
+          <div class="card-title">月影薰衣草法杖 (Lavender)</div>
+          <div class="card-path">assets/towers/tower_lavender.svg</div>
+          <div class="card-desc">月光連鎖電弧彈射</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-mushroom" width="80" height="80"></canvas></div>
+          <div class="card-title">魔幻蘑菇孢子壇 (Mushroom)</div>
+          <div class="card-path">assets/towers/tower_mushroom.svg</div>
+          <div class="card-desc">綠霧孢子持續毒性腐蝕</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-treant" width="80" height="80"></canvas></div>
+          <div class="card-title">古木荊棘牢籠 (Treant)</div>
+          <div class="card-path">assets/towers/tower_treant.svg</div>
+          <div class="card-desc">尖刺定身與範圍震裂</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-cannon" width="80" height="80"></canvas></div>
+          <div class="card-title">熔岩熾火巨砲 (Cannon)</div>
+          <div class="card-path">assets/towers/tower_cannon.svg</div>
+          <div class="card-desc">遠程劇烈熔岩重砲轟炸</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-ice_crystal" width="80" height="80"></canvas></div>
+          <div class="card-title">極光霜藍冰晶 (Ice Crystal)</div>
+          <div class="card-path">assets/towers/tower_ice_crystal.svg</div>
+          <div class="card-desc">霜雪穿透與集體凍結</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tower-laser" width="80" height="80"></canvas></div>
+          <div class="card-title">星核日光雷射塔 (Laser)</div>
+          <div class="card-path">assets/towers/tower_laser.svg</div>
+          <div class="card-desc">極速高頻貫穿雷射光束</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 敵人角色 (Enemies) -->
+    <section>
+      <div class="section-title">🐛 敵人怪物類別 (Enemies) - 6 種</div>
+      <div class="grid-cards">
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-caterpillar" width="80" height="80"></canvas></div>
+          <div class="card-title">毛毛蟲 (Caterpillar)</div>
+          <div class="card-path">assets/enemies/enemy_caterpillar.svg</div>
+          <div class="card-desc">基礎爬行怪</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-bee" width="80" height="80"></canvas></div>
+          <div class="card-title">蜜蜂 (Bee)</div>
+          <div class="card-path">assets/enemies/enemy_bee.svg</div>
+          <div class="card-desc">高移動速度飛行怪</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-snail" width="80" height="80"></canvas></div>
+          <div class="card-title">蝸牛 (Snail)</div>
+          <div class="card-path">assets/enemies/enemy_snail.svg</div>
+          <div class="card-desc">高血量慢速怪</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-beetle" width="80" height="80"></canvas></div>
+          <div class="card-title">鐵甲甲蟲 (Beetle)</div>
+          <div class="card-path">assets/enemies/enemy_beetle.svg</div>
+          <div class="card-desc">高護甲減傷防禦怪</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-butterfly" width="80" height="80"></canvas></div>
+          <div class="card-title">蝴蝶 (Butterfly)</div>
+          <div class="card-path">assets/enemies/enemy_butterfly.svg</div>
+          <div class="card-desc">敏捷型飛行怪</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-enemy-dragon" width="80" height="80"></canvas></div>
+          <div class="card-title">小龍 Boss (Dragon)</div>
+          <div class="card-path">assets/enemies/enemy_dragon.svg</div>
+          <div class="card-desc">首領級高血量 Boss</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 主動技能 (Skills) -->
+    <section>
+      <div class="section-title">✨ 主動技能類別 (Skills) - 2 種</div>
+      <div class="grid-cards">
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-skill-meteor" width="80" height="80"></canvas></div>
+          <div class="card-title">流星轟炸 (Skill Meteor)</div>
+          <div class="card-path">assets/skills/skill_meteor.svg</div>
+          <div class="card-desc">範圍火焰流星打擊</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-skill-freeze" width="80" height="80"></canvas></div>
+          <div class="card-title">絕對零度 (Skill Freeze)</div>
+          <div class="card-path">assets/skills/skill_freeze.svg</div>
+          <div class="card-desc">全螢幕全體敵人冰凍定身</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 主題出入口與環境建築 (Structures & Props) -->
+    <section>
+      <div class="section-title">🏛️ 出入口與地圖建築 (Structures & Props) - 4 種</div>
+      <div class="grid-cards">
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-struct-portal" width="80" height="80"></canvas></div>
+          <div class="card-title">出怪點傳送門 (Spawn Portal)</div>
+          <div class="card-path">assets/ui/spawn_portal.svg</div>
+          <div class="card-desc">深淵符文石陣與魔法漩渦</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-struct-tree" width="80" height="80"></canvas></div>
+          <div class="card-title">終點世界之樹 (Sacred Tree)</div>
+          <div class="card-path">assets/ui/sacred_tree.svg</div>
+          <div class="card-desc">精靈神殿守護水晶巨木</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-struct-badge" width="80" height="80"></canvas></div>
+          <div class="card-title">出怪膠囊底框 (Spawn Badge)</div>
+          <div class="card-path">assets/ui/spawn_badge.svg</div>
+          <div class="card-desc">純底框背景圖素材</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-tile-pedestal" width="80" height="80"></canvas></div>
+          <div class="card-title">2.5D 石頭建造基底 (Pedestal)</div>
+          <div class="card-path">assets/ui/pedestal_tile.svg</div>
+          <div class="card-desc">浮島石磚建築平台底座</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. UI 系統圖標 (Icons) -->
+    <section>
+      <div class="section-title">⚙️ UI 系統圖標 (Icons) - 5 種</div>
+      <div class="grid-cards">
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-icon-gold" width="80" height="80"></canvas></div>
+          <div class="card-title">金幣圖標 (Gold Icon)</div>
+          <div class="card-path">assets/ui/icon_gold.svg</div>
+          <div class="card-desc">頂部列與花費數值圖標</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-icon-heart" width="80" height="80"></canvas></div>
+          <div class="card-title">生命愛心圖標 (Heart Icon)</div>
+          <div class="card-path">assets/ui/icon_heart.svg</div>
+          <div class="card-desc">頂部玩家剩餘血量圖標</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-icon-star" width="80" height="80"></canvas></div>
+          <div class="card-title">波次星星圖標 (Star Icon)</div>
+          <div class="card-path">assets/ui/icon_star.svg</div>
+          <div class="card-desc">關卡波次與分數圖標</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-icon-settings" width="80" height="80"></canvas></div>
+          <div class="card-title">設定齒輪圖標 (Settings Icon)</div>
+          <div class="card-path">assets/ui/icon_settings.svg</div>
+          <div class="card-desc">頂部設定暫停按鈕圖標</div>
+        </div>
+        <div class="card">
+          <span class="status-badge status-svg">已提供 SVG</span>
+          <div class="preview-box"><canvas id="preview-icon-trophy" width="80" height="80"></canvas></div>
+          <div class="card-title">榮譽獎盃圖標 (Trophy Icon)</div>
+          <div class="card-path">assets/ui/icon_trophy.svg</div>
+          <div class="card-desc">英雄榜與結算畫面圖標</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      // SVG / Image 自動加載測試
+      const imgLoads = [
+        { id: 'preview-tower-petal', src: 'assets/towers/tower_petal.svg' },
+        { id: 'preview-tower-sunflower', src: 'assets/towers/tower_sunflower.svg' },
+        { id: 'preview-tower-lavender', src: 'assets/towers/tower_lavender.svg' },
+        { id: 'preview-tower-mushroom', src: 'assets/towers/tower_mushroom.svg' },
+        { id: 'preview-tower-treant', src: 'assets/towers/tower_treant.svg' },
+        { id: 'preview-tower-cannon', src: 'assets/towers/tower_cannon.svg' },
+        { id: 'preview-tower-ice_crystal', src: 'assets/towers/tower_ice_crystal.svg' },
+        { id: 'preview-tower-laser', src: 'assets/towers/tower_laser.svg' },
+        { id: 'preview-enemy-caterpillar', src: 'assets/enemies/enemy_caterpillar.svg' },
+        { id: 'preview-enemy-bee', src: 'assets/enemies/enemy_bee.svg' },
+        { id: 'preview-enemy-snail', src: 'assets/enemies/enemy_snail.svg' },
+        { id: 'preview-enemy-beetle', src: 'assets/enemies/enemy_beetle.svg' },
+        { id: 'preview-enemy-butterfly', src: 'assets/enemies/enemy_butterfly.svg' },
+        { id: 'preview-enemy-dragon', src: 'assets/enemies/enemy_dragon.svg' },
+        { id: 'preview-skill-meteor', src: 'assets/skills/skill_meteor.svg' },
+        { id: 'preview-skill-freeze', src: 'assets/skills/skill_freeze.svg' },
+        { id: 'preview-struct-portal', src: 'assets/ui/spawn_portal.svg' },
+        { id: 'preview-struct-tree', src: 'assets/ui/sacred_tree.svg' },
+        { id: 'preview-struct-badge', src: 'assets/ui/spawn_badge.svg' },
+        { id: 'preview-tile-pedestal', src: 'assets/ui/pedestal_tile.svg' },
+        { id: 'preview-icon-gold', src: 'assets/ui/icon_gold.svg' },
+        { id: 'preview-icon-heart', src: 'assets/ui/icon_heart.svg' },
+        { id: 'preview-icon-star', src: 'assets/ui/icon_star.svg' },
+        { id: 'preview-icon-settings', src: 'assets/ui/icon_settings.svg' },
+        { id: 'preview-icon-trophy', src: 'assets/ui/icon_trophy.svg' },
+      ];
+
+      imgLoads.forEach(item => {
+        const cv = document.getElementById(item.id);
+        if (cv) {
+          const img = new Image();
+          img.onload = () => {
+            const ctx = cv.getContext('2d');
+            ctx.clearRect(0, 0, 80, 80);
+            ctx.drawImage(img, 10, 10, 60, 60);
+          };
+          img.src = item.src;
+        }
+      });
+
+      // Canvas 代碼預覽 fallback
+      if (typeof Sprites !== 'undefined') {
+        const renderMap = {
+          'preview-enemy-caterpillar': (ctx) => Sprites.drawEnemy_caterpillar && Sprites.drawEnemy_caterpillar(ctx, 0),
+          'preview-enemy-bee': (ctx) => Sprites.drawEnemy_bee && Sprites.drawEnemy_bee(ctx, 0),
+          'preview-enemy-snail': (ctx) => Sprites.drawEnemy_snail && Sprites.drawEnemy_snail(ctx, 0),
+          'preview-enemy-beetle': (ctx) => Sprites.drawEnemy_beetle && Sprites.drawEnemy_beetle(ctx, 0),
+          'preview-enemy-butterfly': (ctx) => Sprites.drawEnemy_butterfly && Sprites.drawEnemy_butterfly(ctx, 0),
+          'preview-enemy-dragon': (ctx) => Sprites.drawEnemy_dragon && Sprites.drawEnemy_dragon(ctx, 0),
+          'preview-struct-portal': (ctx) => Sprites.drawPortal && Sprites.drawPortal(ctx, 0),
+          'preview-struct-tree': (ctx) => Sprites.drawSacredTree && Sprites.drawSacredTree(ctx, 0),
+        };
+
+        Object.keys(renderMap).forEach(id => {
+          const cv = document.getElementById(id);
+          if (cv) {
+            const ctx = cv.getContext('2d');
+            ctx.save();
+            ctx.translate(40, 40);
+            try {
+              if (renderMap[id]) renderMap[id](ctx);
+            } catch(e) {}
+            ctx.restore();
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

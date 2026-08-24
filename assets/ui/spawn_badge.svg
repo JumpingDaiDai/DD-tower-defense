@@ -10,9 +10,7 @@
     </filter>
   </defs>
   <g filter="url(#badgeShadow)">
-    <!-- 純粹簡潔膠囊底座 -->
+    <!-- 僅保留純膠囊底框背景 (純背景圖片) -->
     <rect x="4" y="4" width="132" height="42" rx="21" fill="url(#cleanBadgeGrad)" stroke="#ffe082" stroke-width="2.5"/>
-    <!-- 純粹文字 (無任何裝飾與圖標) -->
-    <text x="70" y="31" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="19" fill="#ffffff" text-anchor="middle">出怪 ⚔️</text>
   </g>
 </svg>

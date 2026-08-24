@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="treeTrunk" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#80d8ff"/>
+      <stop offset="50%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#00b0ff"/>
+    </linearGradient>
+    <radialGradient id="crystalGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#0091ea"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 陰影 -->
+  <ellipse cx="50" cy="85" rx="36" ry="10" fill="rgba(0,0,0,0.25)"/>
+
+  <!-- 基座 -->
+  <rect x="20" y="70" width="60" height="16" rx="6" fill="#26c6da" stroke="#00e5ff" stroke-width="2"/>
+
+  <!-- 主幹切面晶體 -->
+  <polygon points="40,70 25,32 50,15 75,32 60,70" fill="url(#treeTrunk)"/>
+  
+  <!-- 立體切面 -->
+  <polygon points="50,15 25,32 36,52 50,38" fill="#e1f5fe"/>
+  <polygon points="50,15 75,32 64,52 50,38" fill="#b3e5fc"/>
+  <polygon points="50,38 36,52 50,70" fill="#4fc3f7"/>
+  <polygon points="50,38 64,52 50,70" fill="#29b6f6"/>
+
+  <!-- 頂部懸浮琉璃守護水晶 -->
+  <polygon points="50,2 62,14 50,26 38,14" fill="url(#crystalGlow)" stroke="#ffffff" stroke-width="1.5"/>
+</svg>
