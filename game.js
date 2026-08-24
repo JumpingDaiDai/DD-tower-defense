@@ -31,7 +31,7 @@ window.addEventListener('unhandledrejection', (e) => {
 
 // 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
 // （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
-const DEBUG_TOKEN = '22c6b3e4249b6201';
+const DEBUG_TOKEN = '1a1e476d6158794f';
 
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身

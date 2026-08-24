@@ -2,6 +2,7 @@
 本地開發伺服器：手機連進來玩遊戲，console log / 錯誤 / 截圖會自動存回這台電腦。
 用法：在這個資料夾執行 `python devserver.py`，再用手機瀏覽器打開印出來的網址（需同一個 WiFi）。
 """
+import sys
 import http.server
 import socketserver
 import socket
@@ -9,6 +10,10 @@ import json
 import os
 import datetime
 import secrets
+
+if sys.stdout.encoding is not None and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
 
 PORT = 8000
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -123,8 +128,9 @@ def get_local_ip():
 
 
 def get_hotspot_ip():
-    """找出 iPhone 個人熱點介面的 IP（子網段固定是 172.20.10.0/28），
-    只綁這個 IP 可避免同時暴露在公司 WiFi/VPN 等其他網卡上。"""
+    """找出 iPhone 個人熱點介面的 IP（子網段固定是 172.20.10.0/28）。
+    優先用這個網卡可避免同時暴露在公司 WiFi/VPN 等其他網卡上。
+    僅適用有 ifconfig 的系統（macOS/Linux）；Windows 上會直接回傳 None，改用一般區網 IP。"""
     import subprocess
     import re
     try:
@@ -138,13 +144,15 @@ def get_hotspot_ip():
 
 if __name__ == '__main__':
     os.chdir(ROOT)
-    hotspot_ip = get_hotspot_ip()
-    if not hotspot_ip:
-        print("找不到 iPhone 個人熱點網卡（172.20.10.x），請確認熱點已用傳輸線連接並開啟。")
-        raise SystemExit(1)
-    with socketserver.TCPServer((hotspot_ip, PORT), Handler) as httpd:
-        print(f"僅綁定手機熱點網卡: {hotspot_ip}（其他網路/網卡連不進來）")
-        print(f"手機瀏覽器打開: http://{hotspot_ip}:{PORT}/index.html")
+    bind_ip = get_hotspot_ip()
+    if bind_ip:
+        note = f"僅綁定手機熱點網卡: {bind_ip}（其他網路/網卡連不進來）"
+    else:
+        bind_ip = get_local_ip()
+        note = f"綁定區網 IP: {bind_ip}（同一個 Wi-Fi/路由器下的其他裝置也連得到，寫入類請求仍需要 token 才會被接受）"
+    with socketserver.TCPServer((bind_ip, PORT), Handler) as httpd:
+        print(note)
+        print(f"手機瀏覽器打開: http://{bind_ip}:{PORT}/index.html")
         print(f"Log 即時寫入: {LOG_FILE}")
         print(f"截圖存放於: {SHOT_DIR}")
         print(f"驗證 token: {DEBUG_TOKEN}  (需與 game.js 裡的 DEBUG_TOKEN 一致)")
