@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&#127837; 毛毛蟲怪物 - 20 款風格提案</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", sans-serif;
+         background: #1a1b26; color: #c0caf5; padding: 28px 20px 80px; }
+  header { max-width: 1300px; margin: 0 auto 28px; text-align: center; }
+  header h1 { font-size: 24px; color: #ff9e64; margin-bottom: 6px; }
+  header p { color: #7a8299; font-size: 13px; }
+  .grid { max-width: 1300px; margin: 0 auto;
+          display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+  .card { background: #24283b; border: 1.5px solid rgba(255,200,80,.18);
+          border-radius: 14px; padding: 14px; transition: border-color .2s, box-shadow .2s; }
+  .card:hover { border-color: rgba(255,200,80,.5); box-shadow: 0 4px 20px rgba(255,158,64,.15); }
+  .num { display:inline-block; background:#ff9e64; color:#1a1b26; font-size:10px;
+         font-weight:800; padding:2px 7px; border-radius:20px; margin-bottom:6px; }
+  .card h2 { font-size:14px; margin-bottom:2px; color:#e0e4f0; }
+  .tag { font-size:10px; color:#7a8299; font-weight:600; margin-bottom:8px; letter-spacing:.5px; }
+  .desc { font-size:11px; color:#7a8299; margin-bottom:12px; line-height:1.5; }
+  .preview { display:flex; justify-content:center; margin-bottom:10px; background:#0d0e17; border-radius:8px; }
+  .preview canvas { display:block; }
+</style>
+</head>
+<body>
+<header>
+  <h1>&#127837; 毛毛蟲 (Caterpillar) &#8212; 20 款風格提案</h1>
+  <p>全部即時 Canvas 動態渲染，看哪個最順眼，回報編號（#1 ~ #20）</p>
+</header>
+<div class="grid">
+
+<div class="card">
+  <div class="num">#1</div>
+  <h2>原版毛毛蟲</h2>
+  <div class="tag">BASELINE GREEN</div>
+  <p class="desc">現有遊戲版本，Q 版翠綠三節蟲</p>
+  <div class="preview">
+    <canvas id="c1" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c1');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#e8f5e9'); g.addColorStop(.4,'#a5d6a7');
+  g.addColorStop(.85,'#66bb6a'); g.addColorStop(1,'#388e3c');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#2e7d32'; ctx.lineWidth=1; ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.strokeStyle='#2e7d32'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='#ff4081';
+ctx.beginPath(); ctx.arc(-13+w1,-12,1.8,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,1.8,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+const ef=(cx,cy,r)=>{const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);g.addColorStop(0,'#e8f5e9');g.addColorStop(.4,'#a5d6a7');g.addColorStop(.85,'#66bb6a');g.addColorStop(1,'#388e3c');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#2e7d32';ctx.lineWidth=.8;ctx.stroke();};
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#2</div>
+  <h2>毒液夜幕蟲</h2>
+  <div class="tag">TOXIC NEON GREEN</div>
+  <p class="desc">螢光酸綠+深黑外框，毒性感強</p>
+  <div class="preview">
+    <canvas id="c2" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c2');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const glow=Math.sin(t*4)*.15+.85;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#76ff03'; ctx.shadowBlur=10*glow;
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#ccff90'); g.addColorStop(.5,'#76ff03');
+  g.addColorStop(1,'#1b5e20');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#33691e'; ctx.lineWidth=1.2; ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.shadowColor='#76ff03'; ctx.shadowBlur=8;
+ctx.strokeStyle='#33691e'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='#eeff41';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#1a1a1a'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#eeff41'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#3</div>
+  <h2>熔岩烈火蟲</h2>
+  <div class="tag">LAVA FIRE WORM</div>
+  <p class="desc">橙紅岩漿漸層，帶火焰光暈</p>
+  <div class="preview">
+    <canvas id="c3" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c3');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const flicker=Math.sin(t*15)*.1+.9;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#ff6d00'; ctx.shadowBlur=12*flicker;
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#fff9c4'); g.addColorStop(.3,'#ffca28');
+  g.addColorStop(.7,'#f4511e'); g.addColorStop(1,'#880e4f');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#bf360c'; ctx.lineWidth=1; ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.strokeStyle='#bf360c'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.shadowColor='#ff6d00'; ctx.shadowBlur=10;
+ctx.fillStyle='#ffff00';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff3e0'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#bf360c'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#4</div>
+  <h2>極寒霜凍蟲</h2>
+  <div class="tag">ICE CRYSTAL WORM</div>
+  <p class="desc">透明藍冰漸層，帶冰晶折射光</p>
+  <div class="preview">
+    <canvas id="c4" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c4');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*6)*2, w2=Math.sin(t*6-1)*2, w3=Math.sin(t*6-2)*2;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#80d8ff'; ctx.shadowBlur=8;
+  const g=ctx.createRadialGradient(cx-r*.4,cy-r*.4,1,cx,cy,r);
+  g.addColorStop(0,'rgba(255,255,255,.95)'); g.addColorStop(.3,'#b3e5fc');
+  g.addColorStop(.7,'#0288d1'); g.addColorStop(1,'#01579b');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#81d4fa'; ctx.lineWidth=1; ctx.stroke();
+  // 冰晶高光
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.beginPath(); ctx.ellipse(cx-r*.3,cy-r*.3,r*.25,r*.15,-Math.PI/4,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.shadowColor='#80d8ff'; ctx.shadowBlur=6;
+ctx.strokeStyle='#29b6f6'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='#e1f5fe';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#01579b'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#5</div>
+  <h2>糖果彩虹蟲</h2>
+  <div class="tag">CANDY RAINBOW WORM</div>
+  <p class="desc">每節不同馬卡龍色，糖果幻彩超萌</p>
+  <div class="preview">
+    <canvas id="c5" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c5');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const colors=[['#fce4ec','#f06292','#c2185b'],['#e8f5e9','#66bb6a','#2e7d32'],['#e3f2fd','#42a5f5','#1565c0']];
+const drawSeg=(cx,cy,r,ci)=>{
+  const [hi,mi,di]=colors[ci];
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,hi); g.addColorStop(.5,mi); g.addColorStop(1,di);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=di; ctx.lineWidth=1; ctx.stroke();
+};
+drawSeg(9+w3,0,5,0); drawSeg(1+w2,w2*.5,6.5,1); drawSeg(-8+w1,0,8,2);
+ctx.strokeStyle='#9c27b0'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+// 七彩觸角球
+const rainbow=['#ff4081','#ff9800','#ffeb3b','#4caf50','#2196f3','#9c27b0'];
+ctx.fillStyle=rainbow[Math.floor(t*3)%6];
+ctx.beginPath(); ctx.arc(-13+w1,-12,2.2,0,Math.PI*2); ctx.fill();
+ctx.fillStyle=rainbow[Math.floor(t*3+3)%6];
+ctx.beginPath(); ctx.arc(-3+w1,-12,2.2,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#4a148c'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#6</div>
+  <h2>暗黑骷髏蟲</h2>
+  <div class="tag">DARK SKULL WORM</div>
+  <p class="desc">紫黑底色，骷髏白骨節紋，邪惡詛咒感</p>
+  <div class="preview">
+    <canvas id="c6" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c6');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const pulse=Math.sin(t*6)*.15+.85;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#aa00ff'; ctx.shadowBlur=10*pulse;
+  const g=ctx.createRadialGradient(cx-r*.2,cy-r*.2,1,cx,cy,r);
+  g.addColorStop(0,'#ede7f6'); g.addColorStop(.4,'#7e57c2');
+  g.addColorStop(.8,'#4a148c'); g.addColorStop(1,'#1a0033');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#aa00ff'; ctx.lineWidth=1; ctx.stroke();
+  // 骨節線
+  ctx.strokeStyle='rgba(255,255,255,.25)'; ctx.lineWidth=.8;
+  ctx.beginPath(); ctx.arc(cx,cy,r*.6,0,Math.PI*2); ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.shadowColor='#aa00ff'; ctx.shadowBlur=8;
+ctx.strokeStyle='#aa00ff'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='#ea80fc';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+// 骷髏眼（X 型）
+ctx.strokeStyle='#ea80fc'; ctx.lineWidth=2;
+ctx.beginPath(); ctx.moveTo(-5.5,-2); ctx.lineTo(-1.5,2); ctx.moveTo(-1.5,-2); ctx.lineTo(-5.5,2); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(1.5,-2); ctx.lineTo(5.5,2); ctx.moveTo(5.5,-2); ctx.lineTo(1.5,2); ctx.stroke();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#7</div>
+  <h2>黃金皇家蟲</h2>
+  <div class="tag">ROYAL GOLD WORM</div>
+  <p class="desc">金光閃閃，帶皇冠裝飾，高貴 Boss 感</p>
+  <div class="preview">
+    <canvas id="c7" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c7');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const shine=Math.sin(t*5)*.2+.8;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#ffd600'; ctx.shadowBlur=12*shine;
+  const g=ctx.createRadialGradient(cx-r*.35,cy-r*.35,1,cx,cy,r);
+  g.addColorStop(0,'#fffde7'); g.addColorStop(.3,'#ffee58');
+  g.addColorStop(.7,'#f9a825'); g.addColorStop(1,'#e65100');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#e65100'; ctx.lineWidth=1.2; ctx.stroke();
+  // 金光高光
+  ctx.fillStyle='rgba(255,255,255,.5)';
+  ctx.beginPath(); ctx.ellipse(cx-r*.3,cy-r*.3,r*.3,r*.18,-Math.PI/5,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 皇冠
+ctx.shadowColor='#ffd600'; ctx.shadowBlur=8;
+ctx.fillStyle='#ffd600';
+const cr=[-8+w1,-14]; // 皇冠底
+ctx.beginPath();
+ctx.moveTo(cr[0]-8,cr[1]+4); ctx.lineTo(cr[0]-8,cr[1]-4);
+ctx.lineTo(cr[0]-4,cr[1]+0); ctx.lineTo(cr[0],cr[1]-6);
+ctx.lineTo(cr[0]+4,cr[1]+0); ctx.lineTo(cr[0]+8,cr[1]-4);
+ctx.lineTo(cr[0]+8,cr[1]+4); ctx.closePath(); ctx.fill();
+ctx.shadowBlur=0;
+// 觸角
+ctx.strokeStyle='#e65100'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-14);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-14); ctx.stroke();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#e65100'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#8</div>
+  <h2>機械賽博蟲</h2>
+  <div class="tag">CYBER MECH WORM</div>
+  <p class="desc">金屬外殼，霓虹燈帶，機器人風格</p>
+  <div class="preview">
+    <canvas id="c8" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c8');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const blink=Math.sin(t*10)>.5?1:.5;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#eceff1'); g.addColorStop(.4,'#90a4ae');
+  g.addColorStop(.8,'#546e7a'); g.addColorStop(1,'#263238');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#00e5ff'; ctx.lineWidth=1; ctx.stroke();
+  // 發光環帶
+  ctx.shadowColor='#00e5ff'; ctx.shadowBlur=6;
+  ctx.strokeStyle='rgba(0,229,255,.6)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.arc(cx,cy,r*.7,Math.PI*.2,Math.PI*.8); ctx.stroke();
+  ctx.shadowBlur=0;
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.shadowColor='#00e5ff'; ctx.shadowBlur=6;
+ctx.strokeStyle='#00e5ff'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+// 感測器球（閃爍）
+ctx.fillStyle=blink>0.8?'#f44336':'#ff9800';
+ctx.shadowBlur=8; ctx.shadowColor=blink>0.8?'#f44336':'#ff9800';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+// 單目鏡頭
+ctx.fillStyle='#263238'; ctx.beginPath(); ctx.ellipse(0,0,6,7,0,0,Math.PI*2); ctx.fill();
+ctx.strokeStyle='#00e5ff'; ctx.lineWidth=1; ctx.stroke();
+ctx.shadowColor='#00e5ff'; ctx.shadowBlur=8;
+ctx.fillStyle='#00e5ff';
+ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-1,-1,1,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#9</div>
+  <h2>粉嫩兔兔蟲</h2>
+  <div class="tag">BUNNY PASTEL WORM</div>
+  <p class="desc">粉色毛茸茸，兔耳觸角，超萌少女心</p>
+  <div class="preview">
+    <canvas id="c9" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c9');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*7)*2, w2=Math.sin(t*7-1)*2, w3=Math.sin(t*7-2)*2;
+const bop=Math.sin(t*4)*.5;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#fce4ec'); g.addColorStop(.5,'#f48fb1');
+  g.addColorStop(1,'#c2185b');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#ad1457'; ctx.lineWidth=.8; ctx.stroke();
+  // 毛茸茸質感
+  for(let i=0;i<6;i++){
+    const a=i/6*Math.PI*2;
+    ctx.fillStyle='rgba(252,228,236,.6)';
+    ctx.beginPath(); ctx.arc(cx+Math.cos(a)*r*.85,cy+Math.sin(a)*r*.85,r*.18,0,Math.PI*2); ctx.fill();
+  }
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 兔耳觸角
+ctx.fillStyle='#f48fb1';
+ctx.beginPath(); ctx.ellipse(-13+w1,-15+bop,2,5,-.2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-3+w1,-15+bop,2,5,.2,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fce4ec';
+ctx.beginPath(); ctx.ellipse(-13+w1,-15+bop,1,3,-.2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-3+w1,-15+bop,1,3,.2,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#880e4f'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+// 小嘴
+ctx.strokeStyle='#c2185b'; ctx.lineWidth=1;
+ctx.beginPath(); ctx.arc(0,2,2,0,Math.PI); ctx.stroke();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#10</div>
+  <h2>星際幽靈蟲</h2>
+  <div class="tag">GHOST PHANTOM WORM</div>
+  <p class="desc">半透明幽靈白，帶藍光殘影，詭異飄移</p>
+  <div class="preview">
+    <canvas id="c10" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c10');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*5)*3, w2=Math.sin(t*5-1)*3, w3=Math.sin(t*5-2)*3;
+const alpha=Math.sin(t*3)*.2+.75;
+const drawSeg=(cx,cy,r,a=1)=>{
+  ctx.globalAlpha=alpha*a;
+  ctx.shadowColor='#64b5f6'; ctx.shadowBlur=15;
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'rgba(255,255,255,.95)'); g.addColorStop(.5,'rgba(144,202,249,.85)');
+  g.addColorStop(1,'rgba(25,118,210,.6)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='rgba(144,202,249,.7)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.globalAlpha=1;
+};
+// 殘影
+ctx.globalAlpha=.2;
+drawSeg(15+w3,0,4,1); drawSeg(5+w2,0,6,1); drawSeg(-3+w1,0,7.5,1);
+ctx.globalAlpha=1;
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.globalAlpha=alpha;
+ctx.shadowColor='#64b5f6'; ctx.shadowBlur=8;
+ctx.strokeStyle='#90caf9'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='rgba(255,255,255,.9)';
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0; ctx.globalAlpha=1;
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.globalAlpha=alpha+.1;
+ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#0d47a1'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.globalAlpha=1; ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#11</div>
+  <h2>石頭鎧甲蟲</h2>
+  <div class="tag">ROCK ARMOR WORM</div>
+  <p class="desc">灰石鎧甲外殼，厚重裂紋，高防禦感</p>
+  <div class="preview">
+    <canvas id="c11" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c11');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*6)*1.5, w2=Math.sin(t*6-1)*1.5, w3=Math.sin(t*6-2)*1.5;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.2,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#eceff1'); g.addColorStop(.35,'#b0bec5');
+  g.addColorStop(.75,'#607d8b'); g.addColorStop(1,'#263238');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#37474f'; ctx.lineWidth=1.5; ctx.stroke();
+  // 鎧甲裂紋
+  ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=.8;
+  ctx.beginPath(); ctx.moveTo(cx-r*.4,cy-r*.6); ctx.lineTo(cx+r*.1,cy+r*.2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+r*.2,cy-r*.5); ctx.lineTo(cx-r*.1,cy+r*.3); ctx.stroke();
+  // 高光
+  ctx.fillStyle='rgba(255,255,255,.35)';
+  ctx.beginPath(); ctx.ellipse(cx-r*.25,cy-r*.3,r*.25,r*.15,-Math.PI/4,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+ctx.strokeStyle='#546e7a'; ctx.lineWidth=1.5;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-12+w1,-11);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-4+w1,-11); ctx.stroke();
+ctx.fillStyle='#b0bec5';
+ctx.beginPath(); ctx.arc(-12+w1,-11,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-4+w1,-11,2,0,Math.PI*2); ctx.fill();
+ctx.strokeStyle='#37474f'; ctx.lineWidth=1; ctx.stroke();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#cfd8dc'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.strokeStyle='#546e7a'; ctx.lineWidth=.8; ctx.stroke();
+ctx.fillStyle='#263238'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#eceff1'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#12</div>
+  <h2>蒸汽朋克機蟲</h2>
+  <div class="tag">STEAMPUNK PIPE WORM</div>
+  <p class="desc">黃銅管節拼接，排氣口冒蒸汽粒子</p>
+  <div class="preview">
+    <canvas id="c12" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c12');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const steam=[];
+if(Math.random()<.15) steam.push({x:-8+w1,y:-8,vx:(Math.random()-.5)*.5,vy:-1.5,life:1});
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#fff8e1'); g.addColorStop(.4,'#ffca28');
+  g.addColorStop(.8,'#a1660a'); g.addColorStop(1,'#5d3a00');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#6d4c00'; ctx.lineWidth=1.5; ctx.stroke();
+  // 鉚釘
+  ctx.fillStyle='#ffe082';
+  ctx.beginPath(); ctx.arc(cx+r*.5,cy,r*.2,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx-r*.5,cy,r*.2,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 排氣管觸角
+ctx.strokeStyle='#795548'; ctx.lineWidth=2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-12+w1,-13);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-13); ctx.stroke();
+ctx.strokeStyle='#a1660a'; ctx.lineWidth=3;
+ctx.beginPath(); ctx.moveTo(-12+w1,-10); ctx.lineTo(-12+w1,-14);
+ctx.moveTo(-3+w1,-10); ctx.lineTo(-3+w1,-14); ctx.stroke();
+// 蒸汽
+ctx.fillStyle='rgba(220,220,220,.5)';
+const sx=-12+w1, sy=-14;
+for(let i=0;i<3;i++){
+  const oy=Math.sin(t*5+i)*2;
+  ctx.beginPath(); ctx.arc(sx+(i-1)*1.5,sy-i*2+oy,1.2,0,Math.PI*2); ctx.fill();
+}
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff8e1'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#5d3a00'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#13</div>
+  <h2>深海發光蟲</h2>
+  <div class="tag">DEEP SEA GLOWWORM</div>
+  <p class="desc">深黑底+生物螢光藍，帶律動發光觸手</p>
+  <div class="preview">
+    <canvas id="c13" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c13');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*5)*2.5, w2=Math.sin(t*5-1)*2.5, w3=Math.sin(t*5-2)*2.5;
+const pulse=Math.sin(t*3)*.3+.7;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx,cy,1,cx,cy,r);
+  g.addColorStop(0,'rgba(0,229,255,.9)'); g.addColorStop(.4,'rgba(0,150,180,.8)');
+  g.addColorStop(.8,'rgba(0,50,80,.9)'); g.addColorStop(1,'rgba(0,0,20,1)');
+  ctx.shadowColor='#00e5ff'; ctx.shadowBlur=15*pulse;
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='rgba(0,229,255,.5)'; ctx.lineWidth=1; ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 觸手（發光絲）
+ctx.shadowColor='#00e5ff'; ctx.shadowBlur=8*pulse;
+for(let i=0;i<4;i++){
+  const bx=-8+w1+(i-1.5)*4;
+  const by=-7-Math.sin(t*4+i)*3;
+  ctx.strokeStyle=`rgba(0,229,255,${.4+i*.15})`; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(bx,0); ctx.quadraticCurveTo(bx+Math.sin(t+i)*.5,by*.5,bx,by); ctx.stroke();
+  ctx.fillStyle='rgba(0,229,255,.9)'; ctx.beginPath(); ctx.arc(bx,by,1.2,0,Math.PI*2); ctx.fill();
+}
+ctx.shadowBlur=0; ctx.save(); ctx.translate(-8+w1,0);
+ctx.shadowColor='#00e5ff'; ctx.shadowBlur=8;
+ctx.fillStyle='rgba(0,229,255,.9)'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0;
+ctx.fillStyle='#002030'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='rgba(0,229,255,.8)'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#14</div>
+  <h2>毒蘑菇孢子蟲</h2>
+  <div class="tag">MUSHROOM SPORE WORM</div>
+  <p class="desc">紫色蘑菇斑點節，帶孢子粒子噴散</p>
+  <div class="preview">
+    <canvas id="c14" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c14');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#f3e5f5'); g.addColorStop(.4,'#ce93d8');
+  g.addColorStop(.8,'#7b1fa2'); g.addColorStop(1,'#4a148c');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#6a1b9a'; ctx.lineWidth=1; ctx.stroke();
+  // 蘑菇斑點
+  ctx.fillStyle='rgba(255,255,255,.6)';
+  ctx.beginPath(); ctx.arc(cx-r*.3,cy-r*.2,r*.25,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx+r*.3,cy+r*.1,r*.18,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 孢子粒子
+for(let i=0;i<5;i++){
+  const px=-8+w1+Math.sin(t*3+i*1.2)*8;
+  const py=-5-Math.cos(t*2+i)*5;
+  const fa=(.5+Math.sin(t+i)*.5)*.7;
+  ctx.fillStyle=`rgba(206,147,216,${fa})`;
+  ctx.beginPath(); ctx.arc(px,py,.8,0,Math.PI*2); ctx.fill();
+}
+ctx.strokeStyle='#9c27b0'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-12+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle='#ce93d8';
+ctx.beginPath(); ctx.arc(-12+w1,-12,3,0,Math.PI);  // 蘑菇帽
+ctx.lineTo(-9+w1,-10); ctx.lineTo(-15+w1,-10); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,3,0,Math.PI);
+ctx.lineTo(0+w1,-10); ctx.lineTo(-6+w1,-10); ctx.closePath(); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#f3e5f5'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#4a148c'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#15</div>
+  <h2>水晶果凍蟲</h2>
+  <div class="tag">CRYSTAL JELLY WORM</div>
+  <p class="desc">半透明彩虹果凍質感，光線折射高光</p>
+  <div class="preview">
+    <canvas id="c15" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c15');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*7)*2, w2=Math.sin(t*7-1)*2, w3=Math.sin(t*7-2)*2;
+const hue=t*60%360;
+const drawSeg=(cx,cy,r,h=0)=>{
+  ctx.globalAlpha=.8;
+  const g=ctx.createRadialGradient(cx-r*.4,cy-r*.4,1,cx,cy,r);
+  g.addColorStop(0,`hsla(${(hue+h)%360},100%,90%,.9)`);
+  g.addColorStop(.5,`hsla(${(hue+h)%360},80%,65%,.8)`);
+  g.addColorStop(1,`hsla(${(hue+h+40)%360},90%,40%,.7)`);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1; ctx.strokeStyle=`hsla(${(hue+h)%360},70%,70%,.9)`; ctx.lineWidth=1; ctx.stroke();
+  // 果凍高光
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.beginPath(); ctx.ellipse(cx-r*.3,cy-r*.35,r*.3,r*.18,-Math.PI/4,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5,120); drawSeg(1+w2,w2*.5,6.5,240); drawSeg(-8+w1,0,8,0);
+ctx.strokeStyle=`hsl(${hue},80%,70%)`; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+ctx.fillStyle=`hsla(${(hue+180)%360},90%,75%,.9)`;
+ctx.beginPath(); ctx.arc(-13+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(-3+w1,-12,2,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.globalAlpha=.85;
+ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.globalAlpha=1;
+ctx.fillStyle=`hsl(${hue},90%,30%)`; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#16</div>
+  <h2>地獄烈焰蟲</h2>
+  <div class="tag">HELLFIRE DEMON WORM</div>
+  <p class="desc">血紅黑焦，帶翅膀與惡魔角，Boss 威壓感</p>
+  <div class="preview">
+    <canvas id="c16" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c16');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*9)*2, w2=Math.sin(t*9-1)*2, w3=Math.sin(t*9-2)*2;
+const flicker=Math.sin(t*15)*.1+.9;
+const drawSeg=(cx,cy,r)=>{
+  ctx.shadowColor='#dd2c00'; ctx.shadowBlur=14*flicker;
+  const g=ctx.createRadialGradient(cx-r*.2,cy-r*.2,1,cx,cy,r);
+  g.addColorStop(0,'#ff6e40'); g.addColorStop(.4,'#dd2c00');
+  g.addColorStop(.8,'#7f0000'); g.addColorStop(1,'#1a0000');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle='#b71c1c'; ctx.lineWidth=1.2; ctx.stroke();
+  // 裂縫發光
+  ctx.strokeStyle=`rgba(255,110,64,${.4*flicker})`; ctx.lineWidth=.8;
+  ctx.beginPath(); ctx.moveTo(cx-r*.5,cy-r*.3); ctx.lineTo(cx+r*.2,cy+r*.4); ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 惡魔角
+ctx.shadowColor='#dd2c00'; ctx.shadowBlur=10;
+ctx.fillStyle='#b71c1c';
+ctx.beginPath(); ctx.moveTo(-13+w1,-8); ctx.lineTo(-10+w1,-16); ctx.lineTo(-7+w1,-8); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-5+w1,-8); ctx.lineTo(-2+w1,-15); ctx.lineTo(1+w1,-8); ctx.closePath(); ctx.fill();
+// 翅膀（折疊）
+ctx.globalAlpha=.6+Math.sin(t*8)*.1;
+ctx.fillStyle='rgba(180,0,0,.5)';
+ctx.beginPath(); ctx.moveTo(-8+w1,2); ctx.bezierCurveTo(-15+w1,-5,-20+w1,5,-14+w1,10);
+ctx.bezierCurveTo(-10+w1,8,-8+w1,5,-8+w1,2); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-8+w1,2); ctx.bezierCurveTo(-1+w1,-5,4+w1,5,-2+w1,10);
+ctx.bezierCurveTo(-6+w1,8,-8+w1,5,-8+w1,2); ctx.fill();
+ctx.globalAlpha=1; ctx.shadowBlur=0;
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#ff6e40'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#1a0000'; ctx.beginPath(); ctx.arc(-3,0,1.8,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.8,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#ff1744'; ctx.beginPath(); ctx.arc(-2.3,-.8,.8,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.8,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#17</div>
+  <h2>彩蛋節日蟲</h2>
+  <div class="tag">EASTER EGG FESTIVE WORM</div>
+  <p class="desc">繽紛彩蛋條紋，帶節日彩帶，歡樂派對感</p>
+  <div class="preview">
+    <canvas id="c17" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c17');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*8)*2, w2=Math.sin(t*8-1)*2, w3=Math.sin(t*8-2)*2;
+const stripeColors=[['#f44336','#fff','#2196f3'],['#ff9800','#4caf50','#9c27b0'],['#e91e63','#00bcd4','#ffeb3b']];
+const drawSeg=(cx,cy,r,ci)=>{
+  const c=stripeColors[ci];
+  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip();
+  ctx.fillStyle=c[0]; ctx.fillRect(cx-r,cy-r,r*2,r*2);
+  for(let i=0;i<3;i++){
+    ctx.fillStyle=c[(i+1)%3];
+    ctx.fillRect(cx-r+i*r*.67,cy-r,r*.67,r*2);
+  }
+  // 漸層覆蓋增加立體感
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'rgba(255,255,255,.4)'); g.addColorStop(1,'rgba(0,0,0,.15)');
+  ctx.fillStyle=g; ctx.fillRect(cx-r,cy-r,r*2,r*2);
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.stroke();
+};
+drawSeg(9+w3,0,5,0); drawSeg(1+w2,w2*.5,6.5,1); drawSeg(-8+w1,0,8,2);
+ctx.strokeStyle='#9c27b0'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-12);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-12); ctx.stroke();
+// 彩帶球
+const rb=['#f44336','#ff9800','#4caf50','#2196f3','#9c27b0'];
+ctx.fillStyle=rb[Math.floor(t*4)%5];
+ctx.beginPath(); ctx.arc(-13+w1,-12,2.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle=rb[Math.floor(t*4+2)%5];
+ctx.beginPath(); ctx.arc(-3+w1,-12,2.5,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#311b92'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#18</div>
+  <h2>森林精靈蟲</h2>
+  <div class="tag">FOREST ELF WORM</div>
+  <p class="desc">翡翠金，葉片鎧甲節，頭頂精靈翅膀</p>
+  <div class="preview">
+    <canvas id="c18" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c18');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*7)*2, w2=Math.sin(t*7-1)*2, w3=Math.sin(t*7-2)*2;
+const flutter=Math.sin(t*12)*5;
+const drawSeg=(cx,cy,r)=>{
+  const g=ctx.createRadialGradient(cx-r*.3,cy-r*.3,1,cx,cy,r);
+  g.addColorStop(0,'#f0fbe8'); g.addColorStop(.35,'#aed581');
+  g.addColorStop(.7,'#558b2f'); g.addColorStop(1,'#1b5e20');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#33691e'; ctx.lineWidth=1; ctx.stroke();
+  // 葉脈紋
+  ctx.strokeStyle='rgba(255,255,255,.3)'; ctx.lineWidth=.7;
+  ctx.beginPath(); ctx.moveTo(cx-r*.5,cy); ctx.lineTo(cx+r*.5,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-r*.5); ctx.lineTo(cx,cy+r*.5); ctx.stroke();
+};
+drawSeg(9+w3,0,5); drawSeg(1+w2,w2*.5,6.5); drawSeg(-8+w1,0,8);
+// 精靈翅膀
+ctx.globalAlpha=.7+Math.sin(t*8)*.1;
+ctx.fillStyle='rgba(200,255,150,.6)'; ctx.strokeStyle='rgba(100,200,50,.8)'; ctx.lineWidth=.8;
+ctx.beginPath(); ctx.moveTo(-8+w1,-6); ctx.bezierCurveTo(-18+w1+flutter,-12,-22+w1,-5,-15+w1,-2); ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-8+w1,-6); ctx.bezierCurveTo(2+w1+flutter,-12,6+w1,-5,-1+w1,-2); ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.globalAlpha=1;
+// 觸角（樹枝狀）
+ctx.strokeStyle='#33691e'; ctx.lineWidth=1.2;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-12+w1,-11); ctx.lineTo(-14+w1,-9);
+ctx.moveTo(-12+w1,-11); ctx.lineTo(-11+w1,-14); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-6+w1,-6); ctx.lineTo(-3+w1,-11); ctx.lineTo(-1+w1,-9);
+ctx.moveTo(-3+w1,-11); ctx.lineTo(-3+w1,-14); ctx.stroke();
+// 葉片頂
+ctx.fillStyle='#69f0ae';
+ctx.beginPath(); ctx.ellipse(-11+w1,-14,2,3,-.3,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-3+w1,-14,2,3,.3,0,Math.PI*2); ctx.fill();
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#f0fbe8'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#1b5e20'; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#19</div>
+  <h2>像素 8-bit 蟲</h2>
+  <div class="tag">PIXEL RETRO WORM</div>
+  <p class="desc">硬邊方塊像素風，復古電玩街機感</p>
+  <div class="preview">
+    <canvas id="c19" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c19');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.round(Math.sin(t*8)*2), w2=Math.round(Math.sin(t*8-1)*2), w3=Math.round(Math.sin(t*8-2)*2);
+ctx.imageSmoothingEnabled=false;
+const px=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h);};
+// 尾節
+px(6+w3,-4,8,8,'#66bb6a');px(7+w3,-3,6,6,'#a5d6a7');px(8+w3,-2,4,4,'#c8e6c9');
+// 中節
+px(-2+w2,-6,10,10,'#4caf50');px(-1+w2,-5,8,8,'#81c784');px(0+w2,-4,6,6,'#a5d6a7');
+// 頭節
+px(-12+w1,-8,14,14,'#388e3c');px(-11+w1,-7,12,12,'#66bb6a');px(-10+w1,-6,10,10,'#a5d6a7');
+// 觸角
+px(-12+w1,-10,2,4,'#2e7d32');px(-6+w1,-10,2,4,'#2e7d32');
+px(-13+w1,-14,4,4,'#ff4081');px(-7+w1,-14,4,4,'#ff4081');
+// 像素眼
+px(-10+w1,-4,4,4,'#fff');px(-5+w1,-4,4,4,'#fff');
+px(-9+w1,-3,2,2,'#1a1a1a');px(-4+w1,-3,2,2,'#1a1a1a');
+px(-9+w1,-4,1,1,'#fff');px(-4+w1,-4,1,1,'#fff');
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+<div class="card">
+  <div class="num">#20</div>
+  <h2>超級合體天使蟲</h2>
+  <div class="tag">SUPER ANGEL FUSION WORM</div>
+  <p class="desc">彩虹光翼+金光聖光，通關大 Boss 感</p>
+  <div class="preview">
+    <canvas id="c20" width="120" height="120"></canvas>
+  </div>
+  <script>
+  (function(){
+    const cv = document.getElementById('c20');
+    const ctx = cv.getContext('2d');
+    let t = 0;
+    function draw(){
+      ctx.clearRect(0,0,120,120);
+      ctx.save();
+      ctx.translate(70, 60);
+      
+const w1=Math.sin(t*6)*2, w2=Math.sin(t*6-1)*2, w3=Math.sin(t*6-2)*2;
+const halo=t*2%360;
+const glow=Math.sin(t*3)*.15+.85;
+const drawSeg=(cx,cy,r,h)=>{
+  ctx.shadowColor=`hsl(${h},90%,70%)`; ctx.shadowBlur=14*glow;
+  const g=ctx.createRadialGradient(cx-r*.35,cy-r*.35,1,cx,cy,r);
+  g.addColorStop(0,'#fffde7'); g.addColorStop(.3,`hsl(${h},100%,80%)`);
+  g.addColorStop(.7,`hsl(${h},90%,55%)`); g.addColorStop(1,`hsl(${h+30},80%,30%)`);
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  ctx.shadowBlur=0; ctx.strokeStyle=`hsl(${h},60%,70%)`; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.5)';
+  ctx.beginPath(); ctx.ellipse(cx-r*.3,cy-r*.35,r*.3,r*.18,-Math.PI/4,0,Math.PI*2); ctx.fill();
+};
+drawSeg(9+w3,0,5,halo+240); drawSeg(1+w2,w2*.5,6.5,halo+120); drawSeg(-8+w1,0,8,halo);
+// 光翼
+ctx.globalAlpha=.65;
+for(let s=0;s<2;s++){
+  const sign=s===0?-1:1;
+  ctx.shadowColor=`hsl(${halo+s*60},90%,70%)`; ctx.shadowBlur=10;
+  ctx.fillStyle=`hsla(${halo+s*60},100%,80%,.6)`;
+  ctx.beginPath();
+  ctx.moveTo(-8+w1,0);
+  ctx.bezierCurveTo(-8+w1+sign*8,-10+sign,-8+w1+sign*20,0,-8+w1+sign*14,6);
+  ctx.bezierCurveTo(-8+w1+sign*8,9,-8+w1,5,-8+w1,0); ctx.fill();
+}
+ctx.globalAlpha=1; ctx.shadowBlur=0;
+// 光環
+ctx.strokeStyle=`hsla(${halo},90%,75%,.7)`; ctx.lineWidth=1.5;
+ctx.setLineDash([3,3]); ctx.beginPath(); ctx.arc(-8+w1,-16,7,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+// 觸角（帶星光球）
+ctx.shadowColor=`hsl(${halo},90%,75%)`; ctx.shadowBlur=10;
+ctx.strokeStyle=`hsl(${halo},70%,65%)`; ctx.lineWidth=1.3;
+ctx.beginPath(); ctx.moveTo(-9+w1,-6); ctx.lineTo(-13+w1,-13);
+ctx.moveTo(-6+w1,-6); ctx.lineTo(-2+w1,-13); ctx.stroke();
+ctx.fillStyle=`hsl(${(halo+90)%360},100%,80%)`;
+ctx.beginPath(); ctx.arc(-13+w1,-13,2.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle=`hsl(${(halo+200)%360},100%,80%)`;
+ctx.beginPath(); ctx.arc(-2+w1,-13,2.5,0,Math.PI*2); ctx.fill();
+ctx.shadowBlur=0;
+ctx.save(); ctx.translate(-8+w1,0);
+ctx.fillStyle='#fffde7'; ctx.beginPath(); ctx.ellipse(-3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.ellipse(3.5,0,3,3.5,0,0,Math.PI*2); ctx.fill();
+ctx.fillStyle=`hsl(${halo},70%,30%)`; ctx.beginPath(); ctx.arc(-3,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4,0,1.5,0,Math.PI*2); ctx.fill();
+ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(-2.3,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.beginPath(); ctx.arc(4.7,-.8,.7,0,Math.PI*2); ctx.fill();
+ctx.restore();
+
+      ctx.restore();
+      t += 0.016;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+  </script>
+</div>
+</div>
+</body>
+</html>

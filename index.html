@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.2.15">
+  <link rel="stylesheet" href="style.css?v=1.3.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -149,10 +149,31 @@
           </div>
         </div>
 
-        <!-- 地圖選擇器 -->
-        <div class="map-selection-container">
-          <div class="map-selection-header">戰場地圖選擇</div>
-          <div id="map-selection-list"></div>
+        <!-- 商店入口 (用永久貨幣「魔法水晶」解鎖塔與技能) -->
+        <div id="open-shop-btn" class="menu-champion-card" title="點擊開啟商店">
+          <div class="champion-left">
+            <span class="shop-crystal-icon">💎</span>
+            <div class="champion-info">
+              <span class="champion-label">魔法水晶</span>
+              <span id="menu-crystal-balance" class="champion-desc">0</span>
+            </div>
+          </div>
+          <div class="champion-right">
+            <span class="champion-score" style="font-size:13px;">商店</span>
+            <span class="champion-arrow">›</span>
+          </div>
+        </div>
+
+        <!-- 關卡輪探 -->
+        <div class="level-carousel">
+          <button id="level-prev-btn" class="level-arrow-btn" aria-label="上一關">‹</button>
+          <div class="level-carousel-card" id="level-carousel-card">
+            <div class="level-card-lock hidden" id="level-lock-overlay">🔒</div>
+            <div class="level-card-name" id="level-card-name"></div>
+            <div class="level-card-stars" id="level-card-stars"></div>
+            <div class="level-star-tip hidden" id="level-star-tip"></div>
+          </div>
+          <button id="level-next-btn" class="level-arrow-btn" aria-label="下一關">›</button>
         </div>
 
         <button id="start-btn" class="btn-primary">
@@ -178,6 +199,19 @@
           <div id="modal-leaderboard-list" class="leaderboard-modal-records"></div>
         </div>
         <button id="close-leaderboard-btn" class="btn-primary" style="margin-top: 14px;">關閉英雄榜</button>
+      </div>
+    </div>
+
+    <!-- 商店彈窗：用魔法水晶永久解鎖塔與技能 -->
+    <div id="shop-modal" class="screen hidden">
+      <div class="screen-content leaderboard-modal-content">
+        <div class="shop-balance-row">💎 <span id="shop-crystal-balance">0</span></div>
+        <h2 style="margin-bottom:8px;">塔與技能商店</h2>
+        <div class="leaderboard-modal-card">
+          <div id="shop-item-list" class="shop-item-list"></div>
+        </div>
+        <div class="shop-item-info hidden" id="shop-item-info"></div>
+        <button id="close-shop-btn" class="btn-primary" style="margin-top: 14px;">關閉商店</button>
       </div>
     </div>
 
@@ -215,6 +249,8 @@
         </div>
         <h1>花園保衛成功！</h1>
         <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
+        <div id="victory-stars" class="victory-stars"></div>
+        <div id="victory-chest-reward" class="victory-chest-reward hidden"></div>
         <div class="end-score-box">
           <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
             <div>
@@ -251,13 +287,35 @@
     <button id="debug-shot-btn" style="background:#222;color:#ffcc00;border:1px solid #ffcc00;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-left:4px;touch-action:manipulation;" onclick="if(window.dbgUploadScreenshot) dbgUploadScreenshot();">
       📷 傳截圖
     </button>
+    <button id="debug-test-toggle-btn" style="background:#222;color:#00bcd4;border:1px solid #00bcd4;padding:4px 10px;border-radius:12px;font-size:11px;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.3);margin-left:4px;touch-action:manipulation;" onclick="const l=document.getElementById('debug-test-panel'); l.style.display = (l.style.display==='none'||l.style.display==='')?'block':'none';">
+      🧪 關卡
+    </button>
     <div id="debug-log" style="display:none;position:absolute;bottom:32px;right:0;width:280px;max-height:180px;background:rgba(0,0,0,0.92);color:#00ff66;font-family:monospace;font-size:10px;padding:8px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;overflow-y:auto;pointer-events:auto;">
       <div style="border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:4px;font-weight:bold;">
         📋 系統偵錯日誌
       </div>
     </div>
+    <div id="debug-test-panel" style="display:none;position:absolute;bottom:32px;right:0;width:200px;background:rgba(0,0,0,0.92);color:#fff;font-family:monospace;font-size:11px;padding:10px;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.4);border:1px solid #333;">
+      <div style="border-bottom:1px solid #444;padding-bottom:4px;margin-bottom:6px;font-weight:bold;color:#00bcd4;">
+        🧪 關卡進度測試
+      </div>
+      <select id="debug-level-select" style="width:100%;margin-bottom:6px;padding:3px;">
+        <option value="-1">尚未通關任何關卡</option>
+        <option value="0">通關第 1 關</option>
+        <option value="1">通關第 2 關</option>
+        <option value="2">通關第 3 關</option>
+      </select>
+      <select id="debug-stars-select" style="width:100%;margin-bottom:8px;padding:3px;">
+        <option value="1">1 ★</option>
+        <option value="2">2 ★</option>
+        <option value="3" selected>3 ★</option>
+      </select>
+      <button style="width:100%;background:#00bcd4;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgApplyLevelProgress) window.dbgApplyLevelProgress(parseInt(document.getElementById('debug-level-select').value, 10), parseInt(document.getElementById('debug-stars-select').value, 10));">
+        套用
+      </button>
+    </div>
   </div>
 
-  <script src="game.js?v=1.2.15"></script>
+  <script src="game.js?v=1.3.0"></script>
 </body>
 </html>

@@ -552,9 +552,12 @@ html, body {
   z-index: 100;
   display: flex;
   align-items: center;
+  align-items: safe center; /* 內容過高時從頂端開始，不會裁掉上半部 */
   justify-content: center;
   background: #fffdf5;
   border-radius: 0px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .screen.hidden {
@@ -981,97 +984,240 @@ html, body {
   font-size: 18px;
 }
 
-/* --- Map Selection UI --- */
-.map-selection-container {
+/* --- Level Carousel UI --- */
+.level-carousel {
   width: 100%;
   margin-bottom: 16px;
-  text-align: left;
-}
-
-.map-selection-header {
-  font-size: 13px;
-  font-weight: 800;
-  color: #e65100;
-  margin-bottom: 8px;
-  padding-left: 2px;
-}
-
-#map-selection-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.map-select-card {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+}
+
+.level-arrow-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 167, 38, 0.4);
   background: #ffffff;
-  border: 1.5px solid rgba(255, 167, 38, 0.35);
-  border-radius: 14px;
+  color: #ff9800;
+  font-size: 18px;
+  font-weight: 800;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
   touch-action: manipulation;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.map-select-card:hover {
+.level-arrow-btn:hover {
   transform: translateY(-2px);
   border-color: #ffa726;
-  background: #fffdf8;
   box-shadow: 0 4px 12px rgba(255, 152, 0, 0.15);
 }
 
-.map-select-card:active {
-  transform: scale(0.98);
+.level-arrow-btn:active {
+  transform: scale(0.92);
 }
 
-.map-select-card.active {
-  background: #fff8e1;
-  border-color: #ff9800;
-  box-shadow: 0 3px 12px rgba(255, 152, 0, 0.2);
+.level-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
 }
 
-.map-card-info {
+.level-carousel-card {
+  position: relative;
   flex: 1;
   min-width: 0;
+  padding: 14px 16px;
+  background: #fff8e1;
+  border: 1.5px solid #ff9800;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(255, 152, 0, 0.15);
 }
 
-.map-card-title {
-  font-size: 13px;
+.level-card-name {
+  font-size: 14px;
   font-weight: 800;
   color: #4e342e;
   line-height: 1.2;
 }
 
-.map-card-desc {
-  font-size: 10px;
+.level-card-stars {
+  margin-top: 6px;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+.level-card-stars .star-filled { color: #ff9800; }
+.level-card-stars .star-empty { color: rgba(255, 167, 38, 0.3); }
+
+.level-card-lock {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: rgba(255, 253, 245, 0.75);
+  border-radius: 16px;
+}
+
+.level-card-lock.hidden { display: none; }
+
+.level-star-tip {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: rgba(78, 52, 46, 0.92);
+  border-radius: 16px;
+  color: #fff8e1;
+  font-size: 13px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.level-star-tip.hidden { display: none; }
+
+.star-tip-row.star-tip-done { color: #a5d6a7; }
+
+#start-btn.btn-locked {
+  opacity: 0.5;
+}
+
+.victory-stars {
+  font-size: 26px;
+  letter-spacing: 4px;
+  margin-bottom: 6px;
+}
+
+.victory-stars .star-filled { color: #ff9800; }
+.victory-stars .star-empty { color: rgba(255, 167, 38, 0.3); }
+
+.victory-chest-reward {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ab47bc;
+  margin-bottom: 8px;
+}
+
+.victory-chest-reward.hidden { display: none; }
+
+/* --- Shop (商店：永久貨幣解鎖塔與技能) --- */
+.shop-crystal-icon { font-size: 20px; }
+
+.shop-balance-row {
+  font-size: 20px;
+  font-weight: 900;
+  color: #ab47bc;
+  margin-bottom: 4px;
+}
+
+.shop-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1.5px solid rgba(255, 167, 38, 0.3);
+  border-radius: 12px;
+}
+
+.shop-item-owned {
+  background: #f1f8e9;
+  border-color: rgba(139, 195, 74, 0.4);
+}
+
+.shop-item-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #4e342e;
+}
+
+.shop-item-status {
+  font-size: 12px;
+  font-weight: 800;
+  color: #689f38;
+}
+
+.shop-buy-btn {
+  background: linear-gradient(135deg, #ab47bc, #8e24aa);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.shop-buy-btn:disabled {
+  background: #cfd8dc;
+  color: #90a4ae;
+  cursor: not-allowed;
+}
+
+.shop-item-info {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 999;
+  width: min(80vw, 300px);
+  padding: 12px 16px;
+  background: rgba(78, 52, 46, 0.96);
+  border-radius: 12px;
+  color: #fff8e1;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.shop-item-info.hidden { display: none; }
+
+.shop-info-title {
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 2px;
+}
+
+.shop-info-desc {
+  font-size: 11px;
+  color: #ffe0b2;
+  margin-bottom: 4px;
+}
+
+.shop-info-stats {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ce93d8;
+}
+
+/* 塔/技能商店鎖定狀態 */
+.tower-item.locked .tower-cost-locked {
   color: #8d6e63;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.map-card-radio {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 167, 38, 0.5);
-  flex-shrink: 0;
-  position: relative;
-  transition: border-color 0.2s;
-}
-
-.map-select-card.active .map-card-radio {
-  border-color: #ff9800;
-  background: #ff9800;
-  box-shadow: inset 0 0 0 3px #fff;
+#skill-meteor-btn.locked,
+#skill-freeze-btn.locked {
+  opacity: 0.35;
+  filter: grayscale(0.8);
 }
 
 /* --- Primary Action Buttons (4號晨曦暖陽擬物按鈕) --- */
