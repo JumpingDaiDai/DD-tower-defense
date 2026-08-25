@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.5.0">
+  <link rel="stylesheet" href="style.css?v=1.6.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -180,6 +180,10 @@
           <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
           <span>開始守衛</span>
         </button>
+
+        <button id="reset-data-btn" style="margin-top:10px;background:none;border:none;color:#b0a89e;font-size:11px;text-decoration:underline;cursor:pointer;padding:4px;">
+          重置所有資料
+        </button>
       </div>
     </div>
 
@@ -239,6 +243,36 @@
       </div>
     </div>
 
+    <!-- 精靈樹彈窗：通關獲得的精華可以拿來升級精靈樹，每級給不同的永久強化 -->
+    <div id="spirit-tree-modal" class="screen hidden">
+      <div class="screen-content shop-modal-content" style="max-height:none;height:auto;">
+        <div class="shop-header-row">
+          <div class="shop-title-wrap">
+            <span class="shop-title-icon">🌳</span>
+            <h2 style="margin:0; font-size:18px; color:var(--gold,#ffd700);">精靈樹 <span id="spirit-tree-level-badge"></span></h2>
+          </div>
+          <div class="crystal-pill" title="當前精華餘額">
+            <span>✨</span>
+            <span class="num" id="spirit-tree-essence-balance">0</span>
+          </div>
+        </div>
+
+        <div style="padding:14px 4px; text-align:center;">
+          <div style="color:#d4b896; font-size:12px; margin-bottom:4px;">目前強化</div>
+          <div id="spirit-tree-current-bonus" style="color:#fff8e7; font-weight:800; font-size:14px; margin-bottom:16px;"></div>
+
+          <div id="spirit-tree-next-box">
+            <div style="color:#d4b896; font-size:12px; margin-bottom:4px;">下一級</div>
+            <div id="spirit-tree-next-bonus" style="color:#80d8ff; font-weight:800; font-size:14px; margin-bottom:10px;"></div>
+            <button id="spirit-tree-upgrade-btn" class="btn-primary" style="width:100%;">升級</button>
+          </div>
+          <div id="spirit-tree-maxed-text" class="hidden" style="color:#ffd700; font-weight:800; font-size:14px;">🌟 精靈樹已滿級！</div>
+        </div>
+
+        <button id="close-spirit-tree-btn" class="btn-primary" style="margin-top: 10px; width: 100%;">關閉</button>
+      </div>
+    </div>
+
     <!-- 遊戲結束畫面 -->
     <div id="gameover-screen" class="screen hidden">
       <div class="screen-content end-game-content">
@@ -275,6 +309,7 @@
         <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
         <div id="victory-stars" class="victory-stars"></div>
         <div id="victory-chest-reward" class="victory-chest-reward hidden"></div>
+        <div id="victory-essence-reward" class="victory-chest-reward hidden"></div>
         <div class="end-score-box">
           <div style="display:flex; justify-content:space-around; align-items:center; width:100%;">
             <div>
@@ -350,6 +385,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.5.0"></script>
+  <script src="game.js?v=1.6.0"></script>
 </body>
 </html>

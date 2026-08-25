@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.5.0-dev',
+  VERSION: 'v1.6.0-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -503,7 +503,7 @@ function saveLevelProgress(data) {
 // 每次「首度達成」某星等門檻會發放一次寶箱水晶獎勵（重玩補到已經拿過的星數不會重複給）。
 function recordLevelResult(levelIndex, stars) {
   const level = LEVEL_DATA[levelIndex];
-  if (!level) return { crystalsEarned: 0 };
+  if (!level) return { crystalsEarned: 0, essenceEarned: 0 };
   const progress = loadLevelProgress();
   const entry = progress.levels[level.id] || { stars: 0, unlocked: levelIndex === 0 };
   const previousStars = entry.stars;
@@ -513,6 +513,9 @@ function recordLevelResult(levelIndex, stars) {
   for (let tier = previousStars + 1; tier <= newStars; tier++) {
     crystalsEarned += CHEST_REWARDS[tier - 1] || 0;
   }
+
+  // 精靈樹精華：跟水晶寶箱不同，每次通關都會給（不限首次達成），用來養精靈樹的持續獎勵
+  const essenceEarned = stars >= 1 ? stars * 5 * (levelIndex + 1) : 0;
 
   entry.stars = newStars;
   if (stars >= 1) {
@@ -527,7 +530,8 @@ function recordLevelResult(levelIndex, stars) {
   saveLevelProgress(progress);
 
   if (crystalsEarned > 0) addCrystals(crystalsEarned);
-  return { entry, crystalsEarned };
+  if (essenceEarned > 0) addEssence(essenceEarned);
+  return { entry, crystalsEarned, essenceEarned };
 }
 
 // 測試用：直接把關卡進度設成「通關到第 clearedThroughIndex 關、拿 starsOnLast 星」
@@ -741,6 +745,95 @@ function isTowerUnlocked(typeKey) {
 
 function isSkillUnlocked(skillKey) {
   return loadUnlocks().skills.includes(skillKey);
+}
+
+// ─── 5.4 精靈樹：通關會獲得「精華」，累積精華可以升級精靈樹，每一級提供不同的永久強化 ─────
+const ESSENCE_KEY = 'dd_td_essence_v1';
+let _essenceMemoryFallback = null;
+
+function loadEssence() {
+  try {
+    const raw = localStorage.getItem(ESSENCE_KEY);
+    if (raw === null) return _essenceMemoryFallback ?? 0;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) ? n : 0;
+  } catch (e) {
+    return _essenceMemoryFallback ?? 0;
+  }
+}
+
+function saveEssence(n) {
+  _essenceMemoryFallback = n;
+  try {
+    localStorage.setItem(ESSENCE_KEY, String(n));
+  } catch (e) {
+    dbgLog('⚠️ 精華存檔失敗（可能為無痕模式或配額已滿），本次僅暫存於記憶體');
+  }
+}
+
+function addEssence(n) {
+  const total = loadEssence() + n;
+  saveEssence(total);
+  return total;
+}
+
+// 每一級都是「升到這一級後」的總加成（已經是累加後的數字，不用在別處再加總）；
+// cost 是從上一級升到這一級要花的精華。index 0 = 第 1 級（初始狀態，免費）。
+const SPIRIT_TREE_LEVELS = [
+  { cost: 0,   bonusGold: 0,   bonusLives: 0,  desc: '幼苗初生' },
+  { cost: 20,  bonusGold: 20,  bonusLives: 0,  desc: '初始金幣 +20' },
+  { cost: 40,  bonusGold: 20,  bonusLives: 2,  desc: '初始生命 +2' },
+  { cost: 70,  bonusGold: 50,  bonusLives: 2,  desc: '初始金幣再 +30' },
+  { cost: 110, bonusGold: 50,  bonusLives: 5,  desc: '初始生命再 +3' },
+  { cost: 160, bonusGold: 100, bonusLives: 5,  desc: '初始金幣再 +50' },
+  { cost: 220, bonusGold: 100, bonusLives: 10, desc: '初始生命再 +5' },
+];
+const SPIRIT_TREE_LEVEL_KEY = 'dd_td_spirit_tree_level_v1';
+let _spiritTreeLevelMemoryFallback = null;
+
+function loadSpiritTreeLevel() {
+  try {
+    const raw = localStorage.getItem(SPIRIT_TREE_LEVEL_KEY);
+    if (raw === null) return _spiritTreeLevelMemoryFallback ?? 1;
+    const n = parseInt(raw, 10);
+    return Number.isFinite(n) && n >= 1 ? n : 1;
+  } catch (e) {
+    return _spiritTreeLevelMemoryFallback ?? 1;
+  }
+}
+
+function saveSpiritTreeLevel(n) {
+  _spiritTreeLevelMemoryFallback = n;
+  try {
+    localStorage.setItem(SPIRIT_TREE_LEVEL_KEY, String(n));
+  } catch (e) {
+    dbgLog('⚠️ 精靈樹等級存檔失敗（可能為無痕模式或配額已滿），本次僅暫存於記憶體');
+  }
+}
+
+function getSpiritTreeBonus() {
+  const level = Math.min(loadSpiritTreeLevel(), SPIRIT_TREE_LEVELS.length);
+  return SPIRIT_TREE_LEVELS[level - 1];
+}
+
+function getStartingGold() {
+  return CONFIG.STARTING_GOLD + getSpiritTreeBonus().bonusGold;
+}
+
+function getStartingLives() {
+  return CONFIG.STARTING_LIVES + getSpiritTreeBonus().bonusLives;
+}
+
+// 花精華把精靈樹升一級；精華不足或已經滿級都會失敗
+function upgradeSpiritTree() {
+  const level = loadSpiritTreeLevel();
+  if (level >= SPIRIT_TREE_LEVELS.length) return { ok: false, reason: 'maxed' };
+  const nextTier = SPIRIT_TREE_LEVELS[level]; // 0-based，index=level 剛好是「下一級」
+  const balance = loadEssence();
+  if (balance < nextTier.cost) return { ok: false, reason: 'insufficient' };
+  saveEssence(balance - nextTier.cost);
+  saveSpiritTreeLevel(level + 1);
+  return { ok: true, level: level + 1 };
 }
 
 // 用水晶購買永久解鎖一座塔；回傳 { ok, reason? }
@@ -2628,8 +2721,8 @@ class Game {
 
     // Game state
     this.state = 'menu'; // menu, planning, wave, gameover, victory
-    this.gold = CONFIG.STARTING_GOLD;
-    this.lives = CONFIG.STARTING_LIVES;
+    this.gold = getStartingGold();
+    this.lives = getStartingLives();
     this.score = 0;
     this.bestScore = parseInt(localStorage.getItem(CONFIG.LS_KEY)) || 0;
     this.currentWave = 0;
@@ -3568,12 +3661,30 @@ class Game {
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
     bindTap('open-shop-btn', () => this.openShopModal());
+    bindTap('reset-data-btn', () => {
+      const ok = window.confirm('確定要重置所有資料嗎？已解鎖的塔/技能、水晶、通關進度、排行榜都會清空，且無法復原。');
+      if (!ok) return;
+      [
+        LEVEL_PROGRESS_KEY,
+        CRYSTALS_KEY,
+        UNLOCKS_KEY,
+        CONFIG.LS_KEY,
+        ESSENCE_KEY,
+        SPIRIT_TREE_LEVEL_KEY,
+        'dd_td_leaderboard_v1',
+        'dd_td_gold_leaderboard_v1',
+      ].forEach(key => {
+        try { localStorage.removeItem(key); } catch (e) {}
+      });
+      location.reload();
+    });
 
-    // 隱藏開關：連續點擊首頁精靈樹 5 下，只喚出「🧪 關卡進度測試／水晶測試」的入口按鈕
+    // 點精靈樹：開啟精靈樹升級面板；同一個按鈕另外還藏了「連點 5 下」的隱藏開關（見下方）
     // （Log／截圖是給開發者看的，正式版永遠不開放，不受這個密碼影響）
     let secretTapCount = 0;
     let secretTapLastTime = 0;
     bindTap('menu-title-canvas', () => {
+      this.openSpiritTreeModal();
       const now = Date.now();
       if (now - secretTapLastTime > 2000) secretTapCount = 0;
       secretTapLastTime = now;
@@ -3588,6 +3699,18 @@ class Game {
       }
     });
     bindTap('close-shop-btn', () => this.closeShopModal());
+    bindTap('close-spirit-tree-btn', () => this.closeSpiritTreeModal());
+    bindTap('spirit-tree-upgrade-btn', () => {
+      const result = upgradeSpiritTree();
+      if (result.ok) {
+        this.sfx.play('upgrade');
+        this.showToast(`🌳 精靈樹升級到 Lv.${result.level}！`);
+      } else if (result.reason === 'insufficient') {
+        this.sfx.play('error');
+        this.showToast('✨ 精華不足');
+      }
+      this.renderSpiritTreeModal();
+    });
     
     // 商店主狀態頁籤 (全部 / 未解鎖 / 已解鎖)
     document.querySelectorAll('.shop-status-tab-btn').forEach(btn => {
@@ -4514,8 +4637,8 @@ class Game {
   restartGame() {
     this.map = new GameMap(CURRENT_MAP_ID);
     this.renderMapToBuffer();
-    this.gold = CONFIG.STARTING_GOLD;
-    this.lives = CONFIG.STARTING_LIVES;
+    this.gold = getStartingGold();
+    this.lives = getStartingLives();
     this.score = 0;
     this.currentWave = 0;
     this.speedMultiplier = 1;
@@ -4558,9 +4681,9 @@ class Game {
     this.sfx.play('victory');
     this.score += this.lives * 50; // Bonus for remaining lives
 
-    const lifeRatio = this.lives / CONFIG.STARTING_LIVES;
+    const lifeRatio = this.lives / getStartingLives();
     const stars = lifeRatio >= 1 ? 3 : (lifeRatio >= 0.5 ? 2 : 1);
-    const { crystalsEarned } = recordLevelResult(CURRENT_LEVEL_INDEX, stars);
+    const { crystalsEarned, essenceEarned } = recordLevelResult(CURRENT_LEVEL_INDEX, stars);
     this.lastVictoryStars = stars;
 
     this.saveGameRecord();
@@ -4575,6 +4698,11 @@ class Game {
     if (vicChestEl) {
       vicChestEl.textContent = crystalsEarned > 0 ? `🎁 寶箱獎勵：💎${crystalsEarned}` : '';
       vicChestEl.classList.toggle('hidden', crystalsEarned <= 0);
+    }
+    const vicEssenceEl = document.getElementById('victory-essence-reward');
+    if (vicEssenceEl) {
+      vicEssenceEl.textContent = essenceEarned > 0 ? `🌳 精靈樹精華：✨${essenceEarned}` : '';
+      vicEssenceEl.classList.toggle('hidden', essenceEarned <= 0);
     }
     document.getElementById('victory-screen').classList.remove('hidden');
     this.enemies = [];
@@ -4620,8 +4748,8 @@ class Game {
     this.towerGrid = {};
     this.selectedTower = null;
     this.selectedTowerType = null;
-    this.gold = CONFIG.STARTING_GOLD;
-    this.lives = CONFIG.STARTING_LIVES;
+    this.gold = getStartingGold();
+    this.lives = getStartingLives();
     this.score = 0;
     this.currentWave = 0;
     this.speedMultiplier = 1;
@@ -4797,6 +4925,51 @@ class Game {
   closeShopModal() {
     document.getElementById('shop-modal')?.classList.add('hidden');
     this.sfx.play('tap');
+  }
+
+  openSpiritTreeModal() {
+    this.renderSpiritTreeModal();
+    document.getElementById('spirit-tree-modal')?.classList.remove('hidden');
+    this.sfx.play('tap');
+  }
+
+  closeSpiritTreeModal() {
+    document.getElementById('spirit-tree-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
+  }
+
+  renderSpiritTreeModal() {
+    const level = loadSpiritTreeLevel();
+    const essence = loadEssence();
+    const current = SPIRIT_TREE_LEVELS[level - 1];
+    const maxed = level >= SPIRIT_TREE_LEVELS.length;
+
+    const levelBadge = document.getElementById('spirit-tree-level-badge');
+    if (levelBadge) levelBadge.textContent = `Lv.${level}`;
+    const balanceEl = document.getElementById('spirit-tree-essence-balance');
+    if (balanceEl) balanceEl.textContent = essence;
+    const currentBonusEl = document.getElementById('spirit-tree-current-bonus');
+    if (currentBonusEl) {
+      currentBonusEl.textContent = level === 1
+        ? current.desc
+        : `💰 初始金幣 +${current.bonusGold} ・ ❤️ 初始生命 +${current.bonusLives}`;
+    }
+
+    const nextBox = document.getElementById('spirit-tree-next-box');
+    const maxedText = document.getElementById('spirit-tree-maxed-text');
+    if (nextBox) nextBox.classList.toggle('hidden', maxed);
+    if (maxedText) maxedText.classList.toggle('hidden', !maxed);
+
+    if (!maxed) {
+      const next = SPIRIT_TREE_LEVELS[level];
+      const nextBonusEl = document.getElementById('spirit-tree-next-bonus');
+      if (nextBonusEl) nextBonusEl.textContent = `${next.desc}（需要 ✨${next.cost}）`;
+      const upgradeBtn = document.getElementById('spirit-tree-upgrade-btn');
+      if (upgradeBtn) {
+        upgradeBtn.disabled = essence < next.cost;
+        upgradeBtn.textContent = essence < next.cost ? `✨ 精華不足（${essence}/${next.cost}）` : `⬆️ 升級（消耗 ✨${next.cost}）`;
+      }
+    }
   }
 
   renderShopT1Card(item, balance) {
