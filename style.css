@@ -1117,7 +1117,7 @@ html, body {
 .shop-modal-content {
   max-width: 480px;
   width: 95%;
-  max-height: 85vh;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   padding: 14px 16px;
