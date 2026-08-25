@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.4.0-dev',
+  VERSION: 'v1.5.0-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -92,11 +92,18 @@ const CONFIG = {
 // 這裡也會跟著自動生效，不需要每次發版另外手動記得拔掉偵錯面板）
 const IS_DEV_BUILD = CONFIG.VERSION.includes('dev');
 
-// 正式版直接把整個行動偵錯面板（Log/截圖/關卡測試按鈕）從畫面上移除，避免玩家在正式環境看到測試用 UI
+// 正式版預設隱藏偵錯用 UI，避免玩家在正式環境看到測試用按鈕：
+// - Log／截圖是給開發者看的，正式版永遠不開放
+// - 「關卡進度測試／水晶測試」的入口按鈕（🧪）藏起來，但可以靠下面「連點首頁精靈樹 5 下」的隱藏開關喚出，
+//   方便正式環境測試人員取用；#debug-container 本身保持顯示，只隱藏個別按鈕，不整個藏起來
 (function hideDebugPanelOnProd() {
   if (IS_DEV_BUILD) return;
-  const el = document.getElementById('debug-container');
-  if (el) el.remove();
+  const logBtn = document.getElementById('debug-toggle-btn');
+  if (logBtn) logBtn.style.display = 'none';
+  const shotBtn = document.getElementById('debug-shot-btn');
+  if (shotBtn) shotBtn.style.display = 'none';
+  const testToggleBtn = document.getElementById('debug-test-toggle-btn');
+  if (testToggleBtn) testToggleBtn.style.display = 'none';
 })();
 
 const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 480
@@ -366,12 +373,92 @@ const WAVE_DATA_L3 = [
   { enemies: [{ type: 'dragon', count: 5, interval: 3.0 }, { type: 'beetle', count: 12, interval: 0.45 }, { type: 'butterfly', count: 20, interval: 0.18 }, { type: 'bee', count: 26, interval: 0.1 }], bonus: 800 },
 ];
 
+// 第四關：比第三關更密集，龍第 7 波開始出現（共 4 波含龍，總龍數 12 隻）
+const WAVE_DATA_L4 = [
+  { enemies: [{ type: 'caterpillar', count: 12, interval: 0.8 }, { type: 'bee', count: 4, interval: 0.9 }], bonus: 80 },
+  { enemies: [{ type: 'caterpillar', count: 12, interval: 0.65 }, { type: 'bee', count: 7, interval: 0.55 }, { type: 'snail', count: 3, interval: 1.8 }], bonus: 105 },
+  { enemies: [{ type: 'bee', count: 14, interval: 0.4 }, { type: 'snail', count: 5, interval: 1.45 }, { type: 'beetle', count: 3, interval: 1.45 }], bonus: 150 },
+  { enemies: [{ type: 'bee', count: 16, interval: 0.32 }, { type: 'beetle', count: 5, interval: 1.2 }, { type: 'butterfly', count: 5, interval: 0.75 }], bonus: 175 },
+  { enemies: [{ type: 'caterpillar', count: 9, interval: 0.45 }, { type: 'snail', count: 6, interval: 1.3 }, { type: 'beetle', count: 5, interval: 1.0 }], bonus: 220 },
+  { enemies: [{ type: 'bee', count: 19, interval: 0.28 }, { type: 'beetle', count: 7, interval: 0.9 }, { type: 'butterfly', count: 7, interval: 0.55 }], bonus: 240 },
+  { enemies: [{ type: 'butterfly', count: 12, interval: 0.37 }, { type: 'bee', count: 16, interval: 0.29 }, { type: 'dragon', count: 1, interval: 3 }], bonus: 345 },
+  { enemies: [{ type: 'snail', count: 9, interval: 1.0 }, { type: 'beetle', count: 9, interval: 0.75 }, { type: 'bee', count: 12, interval: 0.32 }], bonus: 320 },
+  { enemies: [{ type: 'bee', count: 28, interval: 0.18 }, { type: 'butterfly', count: 17, interval: 0.26 }, { type: 'beetle', count: 5, interval: 0.8 }], bonus: 370 },
+  { enemies: [{ type: 'dragon', count: 2, interval: 2.6 }, { type: 'beetle', count: 9, interval: 0.65 }, { type: 'caterpillar', count: 14, interval: 0.32 }], bonus: 485 },
+  { enemies: [{ type: 'butterfly', count: 23, interval: 0.2 }, { type: 'beetle', count: 12, interval: 0.55 }, { type: 'snail', count: 7, interval: 0.8 }], bonus: 440 },
+  { enemies: [{ type: 'bee', count: 35, interval: 0.14 }, { type: 'butterfly', count: 19, interval: 0.2 }, { type: 'beetle', count: 7, interval: 0.55 }], bonus: 485 },
+  { enemies: [{ type: 'snail', count: 14, interval: 0.46 }, { type: 'dragon', count: 3, interval: 2.6 }, { type: 'beetle', count: 9, interval: 0.46 }], bonus: 575 },
+  { enemies: [{ type: 'beetle', count: 17, interval: 0.37 }, { type: 'butterfly', count: 23, interval: 0.18 }, { type: 'snail', count: 12, interval: 0.39 }, { type: 'bee', count: 19, interval: 0.14 }], bonus: 645 },
+  { enemies: [{ type: 'dragon', count: 6, interval: 2.8 }, { type: 'beetle', count: 14, interval: 0.41 }, { type: 'butterfly', count: 23, interval: 0.16 }, { type: 'bee', count: 30, interval: 0.09 }], bonus: 950 },
+];
+
+// 第五關：龍第 7 波開始出現，波次密度再往上一階（共 4 波含龍，總龍數 14 隻）
+const WAVE_DATA_L5 = [
+  { enemies: [{ type: 'caterpillar', count: 14, interval: 0.72 }, { type: 'bee', count: 5, interval: 0.82 }], bonus: 95 },
+  { enemies: [{ type: 'caterpillar', count: 14, interval: 0.58 }, { type: 'bee', count: 8, interval: 0.5 }, { type: 'snail', count: 3, interval: 1.62 }], bonus: 120 },
+  { enemies: [{ type: 'bee', count: 16, interval: 0.36 }, { type: 'snail', count: 6, interval: 1.3 }, { type: 'beetle', count: 3, interval: 1.3 }], bonus: 170 },
+  { enemies: [{ type: 'bee', count: 18, interval: 0.29 }, { type: 'beetle', count: 6, interval: 1.08 }, { type: 'butterfly', count: 6, interval: 0.68 }], bonus: 200 },
+  { enemies: [{ type: 'caterpillar', count: 10, interval: 0.4 }, { type: 'snail', count: 7, interval: 1.17 }, { type: 'beetle', count: 6, interval: 0.9 }], bonus: 250 },
+  { enemies: [{ type: 'bee', count: 22, interval: 0.25 }, { type: 'beetle', count: 8, interval: 0.81 }, { type: 'butterfly', count: 8, interval: 0.5 }], bonus: 275 },
+  { enemies: [{ type: 'butterfly', count: 14, interval: 0.33 }, { type: 'bee', count: 18, interval: 0.26 }, { type: 'dragon', count: 1, interval: 2.8 }], bonus: 395 },
+  { enemies: [{ type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 10, interval: 0.68 }, { type: 'bee', count: 14, interval: 0.29 }], bonus: 365 },
+  { enemies: [{ type: 'bee', count: 32, interval: 0.16 }, { type: 'butterfly', count: 19, interval: 0.23 }, { type: 'beetle', count: 6, interval: 0.72 }], bonus: 425 },
+  { enemies: [{ type: 'dragon', count: 2, interval: 2.4 }, { type: 'beetle', count: 10, interval: 0.58 }, { type: 'caterpillar', count: 16, interval: 0.29 }], bonus: 555 },
+  { enemies: [{ type: 'butterfly', count: 26, interval: 0.18 }, { type: 'beetle', count: 14, interval: 0.5 }, { type: 'snail', count: 8, interval: 0.72 }], bonus: 505 },
+  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 22, interval: 0.18 }, { type: 'beetle', count: 8, interval: 0.5 }], bonus: 555 },
+  { enemies: [{ type: 'snail', count: 16, interval: 0.41 }, { type: 'dragon', count: 4, interval: 2.4 }, { type: 'beetle', count: 10, interval: 0.41 }], bonus: 660 },
+  { enemies: [{ type: 'beetle', count: 19, interval: 0.33 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'snail', count: 14, interval: 0.35 }, { type: 'bee', count: 22, interval: 0.12 }], bonus: 740 },
+  { enemies: [{ type: 'dragon', count: 7, interval: 2.6 }, { type: 'beetle', count: 16, interval: 0.37 }, { type: 'butterfly', count: 26, interval: 0.14 }, { type: 'bee', count: 34, interval: 0.08 }], bonus: 1100 },
+];
+
+// 第六關：龍第 7 波就直接出 2 隻，後段甲蟲/蜂潮更密（共 4 波含龍，總龍數 17 隻）
+const WAVE_DATA_L6 = [
+  { enemies: [{ type: 'caterpillar', count: 16, interval: 0.65 }, { type: 'bee', count: 6, interval: 0.75 }], bonus: 105 },
+  { enemies: [{ type: 'caterpillar', count: 16, interval: 0.52 }, { type: 'bee', count: 9, interval: 0.45 }, { type: 'snail', count: 4, interval: 1.45 }], bonus: 135 },
+  { enemies: [{ type: 'bee', count: 18, interval: 0.32 }, { type: 'snail', count: 7, interval: 1.15 }, { type: 'beetle', count: 4, interval: 1.15 }], bonus: 195 },
+  { enemies: [{ type: 'bee', count: 20, interval: 0.26 }, { type: 'beetle', count: 7, interval: 0.95 }, { type: 'butterfly', count: 7, interval: 0.6 }], bonus: 225 },
+  { enemies: [{ type: 'caterpillar', count: 11, interval: 0.36 }, { type: 'snail', count: 8, interval: 1.05 }, { type: 'beetle', count: 7, interval: 0.8 }], bonus: 285 },
+  { enemies: [{ type: 'bee', count: 25, interval: 0.22 }, { type: 'beetle', count: 9, interval: 0.72 }, { type: 'butterfly', count: 9, interval: 0.45 }], bonus: 315 },
+  { enemies: [{ type: 'butterfly', count: 16, interval: 0.29 }, { type: 'bee', count: 20, interval: 0.23 }, { type: 'dragon', count: 2, interval: 2.6 }], bonus: 450 },
+  { enemies: [{ type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 12, interval: 0.6 }, { type: 'bee', count: 16, interval: 0.26 }], bonus: 420 },
+  { enemies: [{ type: 'bee', count: 36, interval: 0.14 }, { type: 'butterfly', count: 22, interval: 0.2 }, { type: 'beetle', count: 7, interval: 0.65 }], bonus: 480 },
+  { enemies: [{ type: 'dragon', count: 3, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.52 }, { type: 'caterpillar', count: 18, interval: 0.26 }], bonus: 630 },
+  { enemies: [{ type: 'butterfly', count: 30, interval: 0.16 }, { type: 'beetle', count: 16, interval: 0.45 }, { type: 'snail', count: 9, interval: 0.65 }], bonus: 570 },
+  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 25, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.45 }], bonus: 630 },
+  { enemies: [{ type: 'snail', count: 18, interval: 0.37 }, { type: 'dragon', count: 4, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.37 }], bonus: 750 },
+  { enemies: [{ type: 'beetle', count: 22, interval: 0.29 }, { type: 'butterfly', count: 30, interval: 0.14 }, { type: 'snail', count: 16, interval: 0.32 }, { type: 'bee', count: 25, interval: 0.1 }], bonus: 840 },
+  { enemies: [{ type: 'dragon', count: 8, interval: 2.4 }, { type: 'beetle', count: 18, interval: 0.33 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'bee', count: 38, interval: 0.07 }], bonus: 1300 },
+];
+
+// 第七關（終極關）：龍第 7 波就出 3 隻，最終波 10 隻龍同場，全遊戲最高強度
+const WAVE_DATA_L7 = [
+  { enemies: [{ type: 'caterpillar', count: 18, interval: 0.6 }, { type: 'bee', count: 7, interval: 0.65 }], bonus: 140 },
+  { enemies: [{ type: 'caterpillar', count: 18, interval: 0.46 }, { type: 'bee', count: 11, interval: 0.4 }, { type: 'snail', count: 5, interval: 1.3 }], bonus: 180 },
+  { enemies: [{ type: 'bee', count: 20, interval: 0.28 }, { type: 'snail', count: 8, interval: 1.0 }, { type: 'beetle', count: 5, interval: 1.0 }], bonus: 260 },
+  { enemies: [{ type: 'bee', count: 22, interval: 0.22 }, { type: 'beetle', count: 8, interval: 0.85 }, { type: 'butterfly', count: 8, interval: 0.52 }], bonus: 300 },
+  { enemies: [{ type: 'caterpillar', count: 12, interval: 0.32 }, { type: 'snail', count: 9, interval: 0.95 }, { type: 'beetle', count: 8, interval: 0.7 }], bonus: 380 },
+  { enemies: [{ type: 'bee', count: 28, interval: 0.19 }, { type: 'beetle', count: 10, interval: 0.62 }, { type: 'butterfly', count: 11, interval: 0.4 }], bonus: 420 },
+  { enemies: [{ type: 'butterfly', count: 18, interval: 0.25 }, { type: 'bee', count: 22, interval: 0.2 }, { type: 'dragon', count: 3, interval: 2.4 }], bonus: 600 },
+  { enemies: [{ type: 'snail', count: 14, interval: 0.7 }, { type: 'beetle', count: 14, interval: 0.52 }, { type: 'bee', count: 18, interval: 0.22 }], bonus: 560 },
+  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 25, interval: 0.17 }, { type: 'beetle', count: 8, interval: 0.55 }], bonus: 640 },
+  { enemies: [{ type: 'dragon', count: 4, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.46 }, { type: 'caterpillar', count: 20, interval: 0.22 }], bonus: 840 },
+  { enemies: [{ type: 'butterfly', count: 34, interval: 0.14 }, { type: 'beetle', count: 18, interval: 0.4 }, { type: 'snail', count: 10, interval: 0.55 }], bonus: 760 },
+  { enemies: [{ type: 'bee', count: 50, interval: 0.09 }, { type: 'butterfly', count: 28, interval: 0.14 }, { type: 'beetle', count: 10, interval: 0.4 }], bonus: 840 },
+  { enemies: [{ type: 'snail', count: 20, interval: 0.32 }, { type: 'dragon', count: 5, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.32 }], bonus: 1000 },
+  { enemies: [{ type: 'beetle', count: 25, interval: 0.25 }, { type: 'butterfly', count: 34, interval: 0.12 }, { type: 'snail', count: 18, interval: 0.28 }, { type: 'bee', count: 28, interval: 0.09 }], bonus: 1120 },
+  { enemies: [{ type: 'dragon', count: 10, interval: 2.2 }, { type: 'beetle', count: 20, interval: 0.29 }, { type: 'butterfly', count: 34, interval: 0.11 }, { type: 'bee', count: 42, interval: 0.06 }], bonus: 1600 },
+];
+
 // ─── 5.1 關卡定義：地圖 + 專屬波次，取代原本的自由選地圖 ─────
 // hpMultiplier：難度成長改成「換關卡」才提高血量，同一關卡內每一波不再額外疊加
 const LEVEL_DATA = [
   { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.0 },
   { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2, hpMultiplier: 1.3 },
   { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3, hpMultiplier: 1.6 },
+  { id: 'level_4', name: '第四關・深林迴廊', mapId: 'serpentine', waves: WAVE_DATA_L4, hpMultiplier: 1.9 },
+  { id: 'level_5', name: '第五關・炎陽廢墟', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 2.2 },
+  { id: 'level_6', name: '第六關・冰封絕地', mapId: 'outer_ring', waves: WAVE_DATA_L6, hpMultiplier: 2.5 },
+  { id: 'level_7', name: '第七關・龍王聖殿', mapId: 'serpentine', waves: WAVE_DATA_L7, hpMultiplier: 2.8 },
 ];
 let CURRENT_LEVEL_INDEX = 0;
 
@@ -2223,8 +2310,8 @@ class Tower {
     if (this.typeKey === 'sunflower' && stats.goldPerSecond) {
       if (game.state === 'wave') {
         this.goldTimer += dt;
-        if (this.goldTimer >= 1.0) {
-          this.goldTimer -= 1.0;
+        if (this.goldTimer >= 5.0) {
+          this.goldTimer -= 5.0;
           game.addGold(stats.goldPerSecond);
           game.spawnParticle(this.x, this.y - 15, {
             text: `+${stats.goldPerSecond}💰`,
@@ -3481,6 +3568,25 @@ class Game {
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
     bindTap('open-shop-btn', () => this.openShopModal());
+
+    // 隱藏開關：連續點擊首頁精靈樹 5 下，只喚出「🧪 關卡進度測試／水晶測試」的入口按鈕
+    // （Log／截圖是給開發者看的，正式版永遠不開放，不受這個密碼影響）
+    let secretTapCount = 0;
+    let secretTapLastTime = 0;
+    bindTap('menu-title-canvas', () => {
+      const now = Date.now();
+      if (now - secretTapLastTime > 2000) secretTapCount = 0;
+      secretTapLastTime = now;
+      secretTapCount++;
+      if (secretTapCount >= 5) {
+        secretTapCount = 0;
+        const testToggleBtn = document.getElementById('debug-test-toggle-btn');
+        if (testToggleBtn && testToggleBtn.style.display === 'none') {
+          testToggleBtn.style.display = '';
+          this.showToast('🌳 測試按鈕已解鎖');
+        }
+      }
+    });
     bindTap('close-shop-btn', () => this.closeShopModal());
     
     // 商店主狀態頁籤 (全部 / 未解鎖 / 已解鎖)
@@ -3584,7 +3690,7 @@ class Game {
     this.renderMapToBuffer();
 
     const nameEl = document.getElementById('level-card-name');
-    if (nameEl) nameEl.textContent = `${level.name}${entry.unlocked ? '' : '（尚未解鎖）'}`;
+    if (nameEl) nameEl.textContent = level.name;
 
     const starsEl = document.getElementById('level-card-stars');
     if (starsEl) {
