@@ -29,9 +29,10 @@ window.addEventListener('unhandledrejection', (e) => {
   dbgLog(`❌ Promise Error: ${e.reason}`);
 });
 
-// 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
-// （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
-const DEBUG_TOKEN = '1a1e476d6158794f';
+// 驗證用共用密鑰：開機時自動跟 devserver 要目前這台機器的 token（GET /__token，GET 本來就不驗證），
+// 不用再手動把這台機器的 .debug_token 內容貼回來 commit——兩台輪流開發的電腦各自產生的 token 不同也沒差
+let DEBUG_TOKEN = '';
+fetch('/__token').then(r => (r.ok ? r.text() : '')).then(t => { DEBUG_TOKEN = t.trim(); }).catch(() => {});
 
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身

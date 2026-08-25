@@ -49,6 +49,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return any(path == p or path.startswith(p + '/') for p in BLOCKED_GET_PREFIXES)
 
     def do_GET(self):
+        # /__token：讓 game.js 開機時自動要目前這台機器的 token，不用再手動同步/commit
+        # （GET 本來就不驗證 token，兩台輪流開發的電腦各自的 .debug_token 不同也沒差）
+        if self.path.split('?', 1)[0] == '/__token':
+            body = DEBUG_TOKEN.encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self._blocked():
             self.send_response(403)
             self.end_headers()
