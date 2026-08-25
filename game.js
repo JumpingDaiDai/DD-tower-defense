@@ -87,6 +87,17 @@ const CONFIG = {
   LS_KEY: 'dd_tower_defense_best',
 };
 
+// 唯一的開發版判斷依據（跟版本號後綴綁在一起，release 到 main 時 version-guard hook 會自動去掉 -dev，
+// 這裡也會跟著自動生效，不需要每次發版另外手動記得拔掉偵錯面板）
+const IS_DEV_BUILD = CONFIG.VERSION.includes('dev');
+
+// 正式版直接把整個行動偵錯面板（Log/截圖/關卡測試按鈕）從畫面上移除，避免玩家在正式環境看到測試用 UI
+(function hideDebugPanelOnProd() {
+  if (IS_DEV_BUILD) return;
+  const el = document.getElementById('debug-container');
+  if (el) el.remove();
+})();
+
 const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 480
 const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 640
 
@@ -3126,8 +3137,7 @@ class Game {
     // 動態綁定程式設定的版本號
     const versionBadge = document.getElementById('menu-version-badge');
     if (versionBadge) {
-      const isDev = CONFIG.VERSION.includes('dev');
-      versionBadge.textContent = `${isDev ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
+      versionBadge.textContent = `${IS_DEV_BUILD ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
     }
 
     // 繪製專屬技能 Canvas 圖標 (完全告別 Emoji)
