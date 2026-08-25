@@ -75,7 +75,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.3.0',
+  VERSION: 'v1.3.1-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -84,7 +84,6 @@ const CONFIG = {
   SELL_RATIO: 0.7,
   MAX_LEVEL: 3,
   TOTAL_WAVES: 15,
-  ENEMY_HP_SCALE_PER_WAVE: 0.15,  // 每波 +15% 血量（第15波約 3.1 倍）
   LS_KEY: 'dd_tower_defense_best',
 };
 
@@ -273,16 +272,16 @@ const TOWER_DATA = {
     cost: 350,
     range: 160,
     damage: 40,
-    fireRate: 2.0,
+    fireRate: 1.6,
     piercing: 2,
     projectileSpeed: 600,
     projectileColor: '#ffd700',
     description: '高能光核 · 極速穿透高頻雷射',
     color: '#ffc107',
     levels: [
-      { damage: 40, range: 160, fireRate: 2.0, piercing: 2 },
-      { damage: 65, range: 175, fireRate: 2.4, piercing: 3, upgradeCost: 250 },
-      { damage: 105, range: 195, fireRate: 2.8, piercing: 4, upgradeCost: 450 },
+      { damage: 40, range: 160, fireRate: 1.6, piercing: 2 },
+      { damage: 65, range: 175, fireRate: 1.9, piercing: 3, upgradeCost: 250 },
+      { damage: 105, range: 195, fireRate: 2.2, piercing: 4, upgradeCost: 450 },
     ],
   },
 };
@@ -292,9 +291,9 @@ const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
   bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
   snail: { name: '蝸牛', emoji: '🐌', hp: 190, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, armor: 0.5 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, armor: 0.25 },
   butterfly: { name: '蝴蝶', emoji: '🦋', hp: 95, speed: 65, reward: 18, damage: 1, canEnrage: true },
-  dragon: { name: '小龍', emoji: '🐉', hp: 750, speed: 32, reward: 100, damage: 5, isBoss: true },
+  dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -356,10 +355,11 @@ const WAVE_DATA_L3 = [
 ];
 
 // ─── 5.1 關卡定義：地圖 + 專屬波次，取代原本的自由選地圖 ─────
+// hpMultiplier：難度成長改成「換關卡」才提高血量，同一關卡內每一波不再額外疊加
 const LEVEL_DATA = [
-  { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1 },
-  { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2 },
-  { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3 },
+  { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.0 },
+  { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2, hpMultiplier: 1.3 },
+  { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3, hpMultiplier: 1.6 },
 ];
 let CURRENT_LEVEL_INDEX = 0;
 
@@ -1612,8 +1612,8 @@ class GameMap {
 class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0) {
     const data = ENEMY_DATA[typeKey];
-    // 波次強度成長：越晚出現的波次，敵人血量越高，避免後期塔火力遠遠壓過敵人
-    const hpMult = 1 + waveIndex * CONFIG.ENEMY_HP_SCALE_PER_WAVE;
+    // 難度成長只看「第幾關」，同一關卡內第1波跟第15波的血量一樣，只有怪物組成/密度變難
+    const hpMult = LEVEL_DATA[CURRENT_LEVEL_INDEX].hpMultiplier;
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
     this.name = data.name;
@@ -1661,8 +1661,8 @@ class Enemy {
     // Scale animation (spawn pop)
     this.scale = lerp(this.scale, this.targetScale, dt * 8);
 
-    // 狂暴加速 (低於 35% 血量狂暴)
-    if (this.canEnrage && !this.isEnraged && (this.hp / this.maxHp) <= 0.35) {
+    // 狂暴加速 (低於 20% 血量狂暴；原本 35% 觸發太早，蜜蜂/蝴蝶常常被打一兩下就狂暴衝出塔的射程外，變成怎麼打都追不上的漏怪)
+    if (this.canEnrage && !this.isEnraged && (this.hp / this.maxHp) <= 0.20) {
       this.isEnraged = true;
       if (game) {
         game.spawnParticle(this.x, this.y - 18, {
@@ -1717,8 +1717,8 @@ class Enemy {
     // Hit flash
     if (this.hitFlash > 0) this.hitFlash -= dt * 4;
 
-    // Move along path (狂暴時速度 1.8 倍)
-    const enrageMultiplier = this.isEnraged ? 1.8 : 1.0;
+    // Move along path (狂暴時速度 1.5 倍；原本 1.8 倍會蓋掉減速塔效果，讓怪直接衝出去)
+    const enrageMultiplier = this.isEnraged ? 1.5 : 1.0;
     const currentSpeed = this.baseSpeed * this.slowFactor * enrageMultiplier;
     this.distance += currentSpeed * dt;
     const pos = this.map.getPositionAtDistance(this.distance);
@@ -1735,7 +1735,7 @@ class Enemy {
   takeDamage(amount, slowFactor, slowDuration, poisonDps, poisonDuration, isPhysical = false, game = null) {
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) return;
 
-    // 鐵甲甲蟲物理減傷 50%，非物理（毒/雷/冰/流星）全額承受
+    // 鐵甲甲蟲物理減傷 25%（原本 50% 太重，新手開局只有 petal 這種物理塔可用時打不動），非物理（毒/雷/冰/流星）全額承受
     let finalAmount = amount;
     if (this.armor > 0 && isPhysical) {
       finalAmount = amount * (1 - this.armor);
@@ -1938,7 +1938,9 @@ class Projectile {
   onHit(game) {
     if (this.target && this.target.alive) {
       const isPhysical = (this.towerType === 'petal' || this.towerType === 'candy');
-      this.target.takeDamage(this.damage, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, isPhysical, game);
+      // 穿透彈每貫穿一體衰減 20% 傷害，比照連鎖閃電的衰減比例，避免穿透塔在多怪排隊時全額暴擊每一隻
+      const pierceFalloff = this.piercing > 0 ? Math.pow(0.8, this.piercedEnemies.size) : 1;
+      this.target.takeDamage(this.damage * pierceFalloff, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, isPhysical, game);
       this.piercedEnemies.add(this.target);
       this.chainedEnemies.add(this.target);
 
