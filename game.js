@@ -469,6 +469,17 @@ function debugApplyLevelProgress(clearedThroughIndex, starsOnLast) {
 }
 window.dbgApplyLevelProgress = debugApplyLevelProgress;
 
+// 測試用：直接加水晶餘額，方便開發測試時快速解鎖商店塔/技能
+function debugAddCrystals(n) {
+  const total = addCrystals(n);
+  if (window.gameInstance && window.gameInstance.updateCrystalBalanceUI) {
+    window.gameInstance.updateCrystalBalanceUI();
+  }
+  dbgLog(`🧪 測試加值水晶：+${n}，目前餘額 ${total}`);
+  return total;
+}
+window.dbgAddCrystals = debugAddCrystals;
+
 // ─── 5.3 商店：永久貨幣、塔與技能解鎖 ─────────────────
 // 一開始就能用的塔（不用商店解鎖）；其餘的塔與 2 個主動技能都要用「魔法水晶」在商店解鎖
 const FREE_STARTER_TOWERS = ['petal'];
@@ -4691,12 +4702,16 @@ class Game {
     };
     const canAfford = balance >= item.cost;
     const badgeHtml = meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
-    
+    // 技能用跟遊戲內技能按鈕一致的手繪 Canvas 圖示（drawSkillIcon），不是 assets/skills/*.svg 那張舊圖
+    const iconHtml = item.kind === 'skill'
+      ? `<canvas class="shop-skill-icon-canvas" data-skill-key="${item.key}" width="36" height="36"></canvas>`
+      : `<img src="${meta.icon}" alt="${item.name}">`;
+
     return `
       <div class="shop-card-t1 ${item.unlocked ? 'owned' : ''}">
         <div class="shop-card-t1-top">
           <div class="shop-card-t1-icon">
-            <img src="${meta.icon}" alt="${item.name}">
+            ${iconHtml}
           </div>
           <div class="shop-card-t1-name-box">
             <div class="shop-card-t1-name" title="${item.name}">${item.name}</div>
@@ -4808,6 +4823,11 @@ class Game {
     }
 
     container.innerHTML = html;
+
+    // 技能卡片的圖示是 Canvas 佔位，插入 DOM 後才畫得出來（跟遊戲內技能按鈕同一套 drawSkillIcon）
+    container.querySelectorAll('.shop-skill-icon-canvas').forEach(canvas => {
+      this.drawSkillIcon(canvas.getContext('2d'), canvas.dataset.skillKey);
+    });
 
     // 綁定購買點擊事件
     container.querySelectorAll('.shop-card-t1-btn.btn-buy:not(:disabled)').forEach(btn => {
@@ -4945,10 +4965,11 @@ class Game {
   }
 
   updateSkillBarLockState() {
+    // 未解鎖的技能直接從技能列隱藏，不在遊戲畫面裡用鎖頭佔位（商店裡還是看得到、可以解鎖）
     const meteorBtn = document.getElementById('skill-meteor-btn');
-    if (meteorBtn) meteorBtn.classList.toggle('locked', !isSkillUnlocked('meteor'));
+    if (meteorBtn) meteorBtn.style.display = isSkillUnlocked('meteor') ? '' : 'none';
     const freezeBtn = document.getElementById('skill-freeze-btn');
-    if (freezeBtn) freezeBtn.classList.toggle('locked', !isSkillUnlocked('freeze'));
+    if (freezeBtn) freezeBtn.style.display = isSkillUnlocked('freeze') ? '' : 'none';
   }
 
   updateTowerPanel() {
@@ -4957,15 +4978,15 @@ class Game {
       const type = item.dataset.type;
       const cost = TOWER_DATA[type].cost;
       const unlocked = isTowerUnlocked(type);
+      // 未解鎖的塔直接從牌組隱藏，不在遊戲畫面裡用鎖頭佔位（商店裡還是看得到、可以解鎖）
+      item.style.display = unlocked ? '' : 'none';
+      if (!unlocked) return;
       const canAfford = this.gold >= cost;
-      item.classList.toggle('disabled', !canAfford || !unlocked);
-      item.classList.toggle('locked', !unlocked);
+      item.classList.toggle('disabled', !canAfford);
       item.classList.remove('selected');
       const details = item.querySelector('.tower-details');
       if (details) {
-        details.innerHTML = unlocked
-          ? `<div class="tower-cost">💰${cost}</div>`
-          : `<div class="tower-cost tower-cost-locked">🔒 商店解鎖</div>`;
+        details.innerHTML = `<div class="tower-cost">💰${cost}</div>`;
       }
     });
   }
