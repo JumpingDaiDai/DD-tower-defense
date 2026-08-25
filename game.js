@@ -29,9 +29,10 @@ window.addEventListener('unhandledrejection', (e) => {
   dbgLog(`❌ Promise Error: ${e.reason}`);
 });
 
-// 驗證用共用密鑰，必須跟 devserver.py 啟動時印出來的 token 一致
-// （devserver.py 第一次執行會自動產生並存進 .debug_token，之後重跑沿用同一把）
-const DEBUG_TOKEN = '1a1e476d6158794f';
+// 驗證用共用密鑰：開機時自動跟 devserver 要目前這台機器的 token（GET /__token，GET 本來就不驗證），
+// 不用再手動把這台機器的 .debug_token 內容貼回來 commit——兩台輪流開發的電腦各自產生的 token 不同也沒差
+let DEBUG_TOKEN = '';
+fetch('/__token').then(r => (r.ok ? r.text() : '')).then(t => { DEBUG_TOKEN = t.trim(); }).catch(() => {});
 
 // 把 console.log/warn/error 同步轉發到電腦（需搭配 devserver.py 執行）
 // 沒有跑 devserver 時 fetch 會失敗，靜默忽略，不影響遊戲本身
@@ -75,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.3.1',
+  VERSION: 'v1.4.0',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -86,6 +87,17 @@ const CONFIG = {
   TOTAL_WAVES: 15,
   LS_KEY: 'dd_tower_defense_best',
 };
+
+// 唯一的開發版判斷依據（跟版本號後綴綁在一起，release 到 main 時 version-guard hook 會自動去掉 -dev，
+// 這裡也會跟著自動生效，不需要每次發版另外手動記得拔掉偵錯面板）
+const IS_DEV_BUILD = CONFIG.VERSION.includes('dev');
+
+// 正式版直接把整個行動偵錯面板（Log/截圖/關卡測試按鈕）從畫面上移除，避免玩家在正式環境看到測試用 UI
+(function hideDebugPanelOnProd() {
+  if (IS_DEV_BUILD) return;
+  const el = document.getElementById('debug-container');
+  if (el) el.remove();
+})();
 
 const CANVAS_W = CONFIG.COLS * CONFIG.CELL_SIZE; // 480
 const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 640
@@ -456,6 +468,17 @@ function debugApplyLevelProgress(clearedThroughIndex, starsOnLast) {
   dbgLog(`🧪 測試進度已套用：clearedThroughIndex=${clearedThroughIndex}, starsOnLast=${starsOnLast}`);
 }
 window.dbgApplyLevelProgress = debugApplyLevelProgress;
+
+// 測試用：直接加水晶餘額，方便開發測試時快速解鎖商店塔/技能
+function debugAddCrystals(n) {
+  const total = addCrystals(n);
+  if (window.gameInstance && window.gameInstance.updateCrystalBalanceUI) {
+    window.gameInstance.updateCrystalBalanceUI();
+  }
+  dbgLog(`🧪 測試加值水晶：+${n}，目前餘額 ${total}`);
+  return total;
+}
+window.dbgAddCrystals = debugAddCrystals;
 
 // ─── 5.3 商店：永久貨幣、塔與技能解鎖 ─────────────────
 // 一開始就能用的塔（不用商店解鎖）；其餘的塔與 2 個主動技能都要用「魔法水晶」在商店解鎖
@@ -3126,8 +3149,7 @@ class Game {
     // 動態綁定程式設定的版本號
     const versionBadge = document.getElementById('menu-version-badge');
     if (versionBadge) {
-      const isDev = CONFIG.VERSION.includes('dev');
-      versionBadge.textContent = `${isDev ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
+      versionBadge.textContent = `${IS_DEV_BUILD ? '開發版' : '正式版'} ${CONFIG.VERSION}`;
     }
 
     // 繪製專屬技能 Canvas 圖標 (完全告別 Emoji)
@@ -3723,9 +3745,8 @@ class Game {
     document.addEventListener('touchstart', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 350) {
-        // 商店裡一律禁止雙擊縮放，不論點到什麼元件
-        const inShopModal = e.target && e.target.closest('#shop-modal');
-        // 如果不是按鈕或卡片元件，阻止雙擊放大行為
+        // 如果不是按鈕或卡片元件，阻止雙擊放大行為（商店的頁籤/卡片按鈕都是 <button>，
+        // 一律會被下面的 isClickable 判斷排除，不能額外用 #shop-modal 整包攔截，否則商店本身也點不動）
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
           e.target.tagName === 'SELECT' ||
@@ -3738,7 +3759,7 @@ class Game {
           e.target.closest('.leaderboard-modal-content') ||
           e.target.closest('#debug-container')
         );
-        if ((inShopModal || !isClickable) && e.cancelable) {
+        if (!isClickable && e.cancelable) {
           e.preventDefault();
         }
       }
@@ -3748,7 +3769,6 @@ class Game {
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 300) {
-        const inShopModal = e.target && e.target.closest('#shop-modal');
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
           e.target.tagName === 'SELECT' ||
@@ -3761,7 +3781,7 @@ class Game {
           e.target.closest('.leaderboard-modal-content') ||
           e.target.closest('#debug-container')
         );
-        if ((inShopModal || !isClickable) && e.cancelable) {
+        if (!isClickable && e.cancelable) {
           e.preventDefault();
         }
       }
@@ -4314,7 +4334,8 @@ class Game {
     this.waveManager.startWave(this.currentWave);
     this.sfx.play('wave');
     this.showToast(`🌊 第 ${this.currentWave + 1} 波開始！`);
-    document.getElementById('start-wave-btn').disabled = true;
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = true;
     this.selectedTowerType = null;
     this.updateTowerPanel();
     this.updateUI();
@@ -4338,7 +4359,8 @@ class Game {
     } else {
       dbgLog(`⏳ 進入第 ${this.currentWave + 1} 波 planning 狀態`);
       this.state = 'planning';
-      document.getElementById('start-wave-btn').disabled = false;
+      const startWaveBtn = document.getElementById('start-wave-btn');
+      if (startWaveBtn) startWaveBtn.disabled = false;
       this.updateWavePreview();
     }
     this.updateUI();
@@ -4403,7 +4425,8 @@ class Game {
 
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
-    document.getElementById('start-wave-btn').disabled = false;
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = false;
     document.getElementById('speed-btn').textContent = '1x';
 
     this.deselectTower();
@@ -4679,12 +4702,16 @@ class Game {
     };
     const canAfford = balance >= item.cost;
     const badgeHtml = meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
-    
+    // 技能用跟遊戲內技能按鈕一致的手繪 Canvas 圖示（drawSkillIcon），不是 assets/skills/*.svg 那張舊圖
+    const iconHtml = item.kind === 'skill'
+      ? `<canvas class="shop-skill-icon-canvas" data-skill-key="${item.key}" width="36" height="36"></canvas>`
+      : `<img src="${meta.icon}" alt="${item.name}">`;
+
     return `
       <div class="shop-card-t1 ${item.unlocked ? 'owned' : ''}">
         <div class="shop-card-t1-top">
           <div class="shop-card-t1-icon">
-            <img src="${meta.icon}" alt="${item.name}">
+            ${iconHtml}
           </div>
           <div class="shop-card-t1-name-box">
             <div class="shop-card-t1-name" title="${item.name}">${item.name}</div>
@@ -4796,6 +4823,11 @@ class Game {
     }
 
     container.innerHTML = html;
+
+    // 技能卡片的圖示是 Canvas 佔位，插入 DOM 後才畫得出來（跟遊戲內技能按鈕同一套 drawSkillIcon）
+    container.querySelectorAll('.shop-skill-icon-canvas').forEach(canvas => {
+      this.drawSkillIcon(canvas.getContext('2d'), canvas.dataset.skillKey);
+    });
 
     // 綁定購買點擊事件
     container.querySelectorAll('.shop-card-t1-btn.btn-buy:not(:disabled)').forEach(btn => {
@@ -4933,10 +4965,11 @@ class Game {
   }
 
   updateSkillBarLockState() {
+    // 未解鎖的技能直接從技能列隱藏，不在遊戲畫面裡用鎖頭佔位（商店裡還是看得到、可以解鎖）
     const meteorBtn = document.getElementById('skill-meteor-btn');
-    if (meteorBtn) meteorBtn.classList.toggle('locked', !isSkillUnlocked('meteor'));
+    if (meteorBtn) meteorBtn.style.display = isSkillUnlocked('meteor') ? '' : 'none';
     const freezeBtn = document.getElementById('skill-freeze-btn');
-    if (freezeBtn) freezeBtn.classList.toggle('locked', !isSkillUnlocked('freeze'));
+    if (freezeBtn) freezeBtn.style.display = isSkillUnlocked('freeze') ? '' : 'none';
   }
 
   updateTowerPanel() {
@@ -4945,15 +4978,15 @@ class Game {
       const type = item.dataset.type;
       const cost = TOWER_DATA[type].cost;
       const unlocked = isTowerUnlocked(type);
+      // 未解鎖的塔直接從牌組隱藏，不在遊戲畫面裡用鎖頭佔位（商店裡還是看得到、可以解鎖）
+      item.style.display = unlocked ? '' : 'none';
+      if (!unlocked) return;
       const canAfford = this.gold >= cost;
-      item.classList.toggle('disabled', !canAfford || !unlocked);
-      item.classList.toggle('locked', !unlocked);
+      item.classList.toggle('disabled', !canAfford);
       item.classList.remove('selected');
       const details = item.querySelector('.tower-details');
       if (details) {
-        details.innerHTML = unlocked
-          ? `<div class="tower-cost">💰${cost}</div>`
-          : `<div class="tower-cost tower-cost-locked">🔒 商店解鎖</div>`;
+        details.innerHTML = `<div class="tower-cost">💰${cost}</div>`;
       }
     });
   }

@@ -1117,7 +1117,7 @@ html, body {
 .shop-modal-content {
   max-width: 480px;
   width: 95%;
-  max-height: 85vh;
+  height: 85vh;
   display: flex;
   flex-direction: column;
   padding: 14px 16px;
@@ -1293,6 +1293,12 @@ html, body {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
 }
 
+.shop-card-t1-icon .shop-skill-icon-canvas {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
 .shop-card-t1-name-box {
   flex: 1;
   min-width: 0;
@@ -1428,17 +1434,6 @@ html, body {
   font-size: 12px;
   color: #d4b896;
   line-height: 1.4;
-}
-
-/* 塔/技能商店鎖定狀態 */
-.tower-item.locked .tower-cost-locked {
-  color: #8d6e63;
-}
-
-#skill-meteor-btn.locked,
-#skill-freeze-btn.locked {
-  opacity: 0.35;
-  filter: grayscale(0.8);
 }
 
 /* --- Primary Action Buttons (4號晨曦暖陽擬物按鈕) --- */
