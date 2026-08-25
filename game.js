@@ -3733,9 +3733,8 @@ class Game {
     document.addEventListener('touchstart', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 350) {
-        // 商店裡一律禁止雙擊縮放，不論點到什麼元件
-        const inShopModal = e.target && e.target.closest('#shop-modal');
-        // 如果不是按鈕或卡片元件，阻止雙擊放大行為
+        // 如果不是按鈕或卡片元件，阻止雙擊放大行為（商店的頁籤/卡片按鈕都是 <button>，
+        // 一律會被下面的 isClickable 判斷排除，不能額外用 #shop-modal 整包攔截，否則商店本身也點不動）
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
           e.target.tagName === 'SELECT' ||
@@ -3748,7 +3747,7 @@ class Game {
           e.target.closest('.leaderboard-modal-content') ||
           e.target.closest('#debug-container')
         );
-        if ((inShopModal || !isClickable) && e.cancelable) {
+        if (!isClickable && e.cancelable) {
           e.preventDefault();
         }
       }
@@ -3758,7 +3757,6 @@ class Game {
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
       if (now - lastTouchTime <= 300) {
-        const inShopModal = e.target && e.target.closest('#shop-modal');
         const isClickable = e.target && (
           e.target.tagName === 'BUTTON' ||
           e.target.tagName === 'SELECT' ||
@@ -3771,7 +3769,7 @@ class Game {
           e.target.closest('.leaderboard-modal-content') ||
           e.target.closest('#debug-container')
         );
-        if ((inShopModal || !isClickable) && e.cancelable) {
+        if (!isClickable && e.cancelable) {
           e.preventDefault();
         }
       }
@@ -4324,7 +4322,8 @@ class Game {
     this.waveManager.startWave(this.currentWave);
     this.sfx.play('wave');
     this.showToast(`🌊 第 ${this.currentWave + 1} 波開始！`);
-    document.getElementById('start-wave-btn').disabled = true;
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = true;
     this.selectedTowerType = null;
     this.updateTowerPanel();
     this.updateUI();
@@ -4348,7 +4347,8 @@ class Game {
     } else {
       dbgLog(`⏳ 進入第 ${this.currentWave + 1} 波 planning 狀態`);
       this.state = 'planning';
-      document.getElementById('start-wave-btn').disabled = false;
+      const startWaveBtn = document.getElementById('start-wave-btn');
+      if (startWaveBtn) startWaveBtn.disabled = false;
       this.updateWavePreview();
     }
     this.updateUI();
@@ -4413,7 +4413,8 @@ class Game {
 
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
-    document.getElementById('start-wave-btn').disabled = false;
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = false;
     document.getElementById('speed-btn').textContent = '1x';
 
     this.deselectTower();
