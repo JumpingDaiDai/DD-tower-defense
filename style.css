@@ -1113,100 +1113,321 @@ html, body {
 
 .victory-chest-reward.hidden { display: none; }
 
-/* --- Shop (商店：永久貨幣解鎖塔與技能) --- */
-.shop-crystal-icon { font-size: 20px; }
-
-.shop-balance-row {
-  font-size: 20px;
-  font-weight: 900;
-  color: #ab47bc;
-  margin-bottom: 4px;
-}
-
-.shop-item-list {
+/* --- Shop (商店：方案一 魔導卡牌矩陣 Arcane Card Matrix) --- */
+.shop-modal-content {
+  max-width: 480px;
+  width: 95%;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  padding: 14px 16px;
+  background: rgba(35, 22, 12, 0.96) !important;
+  border: 2px solid rgba(255, 215, 0, 0.5) !important;
+  border-radius: 20px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.shop-item {
+.shop-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: #ffffff;
-  border: 1.5px solid rgba(255, 167, 38, 0.3);
-  border-radius: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid rgba(255, 215, 0, 0.25);
+  flex-shrink: 0;
 }
 
-.shop-item-owned {
-  background: #f1f8e9;
-  border-color: rgba(139, 195, 74, 0.4);
+.shop-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.shop-item-name {
-  font-size: 13px;
-  font-weight: 800;
-  color: #4e342e;
+.shop-title-icon {
+  font-size: 22px;
 }
 
-.shop-item-status {
-  font-size: 12px;
-  font-weight: 800;
-  color: #689f38;
+.crystal-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1.5px solid #00e5ff;
+  border-radius: 20px;
+  padding: 3px 12px;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25);
 }
 
-.shop-buy-btn {
-  background: linear-gradient(135deg, #ab47bc, #8e24aa);
-  color: #ffffff;
-  border: none;
+.crystal-pill .num {
+  font-size: 15px;
+  font-weight: 900;
+  color: #80d8ff;
+}
+
+/* 主狀態頁籤：全部 / 未解鎖 / 已解鎖 */
+.shop-status-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  padding: 8px 0 6px;
+  flex-shrink: 0;
+}
+
+.shop-status-tab-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 215, 0, 0.25);
+  color: #d4b896;
   border-radius: 10px;
-  padding: 6px 12px;
+  padding: 6px 4px;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
-  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
 }
 
-.shop-buy-btn:disabled {
-  background: #cfd8dc;
-  color: #90a4ae;
+.shop-status-tab-btn.active {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.35), rgba(245, 124, 0, 0.2));
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.25);
+}
+
+/* 子分類過濾條：全部種類 / 防禦塔 / 魔法技能 */
+.shop-sub-filters {
+  display: flex;
+  gap: 6px;
+  padding: 4px 0 8px;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.shop-sub-filter-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  color: #a89f91;
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.shop-sub-filter-btn.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.6);
+  color: #fff8e7;
+}
+
+/* 卡牌滾動區 */
+.shop-modal-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 2px;
+  margin-right: -4px;
+  padding-right: 4px;
+  -webkit-overflow-scrolling: touch;
+  max-height: calc(85vh - 200px);
+}
+
+.shop-modal-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.shop-modal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+}
+
+/* 卡牌矩陣 Grid */
+.shop-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.shop-card-t1 {
+  background: linear-gradient(180deg, rgba(60, 40, 20, 0.8) 0%, rgba(30, 18, 10, 0.95) 100%);
+  border: 1.5px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.shop-card-t1:hover {
+  border-color: #ffd700;
+}
+
+.shop-card-t1.owned {
+  border-color: rgba(76, 175, 80, 0.5);
+  background: linear-gradient(180deg, rgba(30, 45, 25, 0.8) 0%, rgba(18, 30, 15, 0.95) 100%);
+}
+
+.shop-card-t1-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.shop-card-t1-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(255, 215, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shop-card-t1-icon img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
+.shop-card-t1-name-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-card-t1-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shop-card-t1-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 2px;
+}
+
+/* 標籤通用樣式 */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.badge-slow { background: rgba(0, 176, 255, 0.2); color: #80d8ff; border: 1px solid rgba(0, 176, 255, 0.5); }
+.badge-poison { background: rgba(0, 230, 118, 0.2); color: #b9f6ca; border: 1px solid rgba(0, 230, 118, 0.5); }
+.badge-chain { background: rgba(213, 0, 249, 0.2); color: #ea80fc; border: 1px solid rgba(213, 0, 249, 0.5); }
+.badge-aoe { background: rgba(255, 61, 0, 0.2); color: #ff9e80; border: 1px solid rgba(255, 61, 0, 0.5); }
+.badge-pierce { background: rgba(255, 193, 7, 0.2); color: #ffe57f; border: 1px solid rgba(255, 193, 7, 0.5); }
+.badge-econ { background: rgba(255, 234, 0, 0.2); color: #ffff8d; border: 1px solid rgba(255, 234, 0, 0.5); }
+.badge-skill { background: rgba(255, 64, 129, 0.2); color: #ff80ab; border: 1px solid rgba(255, 64, 129, 0.5); }
+
+.shop-card-t1-desc {
+  font-size: 10px;
+  color: #d4b896;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  flex: 1;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.shop-card-t1-stats {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  padding: 3px 2px;
+  margin-bottom: 6px;
+  font-size: 9px;
+  color: #ffe082;
+  font-weight: 700;
+}
+
+.shop-card-t1-btn {
+  width: 100%;
+  padding: 6px 0;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.shop-card-t1-btn.btn-buy {
+  background: linear-gradient(135deg, #00b0ff, #0081cb);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 176, 255, 0.3);
+}
+
+.shop-card-t1-btn.btn-buy:disabled {
+  background: #424242;
+  color: #9e9e9e;
+  box-shadow: none;
   cursor: not-allowed;
 }
 
-.shop-item-info {
-  position: fixed;
-  left: 50%;
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  transform: translateX(-50%);
-  z-index: 999;
-  width: min(80vw, 300px);
-  padding: 12px 16px;
-  background: rgba(78, 52, 46, 0.96);
-  border-radius: 12px;
-  color: #fff8e1;
-  text-align: left;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+.shop-card-t1-btn.btn-owned {
+  background: rgba(76, 175, 80, 0.2);
+  color: #81c784;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  cursor: default;
 }
 
-.shop-item-info.hidden { display: none; }
+/* 分區標題 */
+.shop-section-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 8px;
+  padding: 5px 8px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.02) 100%);
+  border-left: 3px solid #ffd700;
+  border-radius: 4px 8px 8px 4px;
+}
 
-.shop-info-title {
-  font-size: 13px;
+.shop-section-title {
+  font-size: 12px;
   font-weight: 900;
-  margin-bottom: 2px;
+  color: #ffd700;
 }
 
-.shop-info-desc {
-  font-size: 11px;
-  color: #ffe0b2;
-  margin-bottom: 4px;
+/* 空狀態 */
+.shop-empty-box {
+  text-align: center;
+  padding: 30px 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1.5px dashed rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  margin: 10px 0;
 }
 
-.shop-info-stats {
-  font-size: 11px;
-  font-weight: 700;
-  color: #ce93d8;
+.shop-empty-icon {
+  font-size: 32px;
+  margin-bottom: 6px;
+}
+
+.shop-empty-text {
+  font-size: 12px;
+  color: #d4b896;
+  line-height: 1.4;
 }
 
 /* 塔/技能商店鎖定狀態 */
