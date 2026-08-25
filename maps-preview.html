@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗺️ 精靈樹保衛戰 - 全地圖路線圖鑑</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --primary: #2d1e0f;
+      --gold: #ff9800;
+      --border: #f0e6d6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffdf5 0%, #fdf6e7 100%);
+      color: #3e2723;
+      padding: 24px 16px 60px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      width: 100%;
+      max-width: 980px;
+    }
+    .header {
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid rgba(255, 215, 0, 0.35);
+      border-radius: 20px;
+      padding: 24px 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 24px rgba(62, 39, 35, 0.06);
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 900;
+      color: #2d1e0f;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #8d6e63;
+      margin-bottom: 12px;
+    }
+    .grid-info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e1f5fe;
+      border: 1px solid #b3e5fc;
+      color: #0288d1;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    /* 地圖卡牌排版 */
+    .maps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 20px;
+    }
+    .map-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(62, 39, 35, 0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .map-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(62, 39, 35, 0.09);
+    }
+    .map-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .map-tag {
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: #efebe9;
+      color: #4e342e;
+    }
+    .map-tag.new {
+      background: linear-gradient(135deg, #ff4081, #f50057);
+      color: #fff;
+    }
+    .map-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #2d1e0f;
+      margin-bottom: 4px;
+      width: 100%;
+      text-align: left;
+    }
+    .map-desc {
+      font-size: 12px;
+      color: #795548;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      width: 100%;
+      text-align: left;
+      min-height: 34px;
+    }
+    .canvas-container {
+      background: #fdfbf7;
+      border: 2px solid #ecdcc8;
+      border-radius: 12px;
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    canvas {
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .map-footer {
+      width: 100%;
+      background: #fbf6ee;
+      border: 1px solid #eedec9;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      color: #5d4037;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗺️ 精靈樹保衛戰・全地圖路線視覺圖鑑</h1>
+      <p class="subtitle">嚴格遵循 6 × 8 網格規範與航點 Waypoint 幾何架構，即時 Canvas 渲染</p>
+      <div class="grid-info-badge">
+        <span>🗺️ 收錄地圖：共 12 款戰術地圖</span>
+        <span>•</span>
+        <span>📐 網格規格：6 欄 × 8 列 (48 格)</span>
+        <span>•</span>
+        <span>🟩 綠格：可建造</span>
+        <span>•</span>
+        <span>🟫 棕道：怪物路線</span>
+      </div>
+    </div>
+
+    <div class="maps-grid" id="maps-container"></div>
+  </div>
+
+  <script>
+    const MAPS = [
+      {
+        id: 'outer_ring',
+        name: '經典外廊 (Outer Ring)',
+        tag: '第一關・晨光花園',
+        isNew: false,
+        desc: '怪物自左上出發沿最外圈順時針行進，中央留有完整 4×6 超大腹地。',
+        tactic: '🎯 戰術建議：中央腹地可集中佈置長射程重砲與向日葵經濟壇。',
+        waypoints: [[0, 0], [0, 7], [5, 7], [5, 0]]
+      },
+      {
+        id: 'serpentine',
+        name: '蛇形曲徑 (Serpentine)',
+        tag: '第二關・迷霧小徑',
+        isNew: false,
+        desc: '經典 S 型三次折返路線，路徑綿長覆蓋率高，具有多處直角盲彎。',
+        tactic: '🎯 戰術建議：轉角內側是極佳的穿透與範圍減速牢籠點位。',
+        waypoints: [[0, 0], [0, 2], [5, 2], [5, 5], [0, 5], [0, 7], [5, 7]]
+      },
+      {
+        id: 'ring',
+        name: '競技之環 (Ring)',
+        tag: '第三關・競技之環',
+        isNew: false,
+        desc: '自外圈環繞至上方後向內收束，圍繞中央核心建造平台。',
+        tactic: '🎯 戰術建議：將最強力的高頻輸出塔放於內側中心形成全域打擊。',
+        waypoints: [[0, 0], [0, 7], [5, 7], [5, 2], [1, 2]]
+      },
+      {
+        id: 'zigzag',
+        name: '之字鋸齒 (Zigzag Path)',
+        tag: '第四關・深林迴廊',
+        isNew: true,
+        desc: '緊密的 4 折橫向往復路線，橫向直線極長，垂直間距僅 2 格。',
+        tactic: '🎯 戰術建議：日光雷射與貫穿冰晶沿著橫向走道直射可貫穿整隊敵軍。',
+        waypoints: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 7], [0, 7]]
+      },
+      {
+        id: 'crossroad',
+        name: '交織十字 (Crossroad)',
+        tag: '第五關・炎陽廢墟',
+        isNew: true,
+        desc: '中軸直線貫穿後繞外環，再於第 4 列形成橫切十字，多點交會。',
+        tactic: '🎯 戰術建議：十字交叉點怪物會經過兩次，是放置連鎖閃電的首選。',
+        waypoints: [[2, 0], [2, 7], [5, 7], [5, 4], [0, 4], [0, 1], [5, 1]]
+      },
+      {
+        id: 'spiral_deep',
+        name: '深層渦旋 (Deep Spiral)',
+        tag: '第六關・冰封絕地',
+        isNew: true,
+        desc: '雙層順時針向心螺旋，怪物由外層層往中心核心逼近。',
+        tactic: '🎯 戰術建議：中心點能長時間覆蓋內外兩層怪物，適合高單體 DPS 塔。',
+        waypoints: [[0, 0], [5, 0], [5, 7], [0, 7], [0, 3], [3, 3], [3, 5]]
+      },
+      {
+        id: 'dual_loop',
+        name: '雙子無限之環 (Dual Loop)',
+        tag: '第七關・龍王聖殿',
+        isNew: true,
+        desc: '上下雙循環 8 字型折返路徑，全遊戲行進路線最長、轉折最多的終極地圖。',
+        tactic: '🎯 戰術建議：全場無死角鋪設毒霧與減速，考驗整體陣容深度。',
+        waypoints: [[0, 0], [5, 0], [5, 3], [0, 3], [0, 7], [5, 7], [5, 4], [2, 4]]
+      },
+      {
+        id: 'hourglass',
+        name: '時光沙漏 (Hourglass)',
+        tag: '擴充精選 ★',
+        isNew: true,
+        desc: '標準直角雙漏斗結構：頂部外環 ➔ 垂直下切至中央窄道 ➔ 底部反向外環 ➔ 終點。',
+        tactic: '🎯 戰術建議：中央 (col 2~3, row 3~4) 窄道是必經咽喉，重砲與劇毒群傷最佳點位。',
+        waypoints: [[0, 0], [5, 0], [5, 3], [3, 3], [3, 4], [5, 4], [5, 7], [0, 7], [0, 4], [2, 4], [2, 3], [0, 3]]
+      },
+      {
+        id: 'canyon_switchback',
+        name: '大峽谷迴旋 (Canyon Switchback)',
+        tag: '擴充精選 ★',
+        isNew: true,
+        desc: '垂直走向為主的險峻峭壁山道，左右縱向穿梭於深谷之間。',
+        tactic: '🎯 戰術建議：適合縱向長射程防禦塔佈局，兩側高台居高臨下輸出。',
+        waypoints: [[0, 0], [0, 7], [2, 7], [2, 1], [4, 1], [4, 7], [5, 7]]
+      },
+      {
+        id: 'pinwheel',
+        name: '四葉風車 (Pinwheel Vortex)',
+        tag: '擴充精選 ★',
+        isNew: true,
+        desc: '四個象限各自獨立又相互串聯的旋轉折返走廊，如風車葉片般旋轉擴散。',
+        tactic: '🎯 戰術建議：中心交界處具備全圖最佳射程覆蓋率，擺放核心輸出塔首選。',
+        waypoints: [[1, 0], [1, 3], [0, 3], [0, 7], [4, 7], [4, 4], [5, 4], [5, 1], [3, 1], [3, 4]]
+      },
+      {
+        id: 'twin_bridges',
+        name: '雙子虹橋 (Twin Bridges)',
+        tag: '擴充精選 ★',
+        isNew: true,
+        desc: '兩座對稱的懸空高架石橋路徑，將戰場分為左右兩座獨立島嶼。',
+        tactic: '🎯 戰術建議：雙橋之間是絕佳的連鎖閃電彈射空域，左右開弓。',
+        waypoints: [[1, 0], [1, 7], [4, 7], [4, 3], [2, 3], [2, 1], [5, 1]]
+      },
+      {
+        id: 'labyrinth_core',
+        name: '迷宮核心 (Labyrinth Core)',
+        tag: '擴充精選 ★',
+        isNew: true,
+        desc: '高密度直角折角迷宮，道路佔比極高，考驗極限格子利用與極限微操。',
+        tactic: '🎯 戰術建議：單體高爆發塔緊貼牆角，搭配減速冰晶造成極長滯留時間。',
+        waypoints: [[0, 0], [3, 0], [3, 2], [1, 2], [1, 5], [4, 5], [4, 2], [5, 2], [5, 7], [0, 7]]
+      }
+    ];
+
+    const COLS = 6;
+    const ROWS = 8;
+    const CELL = 36;
+    const W = COLS * CELL; // 216
+    const H = ROWS * CELL; // 288
+
+    function renderMap(canvas, waypoints) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = W;
+      canvas.height = H;
+
+      // 1. 建立網格狀態 (0 = 草地, 1 = 道路)
+      const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      const pathCells = new Set();
+
+      for (let i = 0; i < waypoints.length - 1; i++) {
+        const [c1, r1] = waypoints[i];
+        const [c2, r2] = waypoints[i + 1];
+        if (r1 === r2) {
+          const minC = Math.min(c1, c2);
+          const maxC = Math.max(c1, c2);
+          for (let c = minC; c <= maxC; c++) {
+            grid[r1][c] = 1;
+            pathCells.add(`${c},${r1}`);
+          }
+        } else {
+          const minR = Math.min(r1, r2);
+          const maxR = Math.max(r1, r2);
+          for (let r = minR; r <= maxR; r++) {
+            grid[r][c1] = 1;
+            pathCells.add(`${c1},${r}`);
+          }
+        }
+      }
+
+      // 2. 繪製草地底圖
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const x = c * CELL;
+          const y = r * CELL;
+          if (grid[r][c] === 0) {
+            // 草地 (可建造)
+            ctx.fillStyle = (r + c) % 2 === 0 ? '#9ccc65' : '#8bc34a';
+            ctx.fillRect(x, y, CELL, CELL);
+            ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+            ctx.strokeRect(x, y, CELL, CELL);
+          } else {
+            // 道路底色
+            ctx.fillStyle = '#deb887';
+            ctx.fillRect(x, y, CELL, CELL);
+          }
+        }
+      }
+
+      // 3. 繪製精緻道路走廊
+      ctx.strokeStyle = '#c69c6d';
+      ctx.lineWidth = CELL * 0.72;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      waypoints.forEach(([c, r], idx) => {
+        const px = c * CELL + CELL / 2;
+        const py = r * CELL + CELL / 2;
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+
+      // 4. 道路中央導引虛線
+      ctx.strokeStyle = '#fff8e7';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      waypoints.forEach(([c, r], idx) => {
+        const px = c * CELL + CELL / 2;
+        const py = r * CELL + CELL / 2;
+        if (idx === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 5. 起點 (傳送門) & 終點 (精靈樹)
+      const [startC, startR] = waypoints[0];
+      const [endC, endR] = waypoints[waypoints.length - 1];
+
+      // 起點傳送門
+      const startX = startC * CELL + CELL / 2;
+      const startY = startR * CELL + CELL / 2;
+      ctx.fillStyle = '#ff7043';
+      ctx.beginPath();
+      ctx.arc(startX, startY, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('起點', startX, startY);
+
+      // 終點精靈樹
+      const endX = endC * CELL + CELL / 2;
+      const endY = endR * CELL + CELL / 2;
+      ctx.fillStyle = '#2e7d32';
+      ctx.beginPath();
+      ctx.arc(endX, endY, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffd700';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('終點', endX, endY);
+    }
+
+    // 渲染所有地圖卡片
+    const container = document.getElementById('maps-container');
+    MAPS.forEach(map => {
+      const card = document.createElement('div');
+      card.className = 'map-card';
+      card.innerHTML = `
+        <div class="map-header">
+          <span class="map-tag ${map.isNew ? 'new' : ''}">${map.tag}</span>
+          <span style="font-size:11px; font-weight:800; color:#8d6e63;">ID: ${map.id}</span>
+        </div>
+        <div class="map-name">${map.name}</div>
+        <div class="map-desc">${map.desc}</div>
+        <div class="canvas-container">
+          <canvas id="canvas-${map.id}"></canvas>
+        </div>
+        <div class="map-footer">${map.tactic}</div>
+      `;
+      container.appendChild(card);
+
+      const canvas = document.getElementById(`canvas-${map.id}`);
+      renderMap(canvas, map.waypoints);
+    });
+  </script>
+</body>
+</html>

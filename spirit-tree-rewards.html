@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌳 精靈樹等級強化獎勵表 - DD Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --primary: #2d1e0f;
+      --gold: #ff9800;
+      --gold-dark: #e65100;
+      --essence: #00e5ff;
+      --essence-glow: #00e676;
+      --heart: #e91e63;
+      --border: #f0e6d6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffdf5 0%, #fdf6e7 100%);
+      color: #3e2723;
+      padding: 24px 16px 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      width: 100%;
+      max-width: 680px;
+      background: var(--card-bg);
+      border: 2px solid rgba(255, 215, 0, 0.35);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: 0 12px 32px rgba(62, 39, 35, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px dashed #f0e6d6;
+    }
+    .tree-icon-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 68px;
+      height: 68px;
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border-radius: 50%;
+      margin-bottom: 10px;
+      border: 2px solid #81c784;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 900;
+      color: #2d1e0f;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 13px;
+      color: #8d6e63;
+    }
+    .info-banner {
+      background: rgba(0, 229, 255, 0.08);
+      border: 1.5px solid rgba(0, 229, 255, 0.35);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: #00838f;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.5;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+      background: #ffffff;
+    }
+    th {
+      background: #faf3e8;
+      color: #5d4037;
+      font-weight: 900;
+      padding: 12px 14px;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f7efe4;
+      vertical-align: middle;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: #fffcf5;
+    }
+    .level-badge {
+      display: inline-block;
+      font-weight: 900;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #efebe9;
+      color: #4e342e;
+    }
+    .level-max {
+      background: linear-gradient(135deg, #ffd54f, #ffb300);
+      color: #3e2723;
+      box-shadow: 0 2px 6px rgba(255, 179, 0, 0.3);
+    }
+    .cost-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 800;
+      color: #0097a7;
+    }
+    .bonus-gold {
+      color: #e65100;
+      font-weight: 800;
+    }
+    .bonus-lives {
+      color: #c2185b;
+      font-weight: 800;
+    }
+    .stat-total {
+      font-size: 13px;
+      font-weight: 800;
+      color: #2e7d32;
+    }
+    .footer-notes {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #a1887f;
+      line-height: 1.6;
+    }
+    .footer-notes ul {
+      padding-left: 18px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="tree-icon-box">
+        <img src="assets/ui/sacred_tree.svg" width="46" height="46" alt="精靈樹" onerror="this.outerHTML='🌳'">
+      </div>
+      <h1>精靈世界樹強化獎勵表</h1>
+      <p class="subtitle">通關關卡獲取「✨ 精華」，永久提升守衛起手優勢</p>
+    </div>
+
+    <div class="info-banner">
+      <span style="font-size:20px;">✨</span>
+      <div>
+        <strong>精華獲取說明：</strong> 首次通關可獲得豐厚星等精華，重複通關亦可累積精華。精靈樹加成永久生效於所有關卡！
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>等級</th>
+            <th>升級消耗</th>
+            <th>單級加成說明</th>
+            <th>總累計加成</th>
+            <th>初始開局狀態</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="level-badge">Lv.1</span></td>
+            <td><span style="color:#8d6e63; font-weight:700;">免費</span> (初始)</td>
+            <td>幼苗初生</td>
+            <td>無額外加成</td>
+            <td><span class="stat-total">💰 200 ・ ❤️ 20</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Lv.2</span></td>
+            <td><span class="cost-pill">✨ 20</span></td>
+            <td><span class="bonus-gold">💰 +20</span> ・ <span class="bonus-lives">❤️ +2</span></td>
+            <td>💰 +20 ・ ❤️ +2</td>
+            <td><span class="stat-total">💰 220 ・ ❤️ 22</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Lv.3</span></td>
+            <td><span class="cost-pill">✨ 40</span></td>
+            <td><span class="bonus-gold">💰 +30</span></td>
+            <td>💰 +50 ・ ❤️ +2</td>
+            <td><span class="stat-total">💰 250 ・ ❤️ 22</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Lv.4</span></td>
+            <td><span class="cost-pill">✨ 70</span></td>
+            <td><span class="bonus-gold">💰 +20</span> ・ <span class="bonus-lives">❤️ +2</span></td>
+            <td>💰 +70 ・ ❤️ +4</td>
+            <td><span class="stat-total">💰 270 ・ ❤️ 24</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Lv.5</span></td>
+            <td><span class="cost-pill">✨ 110</span></td>
+            <td><span class="bonus-gold">💰 +30</span></td>
+            <td>💰 +100 ・ ❤️ +4</td>
+            <td><span class="stat-total">💰 300 ・ ❤️ 24</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Lv.6</span></td>
+            <td><span class="cost-pill">✨ 160</span></td>
+            <td><span class="bonus-gold">💰 +20</span> ・ <span class="bonus-lives">❤️ +2</span></td>
+            <td>💰 +120 ・ ❤️ +6</td>
+            <td><span class="stat-total">💰 320 ・ ❤️ 26</span></td>
+          </tr>
+          <tr>
+            <td><span class="level-badge level-max">Lv.7 (MAX)</span></td>
+            <td><span class="cost-pill">✨ 220</span></td>
+            <td><span class="bonus-gold">💰 +30</span></td>
+            <td>💰 +150 ・ ❤️ +6</td>
+            <td><span class="stat-total" style="color:#e65100; font-size:14px;">💰 350 ・ ❤️ 26</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer-notes">
+      <strong>📌 數值小結：</strong>
+      <ul>
+        <li><strong>滿級總消耗</strong>：共需 <strong>620 ✨ 精華</strong>（20 + 40 + 70 + 110 + 160 + 220）。</li>
+        <li><strong>滿級總效益</strong>：開局金幣從 💰200 提升至 <strong>💰350 (+75%)</strong>，開局生命從 ❤️20 提升至 <strong>❤️26 (+30%)</strong>。</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

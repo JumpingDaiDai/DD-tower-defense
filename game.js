@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.6.0-dev',
+  VERSION: 'v1.6.1-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -94,7 +94,7 @@ const IS_DEV_BUILD = CONFIG.VERSION.includes('dev');
 
 // 正式版預設隱藏偵錯用 UI，避免玩家在正式環境看到測試用按鈕：
 // - Log／截圖是給開發者看的，正式版永遠不開放
-// - 「關卡進度測試／水晶測試」的入口按鈕（🧪）藏起來，但可以靠下面「連點首頁精靈樹 5 下」的隱藏開關喚出，
+// - 「關卡進度測試／水晶測試」的入口按鈕（🧪）藏起來，但可以靠下面「連點首頁關卡區塊 5 下」的隱藏開關喚出，
 //   方便正式環境測試人員取用；#debug-container 本身保持顯示，只隱藏個別按鈕，不整個藏起來
 (function hideDebugPanelOnProd() {
   if (IS_DEV_BUILD) return;
@@ -113,49 +113,111 @@ const CANVAS_H = CONFIG.ROWS * CONFIG.CELL_SIZE; // 640
 const MAP_CONFIGS = {
   outer_ring: {
     id: 'outer_ring',
-    name: '經典外廊 (4×6 建造)',
+    name: '經典外廊 (Outer Ring)',
     desc: '左上 [0,0] 出發繞最外圍一圈至右上 [5,0]，中央 4×6 蓋塔',
     pathType: 'outer',
     cols: 6,
     rows: 8,
-    waypoints: [
-      [0, 0],
-      [0, 7],
-      [5, 7],
-      [5, 0],
-    ],
+    waypoints: [[0, 0], [0, 7], [5, 7], [5, 0]],
   },
   serpentine: {
     id: 'serpentine',
-    name: '花園小徑 (蛇形路線)',
+    name: '蛇形曲徑 (Serpentine)',
     desc: '經典蜿蜒路線，適合均衡佈局',
     pathType: 'snake',
     cols: 6,
     rows: 8,
-    waypoints: [
-      [0, 0],
-      [0, 2],
-      [5, 2],
-      [5, 5],
-      [0, 5],
-      [0, 7],
-      [5, 7],
-    ],
+    waypoints: [[0, 0], [0, 2], [5, 2], [5, 5], [0, 5], [0, 7], [5, 7]],
   },
   ring: {
     id: 'ring',
-    name: '競技之環 (螺旋路線)',
+    name: '競技之環 (Ring)',
     desc: '外圍環繞一圈，中央為建造平台',
     pathType: 'spiral',
     cols: 6,
     rows: 8,
-    waypoints: [
-      [0, 0],
-      [0, 7],
-      [5, 7],
-      [5, 2],
-      [1, 2],
-    ],
+    waypoints: [[0, 0], [0, 7], [5, 7], [5, 2], [1, 2]],
+  },
+  zigzag: {
+    id: 'zigzag',
+    name: '之字鋸齒 (Zigzag Path)',
+    desc: '緊密的 4 折橫向往復路線，橫向直線極長',
+    pathType: 'zigzag',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [5, 0], [5, 2], [0, 2], [0, 4], [5, 4], [5, 7], [0, 7]],
+  },
+  crossroad: {
+    id: 'crossroad',
+    name: '交織十字 (Crossroad)',
+    desc: '中軸直線貫穿後繞外環，形成橫切十字多點交會',
+    pathType: 'crossroad',
+    cols: 6,
+    rows: 8,
+    waypoints: [[2, 0], [2, 7], [5, 7], [5, 4], [0, 4], [0, 1], [5, 1]],
+  },
+  spiral_deep: {
+    id: 'spiral_deep',
+    name: '深層渦旋 (Deep Spiral)',
+    desc: '雙層順時針向心螺旋，怪物由外往中心核心逼近',
+    pathType: 'spiral',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [5, 0], [5, 7], [0, 7], [0, 3], [3, 3], [3, 5]],
+  },
+  dual_loop: {
+    id: 'dual_loop',
+    name: '雙子無限之環 (Dual Loop)',
+    desc: '上下雙循環 8 字型折返路徑，路線最長、轉折最多',
+    pathType: 'dual_loop',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [5, 0], [5, 3], [0, 3], [0, 7], [5, 7], [5, 4], [2, 4]],
+  },
+  hourglass: {
+    id: 'hourglass',
+    name: '時光沙漏 (Hourglass)',
+    desc: '雙漏斗結構，中央 (col 2~3, row 3~4) 緊縮為極窄咽喉',
+    pathType: 'hourglass',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [5, 0], [5, 3], [3, 3], [3, 4], [5, 4], [5, 7], [0, 7], [0, 4], [2, 4], [2, 3], [0, 3]],
+  },
+  canyon_switchback: {
+    id: 'canyon_switchback',
+    name: '大峽谷迴旋 (Canyon Switchback)',
+    desc: '垂直走向為主的險峻峭壁山道，左右縱向穿梭於深谷之間',
+    pathType: 'canyon',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [0, 7], [2, 7], [2, 1], [4, 1], [4, 7], [5, 7]],
+  },
+  pinwheel: {
+    id: 'pinwheel',
+    name: '四葉風車 (Pinwheel Vortex)',
+    desc: '四象限旋轉向外擴散走廊，如風車葉片般旋轉擴散',
+    pathType: 'pinwheel',
+    cols: 6,
+    rows: 8,
+    waypoints: [[1, 0], [1, 3], [0, 3], [0, 7], [4, 7], [4, 4], [5, 4], [5, 1], [3, 1], [3, 4]],
+  },
+  twin_bridges: {
+    id: 'twin_bridges',
+    name: '雙子虹橋 (Twin Bridges)',
+    desc: '兩座對稱的懸空高架石橋路徑，將戰場分為左右兩座獨立島嶼',
+    pathType: 'twin_bridges',
+    cols: 6,
+    rows: 8,
+    waypoints: [[1, 0], [1, 7], [4, 7], [4, 3], [2, 3], [2, 1], [5, 1]],
+  },
+  labyrinth_core: {
+    id: 'labyrinth_core',
+    name: '迷宮核心 (Labyrinth Core)',
+    desc: '高密度直角折角迷宮，道路佔比極高，考驗極限微操',
+    pathType: 'labyrinth',
+    cols: 6,
+    rows: 8,
+    waypoints: [[0, 0], [3, 0], [3, 2], [1, 2], [1, 5], [4, 5], [4, 2], [5, 2], [5, 7], [0, 7]],
   },
 };
 
@@ -186,13 +248,13 @@ const TOWER_DATA = {
     range: 0,
     damage: 0,
     fireRate: 0,
-    goldPerSecond: 8,
-    description: '金黃花瓣 · 定時產出陽光金幣',
+    goldPerSecond: 10,
+    description: '金黃花瓣 · 每 5 秒定時產出陽光金幣',
     color: '#ffb300',
     levels: [
-      { goldPerSecond: 8 },
-      { goldPerSecond: 18, upgradeCost: 75 },
-      { goldPerSecond: 32, upgradeCost: 150 },
+      { goldPerSecond: 10 },
+      { goldPerSecond: 15, upgradeCost: 75 },
+      { goldPerSecond: 20, upgradeCost: 150 },
     ],
   },
   lavender: {
@@ -430,7 +492,7 @@ const WAVE_DATA_L6 = [
   { enemies: [{ type: 'dragon', count: 8, interval: 2.4 }, { type: 'beetle', count: 18, interval: 0.33 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'bee', count: 38, interval: 0.07 }], bonus: 1300 },
 ];
 
-// 第七關（終極關）：龍第 7 波就出 3 隻，最終波 10 隻龍同場，全遊戲最高強度
+// 第七關（原終極關）：龍第 7 波就出 3 隻，最終波 10 隻龍同場
 const WAVE_DATA_L7 = [
   { enemies: [{ type: 'caterpillar', count: 18, interval: 0.6 }, { type: 'bee', count: 7, interval: 0.65 }], bonus: 140 },
   { enemies: [{ type: 'caterpillar', count: 18, interval: 0.46 }, { type: 'bee', count: 11, interval: 0.4 }, { type: 'snail', count: 5, interval: 1.3 }], bonus: 180 },
@@ -449,16 +511,116 @@ const WAVE_DATA_L7 = [
   { enemies: [{ type: 'dragon', count: 10, interval: 2.2 }, { type: 'beetle', count: 20, interval: 0.29 }, { type: 'butterfly', count: 34, interval: 0.11 }, { type: 'bee', count: 42, interval: 0.06 }], bonus: 1600 },
 ];
 
-// ─── 5.1 關卡定義：地圖 + 專屬波次，取代原本的自由選地圖 ─────
-// hpMultiplier：難度成長改成「換關卡」才提高血量，同一關卡內每一波不再額外疊加
+// 第八關：時光沙漏 (雙三角咽喉)，重裝鐵甲蟲與小龍群突破
+const WAVE_DATA_L8 = [
+  { enemies: [{ type: 'caterpillar', count: 20, interval: 0.55 }, { type: 'bee', count: 8, interval: 0.6 }], bonus: 150 },
+  { enemies: [{ type: 'caterpillar', count: 20, interval: 0.42 }, { type: 'bee', count: 12, interval: 0.38 }, { type: 'snail', count: 6, interval: 1.2 }], bonus: 195 },
+  { enemies: [{ type: 'bee', count: 22, interval: 0.26 }, { type: 'snail', count: 9, interval: 0.95 }, { type: 'beetle', count: 6, interval: 0.95 }], bonus: 280 },
+  { enemies: [{ type: 'bee', count: 24, interval: 0.2 }, { type: 'beetle', count: 9, interval: 0.8 }, { type: 'butterfly', count: 9, interval: 0.48 }], bonus: 320 },
+  { enemies: [{ type: 'caterpillar', count: 14, interval: 0.3 }, { type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 9, interval: 0.65 }], bonus: 400 },
+  { enemies: [{ type: 'bee', count: 30, interval: 0.18 }, { type: 'beetle', count: 11, interval: 0.58 }, { type: 'butterfly', count: 12, interval: 0.38 }], bonus: 450 },
+  { enemies: [{ type: 'butterfly', count: 20, interval: 0.23 }, { type: 'bee', count: 24, interval: 0.18 }, { type: 'dragon', count: 3, interval: 2.2 }], bonus: 650 },
+  { enemies: [{ type: 'snail', count: 15, interval: 0.65 }, { type: 'beetle', count: 15, interval: 0.48 }, { type: 'bee', count: 20, interval: 0.2 }], bonus: 600 },
+  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.5 }], bonus: 680 },
+  { enemies: [{ type: 'dragon', count: 5, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.42 }, { type: 'caterpillar', count: 22, interval: 0.2 }], bonus: 900 },
+  { enemies: [{ type: 'butterfly', count: 36, interval: 0.13 }, { type: 'beetle', count: 20, interval: 0.38 }, { type: 'snail', count: 11, interval: 0.52 }], bonus: 820 },
+  { enemies: [{ type: 'bee', count: 55, interval: 0.08 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'beetle', count: 11, interval: 0.38 }], bonus: 900 },
+  { enemies: [{ type: 'snail', count: 22, interval: 0.3 }, { type: 'dragon', count: 6, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.3 }], bonus: 1100 },
+  { enemies: [{ type: 'beetle', count: 28, interval: 0.23 }, { type: 'butterfly', count: 36, interval: 0.11 }, { type: 'snail', count: 20, interval: 0.26 }, { type: 'bee', count: 30, interval: 0.08 }], bonus: 1200 },
+  { enemies: [{ type: 'dragon', count: 11, interval: 2.0 }, { type: 'beetle', count: 22, interval: 0.27 }, { type: 'butterfly', count: 36, interval: 0.1 }, { type: 'bee', count: 45, interval: 0.05 }], bonus: 1750 },
+];
+
+// 第九關：大峽谷迴旋 (垂直長廊)，高速蜜蜂與狂暴蝴蝶海
+const WAVE_DATA_L9 = [
+  { enemies: [{ type: 'caterpillar', count: 22, interval: 0.5 }, { type: 'bee', count: 9, interval: 0.55 }], bonus: 160 },
+  { enemies: [{ type: 'caterpillar', count: 22, interval: 0.39 }, { type: 'bee', count: 13, interval: 0.35 }, { type: 'snail', count: 7, interval: 1.1 }], bonus: 210 },
+  { enemies: [{ type: 'bee', count: 24, interval: 0.24 }, { type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 7, interval: 0.9 }], bonus: 300 },
+  { enemies: [{ type: 'bee', count: 26, interval: 0.18 }, { type: 'beetle', count: 10, interval: 0.75 }, { type: 'butterfly', count: 10, interval: 0.45 }], bonus: 350 },
+  { enemies: [{ type: 'caterpillar', count: 15, interval: 0.28 }, { type: 'snail', count: 11, interval: 0.85 }, { type: 'beetle', count: 10, interval: 0.6 }], bonus: 430 },
+  { enemies: [{ type: 'bee', count: 32, interval: 0.17 }, { type: 'beetle', count: 12, interval: 0.55 }, { type: 'butterfly', count: 13, interval: 0.36 }], bonus: 480 },
+  { enemies: [{ type: 'butterfly', count: 22, interval: 0.21 }, { type: 'bee', count: 26, interval: 0.17 }, { type: 'dragon', count: 4, interval: 2.1 }], bonus: 700 },
+  { enemies: [{ type: 'snail', count: 16, interval: 0.6 }, { type: 'beetle', count: 16, interval: 0.45 }, { type: 'bee', count: 22, interval: 0.18 }], bonus: 650 },
+  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 28, interval: 0.15 }, { type: 'beetle', count: 10, interval: 0.48 }], bonus: 730 },
+  { enemies: [{ type: 'dragon', count: 6, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.4 }, { type: 'caterpillar', count: 24, interval: 0.18 }], bonus: 960 },
+  { enemies: [{ type: 'butterfly', count: 38, interval: 0.12 }, { type: 'beetle', count: 22, interval: 0.36 }, { type: 'snail', count: 12, interval: 0.5 }], bonus: 880 },
+  { enemies: [{ type: 'bee', count: 60, interval: 0.07 }, { type: 'butterfly', count: 32, interval: 0.12 }, { type: 'beetle', count: 12, interval: 0.36 }], bonus: 960 },
+  { enemies: [{ type: 'snail', count: 24, interval: 0.28 }, { type: 'dragon', count: 7, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.28 }], bonus: 1180 },
+  { enemies: [{ type: 'beetle', count: 30, interval: 0.21 }, { type: 'butterfly', count: 38, interval: 0.1 }, { type: 'snail', count: 22, interval: 0.24 }, { type: 'bee', count: 32, interval: 0.07 }], bonus: 1300 },
+  { enemies: [{ type: 'dragon', count: 12, interval: 1.9 }, { type: 'beetle', count: 24, interval: 0.25 }, { type: 'butterfly', count: 38, interval: 0.09 }, { type: 'bee', count: 48, interval: 0.05 }], bonus: 1900 },
+];
+
+// 第十關：四葉風車 (多向外旋)，四面八方重兵襲來
+const WAVE_DATA_L10 = [
+  { enemies: [{ type: 'caterpillar', count: 24, interval: 0.46 }, { type: 'bee', count: 10, interval: 0.5 }], bonus: 175 },
+  { enemies: [{ type: 'caterpillar', count: 24, interval: 0.36 }, { type: 'bee', count: 14, interval: 0.32 }, { type: 'snail', count: 8, interval: 1.0 }], bonus: 230 },
+  { enemies: [{ type: 'bee', count: 26, interval: 0.22 }, { type: 'snail', count: 11, interval: 0.85 }, { type: 'beetle', count: 8, interval: 0.85 }], bonus: 330 },
+  { enemies: [{ type: 'bee', count: 28, interval: 0.16 }, { type: 'beetle', count: 11, interval: 0.7 }, { type: 'butterfly', count: 11, interval: 0.42 }], bonus: 380 },
+  { enemies: [{ type: 'caterpillar', count: 16, interval: 0.26 }, { type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 11, interval: 0.55 }], bonus: 470 },
+  { enemies: [{ type: 'bee', count: 35, interval: 0.15 }, { type: 'beetle', count: 13, interval: 0.52 }, { type: 'butterfly', count: 14, interval: 0.34 }], bonus: 520 },
+  { enemies: [{ type: 'butterfly', count: 24, interval: 0.19 }, { type: 'bee', count: 28, interval: 0.15 }, { type: 'dragon', count: 4, interval: 2.0 }], bonus: 760 },
+  { enemies: [{ type: 'snail', count: 18, interval: 0.55 }, { type: 'beetle', count: 18, interval: 0.42 }, { type: 'bee', count: 24, interval: 0.16 }], bonus: 700 },
+  { enemies: [{ type: 'bee', count: 48, interval: 0.09 }, { type: 'butterfly', count: 30, interval: 0.14 }, { type: 'beetle', count: 11, interval: 0.45 }], bonus: 790 },
+  { enemies: [{ type: 'dragon', count: 7, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.38 }, { type: 'caterpillar', count: 26, interval: 0.16 }], bonus: 1040 },
+  { enemies: [{ type: 'butterfly', count: 40, interval: 0.11 }, { type: 'beetle', count: 24, interval: 0.34 }, { type: 'snail', count: 13, interval: 0.48 }], bonus: 950 },
+  { enemies: [{ type: 'bee', count: 65, interval: 0.06 }, { type: 'butterfly', count: 35, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.34 }], bonus: 1040 },
+  { enemies: [{ type: 'snail', count: 26, interval: 0.26 }, { type: 'dragon', count: 8, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.26 }], bonus: 1280 },
+  { enemies: [{ type: 'beetle', count: 32, interval: 0.19 }, { type: 'butterfly', count: 40, interval: 0.09 }, { type: 'snail', count: 24, interval: 0.22 }, { type: 'bee', count: 35, interval: 0.06 }], bonus: 1400 },
+  { enemies: [{ type: 'dragon', count: 13, interval: 1.8 }, { type: 'beetle', count: 26, interval: 0.23 }, { type: 'butterfly', count: 40, interval: 0.08 }, { type: 'bee', count: 52, interval: 0.04 }], bonus: 2100 },
+];
+
+// 第十一關：雙子虹橋 (雙島空域)，巨龍長隊與甲蟲方陣
+const WAVE_DATA_L11 = [
+  { enemies: [{ type: 'caterpillar', count: 26, interval: 0.42 }, { type: 'bee', count: 11, interval: 0.46 }], bonus: 190 },
+  { enemies: [{ type: 'caterpillar', count: 26, interval: 0.33 }, { type: 'bee', count: 15, interval: 0.29 }, { type: 'snail', count: 9, interval: 0.9 }], bonus: 250 },
+  { enemies: [{ type: 'bee', count: 28, interval: 0.2 }, { type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 9, interval: 0.8 }], bonus: 360 },
+  { enemies: [{ type: 'bee', count: 30, interval: 0.14 }, { type: 'beetle', count: 12, interval: 0.65 }, { type: 'butterfly', count: 12, interval: 0.39 }], bonus: 410 },
+  { enemies: [{ type: 'caterpillar', count: 18, interval: 0.24 }, { type: 'snail', count: 13, interval: 0.75 }, { type: 'beetle', count: 12, interval: 0.5 }], bonus: 510 },
+  { enemies: [{ type: 'bee', count: 38, interval: 0.13 }, { type: 'beetle', count: 14, interval: 0.48 }, { type: 'butterfly', count: 15, interval: 0.31 }], bonus: 570 },
+  { enemies: [{ type: 'butterfly', count: 26, interval: 0.17 }, { type: 'bee', count: 30, interval: 0.14 }, { type: 'dragon', count: 5, interval: 1.9 }], bonus: 830 },
+  { enemies: [{ type: 'snail', count: 20, interval: 0.5 }, { type: 'beetle', count: 20, interval: 0.38 }, { type: 'bee', count: 26, interval: 0.15 }], bonus: 770 },
+  { enemies: [{ type: 'bee', count: 52, interval: 0.08 }, { type: 'butterfly', count: 33, interval: 0.13 }, { type: 'beetle', count: 12, interval: 0.4 }], bonus: 860 },
+  { enemies: [{ type: 'dragon', count: 8, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.35 }, { type: 'caterpillar', count: 28, interval: 0.14 }], bonus: 1140 },
+  { enemies: [{ type: 'butterfly', count: 43, interval: 0.1 }, { type: 'beetle', count: 26, interval: 0.31 }, { type: 'snail', count: 14, interval: 0.45 }], bonus: 1040 },
+  { enemies: [{ type: 'bee', count: 70, interval: 0.05 }, { type: 'butterfly', count: 38, interval: 0.1 }, { type: 'beetle', count: 14, interval: 0.31 }], bonus: 1140 },
+  { enemies: [{ type: 'snail', count: 28, interval: 0.24 }, { type: 'dragon', count: 9, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.24 }], bonus: 1390 },
+  { enemies: [{ type: 'beetle', count: 35, interval: 0.17 }, { type: 'butterfly', count: 43, interval: 0.08 }, { type: 'snail', count: 26, interval: 0.2 }, { type: 'bee', count: 38, interval: 0.05 }], bonus: 1530 },
+  { enemies: [{ type: 'dragon', count: 14, interval: 1.7 }, { type: 'beetle', count: 28, interval: 0.21 }, { type: 'butterfly', count: 43, interval: 0.07 }, { type: 'bee', count: 56, interval: 0.035 }], bonus: 2300 },
+];
+
+// 第十二關（真・神話終極關）：迷宮核心 (極限微操)，16 隻終極巨龍全軍壓境
+const WAVE_DATA_L12 = [
+  { enemies: [{ type: 'caterpillar', count: 28, interval: 0.38 }, { type: 'bee', count: 12, interval: 0.42 }], bonus: 210 },
+  { enemies: [{ type: 'caterpillar', count: 28, interval: 0.3 }, { type: 'bee', count: 16, interval: 0.26 }, { type: 'snail', count: 10, interval: 0.8 }], bonus: 280 },
+  { enemies: [{ type: 'bee', count: 30, interval: 0.18 }, { type: 'snail', count: 13, interval: 0.75 }, { type: 'beetle', count: 10, interval: 0.75 }], bonus: 400 },
+  { enemies: [{ type: 'bee', count: 32, interval: 0.12 }, { type: 'beetle', count: 13, interval: 0.6 }, { type: 'butterfly', count: 13, interval: 0.36 }], bonus: 460 },
+  { enemies: [{ type: 'caterpillar', count: 20, interval: 0.21 }, { type: 'snail', count: 14, interval: 0.7 }, { type: 'beetle', count: 13, interval: 0.45 }], bonus: 570 },
+  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'beetle', count: 15, interval: 0.44 }, { type: 'butterfly', count: 17, interval: 0.28 }], bonus: 640 },
+  { enemies: [{ type: 'butterfly', count: 28, interval: 0.15 }, { type: 'bee', count: 32, interval: 0.12 }, { type: 'dragon', count: 6, interval: 1.8 }], bonus: 930 },
+  { enemies: [{ type: 'snail', count: 22, interval: 0.45 }, { type: 'beetle', count: 22, interval: 0.34 }, { type: 'bee', count: 28, interval: 0.13 }], bonus: 860 },
+  { enemies: [{ type: 'bee', count: 56, interval: 0.07 }, { type: 'butterfly', count: 36, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.36 }], bonus: 970 },
+  { enemies: [{ type: 'dragon', count: 9, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.31 }, { type: 'caterpillar', count: 30, interval: 0.12 }], bonus: 1280 },
+  { enemies: [{ type: 'butterfly', count: 46, interval: 0.09 }, { type: 'beetle', count: 28, interval: 0.28 }, { type: 'snail', count: 16, interval: 0.4 }], bonus: 1160 },
+  { enemies: [{ type: 'bee', count: 75, interval: 0.045 }, { type: 'butterfly', count: 42, interval: 0.09 }, { type: 'beetle', count: 16, interval: 0.28 }], bonus: 1280 },
+  { enemies: [{ type: 'snail', count: 30, interval: 0.21 }, { type: 'dragon', count: 10, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.21 }], bonus: 1550 },
+  { enemies: [{ type: 'beetle', count: 38, interval: 0.15 }, { type: 'butterfly', count: 46, interval: 0.07 }, { type: 'snail', count: 28, interval: 0.18 }, { type: 'bee', count: 42, interval: 0.045 }], bonus: 1720 },
+  { enemies: [{ type: 'dragon', count: 16, interval: 1.6 }, { type: 'beetle', count: 30, interval: 0.19 }, { type: 'butterfly', count: 46, interval: 0.06 }, { type: 'bee', count: 60, interval: 0.03 }], bonus: 2600 },
+];
+
+// ─── 5.1 關卡定義：地圖 + 專屬波次 (12 大關卡全部獨立專屬地圖) ─────
+// hpMultiplier：難度成長依關卡依序遞增 (1.0x ➔ 4.3x)
 const LEVEL_DATA = [
   { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.0 },
   { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2, hpMultiplier: 1.3 },
   { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3, hpMultiplier: 1.6 },
-  { id: 'level_4', name: '第四關・深林迴廊', mapId: 'serpentine', waves: WAVE_DATA_L4, hpMultiplier: 1.9 },
-  { id: 'level_5', name: '第五關・炎陽廢墟', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 2.2 },
-  { id: 'level_6', name: '第六關・冰封絕地', mapId: 'outer_ring', waves: WAVE_DATA_L6, hpMultiplier: 2.5 },
-  { id: 'level_7', name: '第七關・龍王聖殿', mapId: 'serpentine', waves: WAVE_DATA_L7, hpMultiplier: 2.8 },
+  { id: 'level_4', name: '第四關・深林迴廊', mapId: 'zigzag', waves: WAVE_DATA_L4, hpMultiplier: 1.9 },
+  { id: 'level_5', name: '第五關・炎陽廢墟', mapId: 'crossroad', waves: WAVE_DATA_L5, hpMultiplier: 2.2 },
+  { id: 'level_6', name: '第六關・冰封絕地', mapId: 'spiral_deep', waves: WAVE_DATA_L6, hpMultiplier: 2.5 },
+  { id: 'level_7', name: '第七關・龍王聖殿', mapId: 'dual_loop', waves: WAVE_DATA_L7, hpMultiplier: 2.8 },
+  { id: 'level_8', name: '第八關・時光沙漏', mapId: 'hourglass', waves: WAVE_DATA_L8, hpMultiplier: 3.1 },
+  { id: 'level_9', name: '第九關・大峽谷迴旋', mapId: 'canyon_switchback', waves: WAVE_DATA_L9, hpMultiplier: 3.4 },
+  { id: 'level_10', name: '第十關・四葉風車', mapId: 'pinwheel', waves: WAVE_DATA_L10, hpMultiplier: 3.7 },
+  { id: 'level_11', name: '第十一關・雙子虹橋', mapId: 'twin_bridges', waves: WAVE_DATA_L11, hpMultiplier: 4.0 },
+  { id: 'level_12', name: '第十二關・迷宮核心', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 4.3 },
 ];
 let CURRENT_LEVEL_INDEX = 0;
 
@@ -571,6 +733,22 @@ function debugAddCrystals(n) {
 }
 window.dbgAddCrystals = debugAddCrystals;
 
+// 測試用：直接加精華餘額，方便開發測試時升級精靈樹
+function debugAddEssence(n) {
+  const total = addEssence(n);
+  if (window.gameInstance) {
+    if (window.gameInstance.updateSpiritTreeUpBadge) {
+      window.gameInstance.updateSpiritTreeUpBadge();
+    }
+    if (window.gameInstance.renderSpiritTreeModal) {
+      window.gameInstance.renderSpiritTreeModal();
+    }
+  }
+  dbgLog(`🧪 測試加值精華：+${n}，目前餘額 ${total}`);
+  return total;
+}
+window.dbgAddEssence = debugAddEssence;
+
 // ─── 5.3 商店：永久貨幣、塔與技能解鎖 ─────────────────
 // 一開始就能用的塔（不用商店解鎖）；其餘的塔與 2 個主動技能都要用「魔法水晶」在商店解鎖
 const FREE_STARTER_TOWERS = ['petal'];
@@ -603,9 +781,9 @@ const SHOP_METADATA = {
   sunflower: {
     kind: 'tower',
     icon: 'assets/towers/tower_sunflower.svg',
-    badges: [{ text: '💰 產金 +8/s', type: 'econ' }, { text: '📈 經濟核心', type: 'econ' }],
-    desc: '不進行攻擊，每秒定時產出 +8 陽光金幣，升級大幅增加金幣產能，越早蓋越賺。',
-    stats: { dmg: '0', range: '-', rate: '產金 +8/s' },
+    badges: [{ text: '💰 產金 +10/5s', type: 'econ' }, { text: '📈 經濟核心', type: 'econ' }],
+    desc: '不進行攻擊，每 5 秒定時產出 +10 陽光金幣（波次進行中），升級大幅增加金幣產能，越早蓋越賺。',
+    stats: { dmg: '0', range: '-', rate: '產金 +10/5s' },
   },
   ice_crystal: {
     kind: 'tower',
@@ -653,8 +831,8 @@ const SHOP_METADATA = {
     kind: 'skill',
     icon: 'assets/skills/skill_meteor.svg',
     badges: [{ text: '🌋 全圖自選轟炸', type: 'skill' }, { text: '⏱️ 冷卻 30s', type: 'skill' }],
-    desc: '召喚天外熾熱流星群，對指定圓形區域造成毀滅性 350 點範圍爆炸傷害。',
-    stats: { dmg: '350', range: '全圖選點', rate: 'CD 30s' },
+    desc: '召喚天外熾熱流星群，對指定圓形區域造成 60 點範圍爆炸傷害。',
+    stats: { dmg: '60', range: '全圖選點', rate: 'CD 30s' },
   },
   freeze: {
     kind: 'skill',
@@ -779,14 +957,15 @@ function addEssence(n) {
 
 // 每一級都是「升到這一級後」的總加成（已經是累加後的數字，不用在別處再加總）；
 // cost 是從上一級升到這一級要花的精華。index 0 = 第 1 級（初始狀態，免費）。
+// 規則：金幣每級 +20 / +30 交錯提升；生命則偶數等級一律 +2。
 const SPIRIT_TREE_LEVELS = [
-  { cost: 0,   bonusGold: 0,   bonusLives: 0,  desc: '幼苗初生' },
-  { cost: 20,  bonusGold: 20,  bonusLives: 0,  desc: '初始金幣 +20' },
-  { cost: 40,  bonusGold: 20,  bonusLives: 2,  desc: '初始生命 +2' },
-  { cost: 70,  bonusGold: 50,  bonusLives: 2,  desc: '初始金幣再 +30' },
-  { cost: 110, bonusGold: 50,  bonusLives: 5,  desc: '初始生命再 +3' },
-  { cost: 160, bonusGold: 100, bonusLives: 5,  desc: '初始金幣再 +50' },
-  { cost: 220, bonusGold: 100, bonusLives: 10, desc: '初始生命再 +5' },
+  { cost: 0,   bonusGold: 0,   bonusLives: 0, desc: '幼苗初生' },
+  { cost: 20,  bonusGold: 20,  bonusLives: 2, desc: '初始金幣 +20 ・ 初始生命 +2' },
+  { cost: 40,  bonusGold: 50,  bonusLives: 2, desc: '初始金幣再 +30' },
+  { cost: 70,  bonusGold: 70,  bonusLives: 4, desc: '初始金幣再 +20 ・ 初始生命再 +2' },
+  { cost: 110, bonusGold: 100, bonusLives: 4, desc: '初始金幣再 +30' },
+  { cost: 160, bonusGold: 120, bonusLives: 6, desc: '初始金幣再 +20 ・ 初始生命再 +2' },
+  { cost: 220, bonusGold: 150, bonusLives: 6, desc: '初始金幣再 +30' },
 ];
 const SPIRIT_TREE_LEVEL_KEY = 'dd_td_spirit_tree_level_v1';
 let _spiritTreeLevelMemoryFallback = null;
@@ -824,6 +1003,14 @@ function getStartingLives() {
   return CONFIG.STARTING_LIVES + getSpiritTreeBonus().bonusLives;
 }
 
+// 檢查精靈樹當前是否可以升級（未滿級且精華足夠）
+function canUpgradeSpiritTree() {
+  const level = loadSpiritTreeLevel();
+  if (level >= SPIRIT_TREE_LEVELS.length) return false;
+  const nextTier = SPIRIT_TREE_LEVELS[level];
+  return loadEssence() >= nextTier.cost;
+}
+
 // 花精華把精靈樹升一級；精華不足或已經滿級都會失敗
 function upgradeSpiritTree() {
   const level = loadSpiritTreeLevel();
@@ -836,7 +1023,7 @@ function upgradeSpiritTree() {
   return { ok: true, level: level + 1 };
 }
 
-// 用水晶購買永久解鎖一座塔；回傳 { ok, reason? }
+// 用水晶購買（締約）一座塔；回傳 { ok, reason? }
 function purchaseTower(typeKey) {
   const item = SHOP_ITEMS.towers[typeKey];
   if (!item) return { ok: false, reason: 'not-found' };
@@ -850,7 +1037,20 @@ function purchaseTower(typeKey) {
   return { ok: true };
 }
 
-// 用水晶購買永久解鎖一個主動技能；回傳 { ok, reason? }
+// 賣出（解除契約）一座塔，全額退還水晶；回傳 { ok, reason?, refund }
+function refundTower(typeKey) {
+  if (FREE_STARTER_TOWERS.includes(typeKey)) return { ok: false, reason: 'starter' };
+  const item = SHOP_ITEMS.towers[typeKey];
+  if (!item) return { ok: false, reason: 'not-found' };
+  if (!isTowerUnlocked(typeKey)) return { ok: false, reason: 'not-owned' };
+  const unlocks = loadUnlocks();
+  unlocks.towers = unlocks.towers.filter(k => k !== typeKey);
+  saveUnlocks(unlocks);
+  saveCrystals(loadCrystals() + item.cost);
+  return { ok: true, refund: item.cost };
+}
+
+// 用水晶購買（締約）一個主動技能；回傳 { ok, reason? }
 function purchaseSkill(skillKey) {
   const item = SHOP_ITEMS.skills[skillKey];
   if (!item) return { ok: false, reason: 'not-found' };
@@ -862,6 +1062,18 @@ function purchaseSkill(skillKey) {
   unlocks.skills.push(skillKey);
   saveUnlocks(unlocks);
   return { ok: true };
+}
+
+// 賣出（解除契約）一個主動技能，全額退還水晶；回傳 { ok, reason?, refund }
+function refundSkill(skillKey) {
+  const item = SHOP_ITEMS.skills[skillKey];
+  if (!item) return { ok: false, reason: 'not-found' };
+  if (!isSkillUnlocked(skillKey)) return { ok: false, reason: 'not-owned' };
+  const unlocks = loadUnlocks();
+  unlocks.skills = unlocks.skills.filter(k => k !== skillKey);
+  saveUnlocks(unlocks);
+  saveCrystals(loadCrystals() + item.cost);
+  return { ok: true, refund: item.cost };
 }
 
 // ─── 5.5 Canvas 手繪角色系統 ─────────────────
@@ -2457,7 +2669,7 @@ class Tower {
     return bestTarget;
   }
 
-  render(ctx) {
+  render(ctx, game) {
     const s = this.scale;
     if (s < 0.01) return;
 
@@ -2529,6 +2741,60 @@ class Tower {
       }
     }
 
+    // 5. 懸浮升級星星按鈕 (只有升級費用夠且未滿級時才顯示)
+    if (game && this.level < CONFIG.MAX_LEVEL) {
+      const upgradeCost = this.getUpgradeCost();
+      if (upgradeCost !== null && game.gold >= upgradeCost) {
+        const now = performance.now() / 1000;
+        const bob = Math.sin(now * 6) * 2.5;
+        const btnY = -34 + bob;
+        const btnR = 11;
+
+        ctx.save();
+        ctx.translate(0, btnY);
+
+        // 外層金黃流光光暈
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 10;
+        const starGrad = ctx.createLinearGradient(0, -btnR, 0, btnR);
+        starGrad.addColorStop(0, '#fff9c4');
+        starGrad.addColorStop(0.3, '#ffd700');
+        starGrad.addColorStop(1, '#ff8f00');
+
+        // 圓形底座
+        ctx.fillStyle = starGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, btnR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        // 中央閃亮五角星
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        for (let j = 0; j < 5; j++) {
+          const a = (Math.PI * 2 / 5) * j - Math.PI / 2;
+          ctx.lineTo(Math.cos(a) * 6, Math.sin(a) * 6);
+          const a2 = (Math.PI * 2 / 5) * j + Math.PI / 5 - Math.PI / 2;
+          ctx.lineTo(Math.cos(a2) * 2.8, Math.sin(a2) * 2.8);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // 頂部「UP▲」精緻小標籤
+        ctx.fillStyle = '#ff3d00';
+        ctx.font = '900 7.5px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('▲', 0, -btnR + 2);
+
+        ctx.restore();
+      }
+    }
+
     ctx.restore();
   }
 
@@ -2579,7 +2845,6 @@ class WaveManager {
   startWave(waveIndex) {
     this.currentWave = waveIndex;
     const wave = this.waveData[waveIndex];
-    this.spawnQueue = [];
     if (!wave) {
       dbgLog(`⚠️ WaveData not found for wave ${waveIndex}`);
       return;
@@ -2591,10 +2856,11 @@ class WaveManager {
         this.spawnQueue.push({
           type: group.type,
           delay: group.interval,
+          waveIndex: waveIndex,
         });
       }
     }
-    dbgLog(`👾 [Wave] 總預定出怪數: ${this.spawnQueue.length}`);
+    dbgLog(`👾 [Wave] 當前排隊出怪數: ${this.spawnQueue.length}`);
 
     this.spawnTimer = 0.5; // Initial delay
     this.active = true;
@@ -2611,21 +2877,21 @@ class WaveManager {
 
       if (this.spawnQueue.length === 0) {
         this.allSpawned = true;
-        dbgLog(`✨ [Wave] 第 ${this.currentWave + 1} 波出怪完畢 (allSpawned = true)`);
+        dbgLog(`✨ [Wave] 出怪完畢 (allSpawned = true)`);
       }
 
-      return new Enemy(spawn.type, gameMap, this.currentWave);
+      return new Enemy(spawn.type, gameMap, spawn.waveIndex ?? this.currentWave);
     }
     return null;
   }
 
   isComplete(enemies) {
     const aliveCount = enemies.filter((e) => e.alive).length;
-    return this.allSpawned && aliveCount === 0;
+    return this.allSpawned && this.currentWave >= CONFIG.TOTAL_WAVES - 1 && aliveCount === 0;
   }
 
-  getWaveBonus() {
-    return this.waveData[this.currentWave]?.bonus || 0;
+  getWaveBonus(waveIdx = this.currentWave) {
+    return this.waveData[waveIdx]?.bonus || 0;
   }
 }
 
@@ -2736,7 +3002,7 @@ class Game {
 
     // Active Skills System
     this.skills = {
-      meteor: { cd: 30, timer: 0, cost: 0, range: 110, damage: 150 },
+      meteor: { cd: 30, timer: 0, cost: 0, range: 110, damage: 60 },
       freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 }
     };
     this.activeTargetingSkill = null; // 'meteor' or null
@@ -2744,6 +3010,7 @@ class Game {
     // Base & Gate Dynamic Feedback
     this.baseHurtTimer = 0;
     this.gatePulseTimer = 0;
+    this.nextWaveCountdown = null; // 倒數計時秒數 (例如 5.0)，null 表示無倒數
 
     // Interaction
     this.selectedTowerType = null;
@@ -3654,6 +3921,7 @@ class Game {
     bindTap('start-wave-btn', () => this.startNextWave());
     bindTap('retry-btn', () => this.restartGame());
     bindTap('replay-btn', () => this.restartGame());
+    bindTap('next-level-btn', () => this.playNextLevel());
     bindTap('gameover-menu-btn', () => this.quitToMenu());
     bindTap('victory-menu-btn', () => this.quitToMenu());
     bindTap('open-leaderboard-btn', () => this.openLeaderboardModal());
@@ -3679,12 +3947,15 @@ class Game {
       location.reload();
     });
 
-    // 點精靈樹：開啟精靈樹升級面板；同一個按鈕另外還藏了「連點 5 下」的隱藏開關（見下方）
-    // （Log／截圖是給開發者看的，正式版永遠不開放，不受這個密碼影響）
-    let secretTapCount = 0;
-    let secretTapLastTime = 0;
+    // 點精靈樹：開啟精靈樹升級面板
     bindTap('menu-title-canvas', () => {
       this.openSpiritTreeModal();
+    });
+
+    // 關卡輪探卡牌區塊：連點 5 下解鎖測試按鈕（Log／截圖永遠不開放，不受此影響）
+    let secretTapCount = 0;
+    let secretTapLastTime = 0;
+    bindTap('level-carousel-card', () => {
       const now = Date.now();
       if (now - secretTapLastTime > 2000) secretTapCount = 0;
       secretTapLastTime = now;
@@ -3694,7 +3965,7 @@ class Game {
         const testToggleBtn = document.getElementById('debug-test-toggle-btn');
         if (testToggleBtn && testToggleBtn.style.display === 'none') {
           testToggleBtn.style.display = '';
-          this.showToast('🌳 測試按鈕已解鎖');
+          this.showToast('🧪 測試按鈕已解鎖');
         }
       }
     });
@@ -3710,6 +3981,7 @@ class Game {
         this.showToast('✨ 精華不足');
       }
       this.renderSpiritTreeModal();
+      this.updateSpiritTreeUpBadge();
     });
     
     // 商店主狀態頁籤 (全部 / 未解鎖 / 已解鎖)
@@ -4210,13 +4482,24 @@ class Game {
       return;
     }
 
-    // 點擊起點出怪口：直接觸發出怪開始波次
-    if (this.state === 'planning' && this.map.pathPixels.length > 0) {
+    // 點擊起點出怪口：直接觸發出怪開始波次（或在倒數時點擊直接提前出怪）
+    if (this.map.pathPixels.length > 0) {
       const entry = this.map.pathPixels[0];
       const distToEntry = Math.hypot(px - entry.x, py - entry.y);
       if (distToEntry <= CONFIG.CELL_SIZE * 0.65) {
-        this.startNextWave();
-        return;
+        if (this.state === 'planning') {
+          this.startNextWave();
+          return;
+        }
+        if (this.state === 'wave' && this.nextWaveCountdown !== null) {
+          this.nextWaveCountdown = null;
+          this.currentWave++;
+          this.waveManager.startWave(this.currentWave);
+          this.sfx.play('wave');
+          this.showToast(`🌊 第 ${this.currentWave + 1} 波提早降臨！`);
+          this.updateUI();
+          return;
+        }
       }
     }
 
@@ -4224,6 +4507,30 @@ class Game {
     if (this.selectedTowerType) {
       this.placeTower(col, row);
       return;
+    }
+
+    // 1. 優先檢測：是否點擊了任何防禦塔上方的「懸浮升級星星按鈕」
+    for (const tower of this.towers) {
+      if (tower.level < CONFIG.MAX_LEVEL) {
+        const upgradeCost = tower.getUpgradeCost();
+        if (upgradeCost !== null && this.gold >= upgradeCost) {
+          // 星星按鈕位於 (tower.x, tower.y - 34)，半徑判定寬容度 18px (方便手機觸控點擊)
+          const btnX = tower.x;
+          const btnY = tower.y - 34;
+          const distToStar = Math.hypot(px - btnX, py - btnY);
+          if (distToStar <= 18) {
+            this.gold -= upgradeCost;
+            tower.upgrade();
+            this.sfx.play('upgrade');
+            this.showToast(`⭐ ${tower.data.name} 升級到 Lv.${tower.level}！`);
+            if (this.selectedTower === tower) {
+              this.showTowerInfo(tower);
+            }
+            this.updateUI();
+            return;
+          }
+        }
+      }
     }
 
     // Check if clicking on existing tower
@@ -4362,6 +4669,15 @@ class Game {
     this.updateSkillsUI();
   }
 
+  resetSkills() {
+    this.activeTargetingSkill = null;
+    this.skills.meteor.timer = 0;
+    this.skills.freeze.timer = 0;
+    document.getElementById('skill-meteor-btn')?.classList.remove('targeting', 'on-cd');
+    document.getElementById('skill-freeze-btn')?.classList.remove('targeting', 'on-cd');
+    this.updateSkillsUI();
+  }
+
   updateSkillsUI() {
     const meteorBtn = document.getElementById('skill-meteor-btn');
     if (meteorBtn) {
@@ -4476,7 +4792,7 @@ class Game {
 
     let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${tower.data.description}</div>`;
     if (tower.typeKey === 'sunflower') {
-      statsHtml += `產金：${stats.goldPerSecond}/秒（僅出怪時生效）`;
+      statsHtml += `💰 產金：+${stats.goldPerSecond}/5秒（僅出怪時生效）`;
     } else {
       statsHtml += `傷害：${stats.damage}<br>`;
       statsHtml += `範圍：${stats.range}<br>`;
@@ -4513,7 +4829,7 @@ class Game {
 
     let statsHtml = `<div style="color:#e06088;font-weight:bold;margin-bottom:3px;">${data.description}</div>`;
     if (typeKey === 'sunflower') {
-      statsHtml += `💰 產金：${data.goldPerSecond}/秒 (波次進行中自動獲得)`;
+      statsHtml += `💰 產金：+${data.goldPerSecond}/5秒 (波次進行中自動獲得)`;
     } else {
       statsHtml += `⚔️ 基礎傷害：${data.damage}<br>`;
       statsHtml += `📏 攻擊範圍：${data.range}<br>`;
@@ -4558,7 +4874,8 @@ class Game {
 
   // ─── Wave management ───
   startNextWave() {
-    if (this.state !== 'planning') return;
+    if (this.state !== 'planning' && this.state !== 'wave') return;
+    this.nextWaveCountdown = null;
     this.state = 'wave';
     this.waveManager.startWave(this.currentWave);
     this.sfx.play('wave');
@@ -4570,28 +4887,25 @@ class Game {
     this.updateUI();
   }
 
+  triggerNextWaveAutoCountdown() {
+    // 檢查是否還有下一波（最後一波出完後不再倒數下一波）
+    if (this.currentWave + 1 >= CONFIG.TOTAL_WAVES) return;
+    if (this.nextWaveCountdown !== null) return;
+    this.nextWaveCountdown = 10.0;
+    dbgLog(`⏱️ 最後一隻怪已出！第 ${this.currentWave + 2} 波倒數 10 秒後自動降臨`);
+  }
+
   checkWaveComplete() {
     if (this.state !== 'wave') return;
     if (!this.waveManager.isComplete(this.enemies)) return;
 
-    dbgLog(`🎉 [Wave] 第 ${this.currentWave + 1} 波擊殺完畢，觸發結算！`);
-    const bonus = this.waveManager.getWaveBonus();
+    dbgLog(`🎉 [Wave] 全部波次擊殺完畢，觸發通關結算！`);
+    const bonus = this.waveManager.getWaveBonus(this.currentWave);
     this.addGold(bonus);
     this.score += bonus;
-    this.showToast(`✅ 第 ${this.currentWave + 1} 波完成！獎勵 💰${bonus}`);
+    this.showToast(`✅ 全部波次完成！獎勵 💰${bonus}`);
     this.sfx.play('wave');
-
-    this.currentWave++;
-    if (this.currentWave >= CONFIG.TOTAL_WAVES) {
-      dbgLog(`🏆 達成全部 ${CONFIG.TOTAL_WAVES} 波通關，進入 victory 狀態`);
-      this.victory();
-    } else {
-      dbgLog(`⏳ 進入第 ${this.currentWave + 1} 波 planning 狀態`);
-      this.state = 'planning';
-      const startWaveBtn = document.getElementById('start-wave-btn');
-      if (startWaveBtn) startWaveBtn.disabled = false;
-      this.updateWavePreview();
-    }
+    this.victory();
     this.updateUI();
   }
 
@@ -4627,6 +4941,7 @@ class Game {
     this.state = 'planning';
     const startWaveBtn = document.getElementById('start-wave-btn');
     if (startWaveBtn) startWaveBtn.disabled = false;
+    this.resetSkills();
     this.showToast('🏗️ 放置防禦塔，然後開始波次！');
     this.updateWavePreview();
     this.updateUI();
@@ -4651,6 +4966,7 @@ class Game {
     this.selectedTowerType = null;
     this.waveManager = new WaveManager(LEVEL_DATA[CURRENT_LEVEL_INDEX].waves);
     this.state = 'planning';
+    this.resetSkills();
 
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
@@ -4704,9 +5020,66 @@ class Game {
       vicEssenceEl.textContent = essenceEarned > 0 ? `🌳 精靈樹精華：✨${essenceEarned}` : '';
       vicEssenceEl.classList.toggle('hidden', essenceEarned <= 0);
     }
+
+    // 按鈕切換：3星通關且有下一關顯示「進入下一關」，未滿3星顯示「再試一次」
+    const hasNextLevel = CURRENT_LEVEL_INDEX + 1 < LEVEL_DATA.length;
+    const nextLvlBtn = document.getElementById('next-level-btn');
+    const replayBtn = document.getElementById('replay-btn');
+    
+    if (stars >= 3 && hasNextLevel) {
+      if (nextLvlBtn) nextLvlBtn.classList.remove('hidden');
+      if (replayBtn) replayBtn.classList.add('hidden');
+    } else {
+      if (nextLvlBtn) nextLvlBtn.classList.add('hidden');
+      if (replayBtn) {
+        replayBtn.classList.remove('hidden');
+        const span = replayBtn.querySelector('span');
+        if (span) span.textContent = '再試一次';
+      }
+    }
+
     document.getElementById('victory-screen').classList.remove('hidden');
     this.enemies = [];
     this.projectiles = [];
+  }
+
+  playNextLevel() {
+    if (CURRENT_LEVEL_INDEX + 1 >= LEVEL_DATA.length) {
+      this.showToast('🎉 恭喜！您已通關目前所有關卡！');
+      this.quitToMenu();
+      return;
+    }
+    CURRENT_LEVEL_INDEX++;
+    const nextLevel = LEVEL_DATA[CURRENT_LEVEL_INDEX];
+    CURRENT_MAP_ID = nextLevel.mapId;
+    this.map = new GameMap(nextLevel.mapId);
+    this.renderMapToBuffer();
+    this.waveManager = new WaveManager(nextLevel.waves);
+    this.gold = getStartingGold();
+    this.lives = getStartingLives();
+    this.score = 0;
+    this.currentWave = 0;
+    this.speedMultiplier = 1;
+    this.towers = [];
+    this.enemies = [];
+    this.projectiles = [];
+    this.particles = [];
+    this.towerGrid = {};
+    this.selectedTower = null;
+    this.selectedTowerType = null;
+    this.state = 'planning';
+    this.resetSkills();
+
+    document.getElementById('victory-screen').classList.add('hidden');
+    document.getElementById('speed-btn').textContent = '1x';
+    const startWaveBtn = document.getElementById('start-wave-btn');
+    if (startWaveBtn) startWaveBtn.disabled = false;
+
+    this.deselectTower();
+    this.updateWavePreview();
+    this.updateUI();
+    this.updateTowerPanel();
+    this.showToast(`🚀 開始挑戰第 ${CURRENT_LEVEL_INDEX + 1} 關：${nextLevel.name}！`);
   }
 
   openSettingsModal() {
@@ -4754,6 +5127,7 @@ class Game {
     this.currentWave = 0;
     this.speedMultiplier = 1;
     this.waveManager = new WaveManager(LEVEL_DATA[CURRENT_LEVEL_INDEX].waves);
+    this.resetSkills();
     const speedBtn = document.getElementById('speed-btn');
     if (speedBtn) speedBtn.textContent = '1x';
 
@@ -4908,12 +5282,29 @@ class Game {
     this.sfx.play('tap');
   }
 
+  updateSpiritTreeUpBadge() {
+    const canUp = canUpgradeSpiritTree();
+    const badge = document.getElementById('spirit-tree-up-badge');
+    if (badge) {
+      badge.classList.toggle('hidden', !canUp);
+    }
+    const sparkles = document.getElementById('spirit-tree-sparkles');
+    if (sparkles) {
+      sparkles.classList.toggle('hidden', !canUp);
+    }
+    const titleCv = document.getElementById('menu-title-canvas');
+    if (titleCv) {
+      titleCv.classList.toggle('spirit-tree-glowing', canUp);
+    }
+  }
+
   updateCrystalBalanceUI() {
     const balance = loadCrystals();
     const menuEl = document.getElementById('menu-crystal-balance');
     if (menuEl) menuEl.textContent = balance;
     const shopEl = document.getElementById('shop-crystal-balance');
     if (shopEl) shopEl.textContent = balance;
+    this.updateSpiritTreeUpBadge();
   }
 
   openShopModal() {
@@ -4967,7 +5358,7 @@ class Game {
       const upgradeBtn = document.getElementById('spirit-tree-upgrade-btn');
       if (upgradeBtn) {
         upgradeBtn.disabled = essence < next.cost;
-        upgradeBtn.textContent = essence < next.cost ? `✨ 精華不足（${essence}/${next.cost}）` : `⬆️ 升級（消耗 ✨${next.cost}）`;
+        upgradeBtn.textContent = essence < next.cost ? `精華不足（${essence}/${next.cost}）` : `升級（消耗 ✨${next.cost}）`;
       }
     }
   }
@@ -4980,17 +5371,53 @@ class Game {
       stats: { dmg: '-', range: '-', rate: '-' }
     };
     const canAfford = balance >= item.cost;
+    const towerGoldCost = item.kind === 'tower' && TOWER_DATA[item.key] ? TOWER_DATA[item.key].cost : null;
     const badgeHtml = meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
     // 技能用跟遊戲內技能按鈕一致的手繪 Canvas 圖示（drawSkillIcon），不是 assets/skills/*.svg 那張舊圖
     const iconHtml = item.kind === 'skill'
       ? `<canvas class="shop-skill-icon-canvas" data-skill-key="${item.key}" width="36" height="36"></canvas>`
       : `<img src="${meta.icon}" alt="${item.name}">`;
 
+    const costBadgeUnderIcon = towerGoldCost !== null
+      ? `<div class="shop-card-t1-cost-pill">💰${towerGoldCost}</div>`
+      : '';
+
+    // 按鈕呈現：
+    // 1. 若為初始必備塔（粉櫻），不可解除契約
+    // 2. 若已締約，顯示「解除契約 (+💎cost)」按鈕（無圖標）
+    // 3. 若未締約，顯示「💎 cost 締結契約」按鈕
+    let buttonHtml = '';
+    if (item.isStarter) {
+      buttonHtml = `<button class="shop-card-t1-btn btn-starter" disabled>🌸 初始守護 (常駐)</button>`;
+    } else if (item.unlocked) {
+      buttonHtml = `
+        <button class="shop-card-t1-btn btn-refund" 
+                data-kind="${item.kind}" 
+                data-key="${item.key}"
+                data-cost="${item.cost}">
+          解除契約 (+💎${item.cost})
+        </button>
+      `;
+    } else {
+      buttonHtml = `
+        <button class="shop-card-t1-btn btn-buy" 
+                data-kind="${item.kind}" 
+                data-key="${item.key}"
+                data-cost="${item.cost}"
+                ${canAfford ? '' : 'disabled'}>
+          💎 ${item.cost} 締結契約
+        </button>
+      `;
+    }
+
     return `
       <div class="shop-card-t1 ${item.unlocked ? 'owned' : ''}">
         <div class="shop-card-t1-top">
-          <div class="shop-card-t1-icon">
-            ${iconHtml}
+          <div class="shop-card-t1-icon-container">
+            <div class="shop-card-t1-icon">
+              ${iconHtml}
+            </div>
+            ${costBadgeUnderIcon}
           </div>
           <div class="shop-card-t1-name-box">
             <div class="shop-card-t1-name" title="${item.name}">${item.name}</div>
@@ -5003,12 +5430,7 @@ class Game {
           <span>🎯 ${meta.stats.range}</span>
           <span>⏱️ ${meta.stats.rate}</span>
         </div>
-        <button class="shop-card-t1-btn ${item.unlocked ? 'btn-owned' : 'btn-buy'}" 
-                data-kind="${item.kind}" 
-                data-key="${item.key}" 
-                ${item.unlocked ? 'disabled' : (canAfford ? '' : 'disabled')}>
-          ${item.unlocked ? '✅ 已解鎖' : `💎 ${item.cost} 解鎖`}
-        </button>
+        ${buttonHtml}
       </div>
     `;
   }
@@ -5029,6 +5451,7 @@ class Game {
       name: TOWER_DATA.petal?.name || '粉櫻花靈之箭',
       cost: 0,
       unlocked: true,
+      isStarter: true,
       desc: SHOP_METADATA.petal?.desc
     });
 
@@ -5036,13 +5459,13 @@ class Game {
     for (const [key, item] of Object.entries(SHOP_ITEMS.towers)) {
       const unlocked = isTowerUnlocked(key);
       const name = TOWER_DATA[key]?.name || key;
-      allItems.push({ kind: 'tower', key, name, cost: item.cost, unlocked, desc: SHOP_METADATA[key]?.desc });
+      allItems.push({ kind: 'tower', key, name, cost: item.cost, unlocked, isStarter: false, desc: SHOP_METADATA[key]?.desc });
     }
 
     // 商店解鎖技能
     for (const [key, item] of Object.entries(SHOP_ITEMS.skills)) {
       const unlocked = isSkillUnlocked(key);
-      allItems.push({ kind: 'skill', key, name: item.name, cost: item.cost, unlocked, desc: item.desc });
+      allItems.push({ kind: 'skill', key, name: item.name, cost: item.cost, unlocked, isStarter: false, desc: item.desc });
     }
 
     // 依種類過濾 (全部 / 防禦塔 / 魔法技能)
@@ -5071,15 +5494,15 @@ class Game {
       if (this.shopStatusTab === 'locked') {
         container.innerHTML = `
           <div class="shop-empty-box">
-            <div class="shop-empty-icon">🎉</div>
-            <div class="shop-empty-text">太厲害了！你已成功解鎖所有塔防單位與魔法技能！</div>
+            <div class="shop-empty-icon">✨</div>
+            <div class="shop-empty-text">太厲害了！你已成功與所有守護花靈及魔法技能完成締約！</div>
           </div>
         `;
       } else {
         container.innerHTML = `
           <div class="shop-empty-box">
             <div class="shop-empty-icon">📦</div>
-            <div class="shop-empty-text">尚無已解鎖項目<br>請前往「未解鎖」頁籤消耗魔法水晶解鎖！</div>
+            <div class="shop-empty-text">尚無已締約項目<br>請前往「未締約」頁籤消耗魔法水晶進行締結契約！</div>
           </div>
         `;
       }
@@ -5090,11 +5513,11 @@ class Game {
     let html = '';
     if (isSplitView) {
       if (lockedList.length > 0) {
-        html += `<div class="shop-section-banner"><span class="shop-section-title">🛒 未解鎖商品</span></div>`;
+        html += `<div class="shop-section-banner"><span class="shop-section-title">未締約夥伴與技能</span></div>`;
         html += `<div class="shop-cards-grid">${lockedList.map(item => this.renderShopT1Card(item, balance)).join('')}</div>`;
       }
       if (unlockedList.length > 0) {
-        html += `<div class="shop-section-banner" style="margin-top:14px;"><span class="shop-section-title">📦 已解鎖圖鑑</span></div>`;
+        html += `<div class="shop-section-banner" style="margin-top:14px;"><span class="shop-section-title">已締約守護陣容（點擊可解除契約返還水晶）</span></div>`;
         html += `<div class="shop-cards-grid">${unlockedList.map(item => this.renderShopT1Card(item, balance)).join('')}</div>`;
       }
     } else {
@@ -5108,26 +5531,53 @@ class Game {
       this.drawSkillIcon(canvas.getContext('2d'), canvas.dataset.skillKey);
     });
 
-    // 綁定購買點擊事件
+    // 綁定締約購買點擊事件
     container.querySelectorAll('.shop-card-t1-btn.btn-buy:not(:disabled)').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.buyShopItem(btn.dataset.kind, btn.dataset.key);
       });
     });
+
+    // 綁定解除契約退款點擊事件
+    container.querySelectorAll('.shop-card-t1-btn.btn-refund').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.refundShopItem(btn.dataset.kind, btn.dataset.key);
+      });
+    });
   }
 
   buyShopItem(kind, key) {
     const result = kind === 'skill' ? purchaseSkill(key) : purchaseTower(key);
+    const itemName = (kind === 'skill' ? SHOP_ITEMS.skills[key]?.name : TOWER_DATA[key]?.name) || key;
     if (result.ok) {
       this.sfx.play('upgrade');
-      this.showToast('✅ 解鎖成功！');
+      this.showToast(`✨ 成功與「${itemName}」締結契約！`);
     } else if (result.reason === 'insufficient') {
       this.sfx.play('error');
       this.showToast('💎 水晶不足');
     } else {
       this.sfx.play('error');
-      this.showToast('⚠️ 購買失敗');
+      this.showToast('⚠️ 締約失敗');
+    }
+    this.renderShopItems();
+    this.updateTowerPanel();
+    this.updateSkillBarLockState();
+  }
+
+  refundShopItem(kind, key) {
+    const itemName = (kind === 'skill' ? SHOP_ITEMS.skills[key]?.name : TOWER_DATA[key]?.name) || key;
+    const result = kind === 'skill' ? refundSkill(key) : refundTower(key);
+    if (result.ok) {
+      this.sfx.play('sell');
+      this.showToast(`🍃 已解除「${itemName}」契約，返還 💎${result.refund} 水晶！`);
+    } else if (result.reason === 'starter') {
+      this.sfx.play('error');
+      this.showToast('🌸 初始守護單位不可解除契約');
+    } else {
+      this.sfx.play('error');
+      this.showToast('⚠️ 解除契約失敗');
     }
     this.renderShopItems();
     this.updateTowerPanel();
@@ -5453,8 +5903,22 @@ class Game {
     }
     this.particles = this.particles.filter((p) => p.alive);
 
-    // Check wave complete
+    // Check wave countdown & auto start next wave
     if (this.state === 'wave') {
+      if (this.waveManager.allSpawned && this.nextWaveCountdown === null && this.currentWave + 1 < CONFIG.TOTAL_WAVES) {
+        this.triggerNextWaveAutoCountdown();
+      }
+      if (this.nextWaveCountdown !== null) {
+        this.nextWaveCountdown -= dt;
+        if (this.nextWaveCountdown <= 0) {
+          this.nextWaveCountdown = null;
+          this.currentWave++;
+          this.waveManager.startWave(this.currentWave);
+          this.sfx.play('wave');
+          this.showToast(`🌊 第 ${this.currentWave + 1} 波降臨！`);
+          this.updateUI();
+        }
+      }
       this.checkWaveComplete();
     }
 
@@ -5540,7 +6004,7 @@ class Game {
 
     // Towers
     for (const tower of this.towers) {
-      tower.render(ctx);
+      tower.render(ctx, this);
     }
 
     // Enemies (sort by distance for proper layering)
@@ -5760,50 +6224,96 @@ class Game {
       ctx.restore();
     }
 
-    // 4.3 起點出怪口按鈕（在 planning 狀態下極為醒目，帶有呼吸縮放與點擊提示）
-    if (this.state === 'planning' && this.map.pathPixels.length > 0) {
+    // 4.3 起點出怪口按鈕與倒數提示
+    if (this.map.pathPixels.length > 0) {
       const entry = this.map.pathPixels[0];
       const now = performance.now() / 1000;
-      const pulseScale = 1 + Math.sin(now * 5) * 0.08;
       const waveNum = this.currentWave + 1;
 
-      ctx.save();
-      ctx.translate(entry.x, entry.y);
-      ctx.scale(pulseScale, pulseScale);
+      // (A) planning 狀態：顯示點擊開始出怪按鈕
+      if (this.state === 'planning') {
+        const pulseScale = 1 + Math.sin(now * 5) * 0.08;
+        ctx.save();
+        ctx.translate(entry.x, entry.y);
+        ctx.scale(pulseScale, pulseScale);
 
-      // 外圍發光呼吸圈
-      ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
-      ctx.beginPath();
-      ctx.arc(0, 0, 36, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 出怪徽章按鈕：優先使用超高清 SVG 向量貼圖 (100% 絕對不失焦)
-      const badgeImg = assets.get('spawn_badge');
-      if (badgeImg) {
-        ctx.drawImage(badgeImg, -35, 14, 70, 30);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`出怪 第${waveNum}波`, 0, 14 + 30 / 2 + 1);
-      } else {
-        const btnW = 68;
-        const btnH = 26;
-        const btnR = 13;
-        const bx = -btnW / 2;
-        const by = 16;
-        ctx.fillStyle = 'rgba(255, 107, 0, 0.95)';
+        // 外圍發光呼吸圈
+        ctx.fillStyle = 'rgba(255, 152, 0, 0.35)';
         ctx.beginPath();
-        ctx.roundRect(bx, by, btnW, btnH, btnR);
+        ctx.arc(0, 0, 36, 0, Math.PI * 2);
         ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(`出怪 第${waveNum}波`, 0, by + btnH / 2 + 1);
+
+        // 出怪徽章按鈕：優先使用超高清 SVG 向量貼圖
+        const badgeImg = assets.get('spawn_badge');
+        if (badgeImg) {
+          ctx.drawImage(badgeImg, -35, 14, 70, 30);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`出怪 第${waveNum}波`, 0, 14 + 30 / 2 + 1);
+        } else {
+          const btnW = 68;
+          const btnH = 26;
+          const btnR = 13;
+          const bx = -btnW / 2;
+          const by = 16;
+          ctx.fillStyle = 'rgba(255, 107, 0, 0.95)';
+          ctx.beginPath();
+          ctx.roundRect(bx, by, btnW, btnH, btnR);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`出怪 第${waveNum}波`, 0, by + btnH / 2 + 1);
+        }
+        ctx.restore();
       }
 
-      ctx.restore();
+      // (B) wave 進行中且正在倒數下一波：在傳送門上方浮現 5 秒倒數發光光圈與數字
+      if (this.state === 'wave' && this.nextWaveCountdown !== null) {
+        const secs = Math.max(1, Math.ceil(this.nextWaveCountdown));
+        const nextWaveNum = this.currentWave + 2;
+        const countPulse = 1 + Math.sin(now * 8) * 0.12;
+
+        ctx.save();
+        ctx.translate(entry.x, entry.y);
+        ctx.scale(countPulse, countPulse);
+
+        // 發光倒數能量圈
+        ctx.shadowColor = '#00e5ff';
+        ctx.shadowBlur = 16;
+        const ringGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 32);
+        ringGrad.addColorStop(0, 'rgba(0, 229, 255, 0.6)');
+        ringGrad.addColorStop(0.7, 'rgba(0, 230, 118, 0.4)');
+        ringGrad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+        ctx.fillStyle = ringGrad;
+        ctx.beginPath();
+        ctx.arc(0, 0, 32, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 倒數膠囊面板
+        const cdW = 86;
+        const cdH = 28;
+        const cdR = 14;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = '#00e5ff';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.roundRect(-cdW / 2, 14, cdW, cdH, cdR);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#00e5ff';
+        ctx.font = '900 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`⏳ ${secs}s 第${nextWaveNum}波`, 0, 14 + cdH / 2 + 1);
+
+        ctx.restore();
+      }
     }
 
     // 5. 路徑動態引導微光 (Path Flow Particle Beam)
