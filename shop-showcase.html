@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🏰 可愛塔防 - 商店介面 3 大設計方案預覽</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #14120e;
+      --card-bg: rgba(45, 30, 15, 0.92);
+      --card-border: rgba(255, 215, 0, 0.4);
+      --gold: #ffd700;
+      --accent-orange: #ff9800;
+      --text-main: #fff8e7;
+      --text-muted: #d4b896;
+      --tag-slow: #00b0ff;
+      --tag-poison: #00e676;
+      --tag-chain: #d500f9;
+      --tag-aoe: #ff3d00;
+      --tag-pierce: #ffc107;
+      --tag-econ: #ffea00;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at center, #241b14 0%, #0d0a08 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 頂部切換方案控制列 */
+    .top-controller {
+      width: 100%;
+      max-width: 520px;
+      margin-bottom: 16px;
+      background: rgba(30, 20, 10, 0.85);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .controller-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .mode-tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 215, 0, 0.2);
+      color: var(--text-muted);
+      padding: 8px 4px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .mode-tab-btn.active {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: #fff;
+      border-color: #ffe082;
+      box-shadow: 0 3px 12px rgba(245, 124, 0, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* 手機展示容器 (模擬遊戲內彈窗視窗) */
+    .phone-mockup {
+      width: 100%;
+      max-width: 480px;
+      height: 720px;
+      background: rgba(35, 22, 12, 0.96);
+      border: 2px solid rgba(255, 215, 0, 0.5);
+      border-radius: 24px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 商店 Header */
+    .shop-header {
+      padding: 14px 16px 10px;
+      background: rgba(20, 12, 6, 0.9);
+      border-bottom: 1.5px solid rgba(255, 215, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .shop-title-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shop-title-icon {
+      font-size: 24px;
+    }
+
+    .shop-title-text {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--gold);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    }
+
+    .crystal-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1.5px solid #00e5ff;
+      border-radius: 20px;
+      padding: 4px 12px;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    }
+
+    .crystal-pill .num {
+      font-size: 15px;
+      font-weight: 900;
+      color: #80d8ff;
+    }
+
+    /* 解鎖狀態主頁籤 (待解鎖 / 已解鎖 / 全部) */
+    .status-tab-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.8fr;
+      gap: 6px;
+      padding: 10px 14px 6px;
+      background: rgba(22, 13, 7, 0.95);
+      border-bottom: 1.5px solid rgba(255, 215, 0, 0.2);
+      flex-shrink: 0;
+    }
+
+    .status-tab-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 215, 0, 0.25);
+      color: var(--text-muted);
+      border-radius: 12px;
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+
+    .status-tab-btn.active {
+      background: linear-gradient(135deg, rgba(255, 152, 0, 0.35), rgba(245, 124, 0, 0.2));
+      border-color: var(--gold);
+      color: var(--gold);
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.25);
+    }
+
+    .tab-badge {
+      font-size: 10px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+    }
+    .status-tab-btn.active .tab-badge {
+      background: var(--gold);
+      color: #3e2723;
+    }
+
+    /* 分類子過濾條 (全部 / 防禦塔 / 魔法技能) */
+    .sub-category-bar {
+      display: flex;
+      gap: 6px;
+      padding: 6px 14px 8px;
+      background: rgba(18, 10, 5, 0.85);
+      border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+      flex-shrink: 0;
+    }
+
+    .sub-filter-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 215, 0, 0.15);
+      color: #a89f91;
+      border-radius: 10px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sub-filter-chip.active {
+      background: rgba(255, 215, 0, 0.15);
+      border-color: rgba(255, 215, 0, 0.6);
+      color: #fff8e7;
+    }
+
+    /* 區塊分割標題 (在全部視圖下清晰分開待解鎖與已解鎖) */
+    .section-header-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 8px 0 10px;
+      padding: 6px 10px;
+      background: linear-gradient(90deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.02) 100%);
+      border-left: 3px solid var(--gold);
+      border-radius: 4px 8px 8px 4px;
+    }
+
+    .section-header-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .empty-state-box {
+      text-align: center;
+      padding: 40px 20px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1.5px dashed rgba(255, 215, 0, 0.2);
+      border-radius: 16px;
+      margin: 20px 0;
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      opacity: 0.8;
+    }
+
+    .empty-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* 內容滾動區 */
+    .shop-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px 20px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .shop-scroll-area::-webkit-scrollbar {
+      width: 4px;
+    }
+    .shop-scroll-area::-webkit-scrollbar-thumb {
+      background: rgba(255, 215, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    /* 標籤通用樣式 */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+    .badge-slow { background: rgba(0, 176, 255, 0.2); color: #80d8ff; border: 1px solid rgba(0, 176, 255, 0.5); }
+    .badge-poison { background: rgba(0, 230, 118, 0.2); color: #b9f6ca; border: 1px solid rgba(0, 230, 118, 0.5); }
+    .badge-chain { background: rgba(213, 0, 249, 0.2); color: #ea80fc; border: 1px solid rgba(213, 0, 249, 0.5); }
+    .badge-aoe { background: rgba(255, 61, 0, 0.2); color: #ff9e80; border: 1px solid rgba(255, 61, 0, 0.5); }
+    .badge-pierce { background: rgba(255, 193, 7, 0.2); color: #ffe57f; border: 1px solid rgba(255, 193, 7, 0.5); }
+    .badge-econ { background: rgba(255, 234, 0, 0.2); color: #ffff8d; border: 1px solid rgba(255, 234, 0, 0.5); }
+    .badge-skill { background: rgba(255, 64, 129, 0.2); color: #ff80ab; border: 1px solid rgba(255, 64, 129, 0.5); }
+
+    /* 方案 1：魔導卡牌矩陣 */
+    .template-card-matrix .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .t1-card {
+      background: linear-gradient(180deg, rgba(60, 40, 20, 0.8) 0%, rgba(30, 18, 10, 0.95) 100%);
+      border: 1.5px solid rgba(255, 215, 0, 0.3);
+      border-radius: 14px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .t1-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(255, 215, 0, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .t1-card.owned {
+      border-color: rgba(76, 175, 80, 0.5);
+      background: linear-gradient(180deg, rgba(30, 45, 25, 0.8) 0%, rgba(18, 30, 15, 0.95) 100%);
+    }
+
+    .t1-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .t1-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1.5px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .t1-icon-box img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    }
+
+    .t1-name-box {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .t1-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .t1-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      margin-top: 3px;
+    }
+
+    .t1-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 8px;
+      flex: 1;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px;
+      border-radius: 6px;
+    }
+
+    .t1-stats-row {
+      display: flex;
+      justify-content: space-around;
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 6px;
+      padding: 4px 2px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      color: #ffe082;
+      font-weight: 700;
+    }
+
+    .t1-btn {
+      width: 100%;
+      padding: 7px 0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: filter 0.15s;
+    }
+
+    .t1-btn-buy {
+      background: linear-gradient(135deg, #00b0ff, #0081cb);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 176, 255, 0.3);
+    }
+
+    .t1-btn-owned {
+      background: rgba(76, 175, 80, 0.2);
+      color: #81c784;
+      border: 1px solid rgba(76, 175, 80, 0.4);
+      cursor: default;
+    }
+
+    /* 方案 2：皇家工坊檢視錄 */
+    .template-workshop .workshop-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .t2-card {
+      background: rgba(40, 26, 14, 0.9);
+      border: 1.5px solid rgba(255, 215, 0, 0.3);
+      border-radius: 14px;
+      padding: 12px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .t2-card:hover {
+      border-color: var(--gold);
+      background: rgba(50, 32, 18, 0.95);
+    }
+
+    .t2-main-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .t2-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%);
+      border: 1.5px solid rgba(255, 215, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .t2-icon-wrap img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .t2-info-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .t2-title-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .t2-name {
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .t2-desc-line {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+      margin-bottom: 5px;
+    }
+
+    .t2-action-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .t2-buy-btn {
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      border: none;
+      background: linear-gradient(135deg, #ff9800, #e65100);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(230, 81, 0, 0.4);
+    }
+
+    .t2-owned-tag {
+      font-size: 11px;
+      color: #81c784;
+      font-weight: 800;
+      background: rgba(76, 175, 80, 0.15);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .t2-expand-hint {
+      font-size: 10px;
+      color: #ffd54f;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .t2-accordion {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 215, 0, 0.2);
+      display: none;
+    }
+
+    .t2-card.expanded .t2-accordion {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .t2-levels-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .t2-levels-table th {
+      background: rgba(255, 215, 0, 0.15);
+      color: var(--gold);
+      padding: 4px 6px;
+      font-weight: 800;
+    }
+
+    .t2-levels-table td {
+      padding: 4px 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: #e0e0e0;
+    }
+
+    /* 方案 3：精靈奇幻市集 */
+    .template-market .market-section {
+      margin-bottom: 16px;
+    }
+
+    .market-sec-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #ffd54f;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-left: 4px;
+      border-left: 3px solid var(--accent-orange);
+    }
+
+    .market-items-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .t3-card {
+      background: linear-gradient(90deg, rgba(50, 30, 15, 0.95) 0%, rgba(30, 18, 10, 0.85) 100%);
+      border: 1.5px solid rgba(255, 215, 0, 0.25);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .t3-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1.5px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .t3-avatar img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+    }
+
+    .t3-detail {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .t3-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .t3-name {
+      font-size: 13px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .t3-effect-tip {
+      font-size: 11px;
+      color: #ffe0b2;
+      line-height: 1.3;
+    }
+
+    .t3-buy-area {
+      flex-shrink: 0;
+    }
+
+    .t3-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .t3-btn-buy {
+      background: linear-gradient(135deg, #ffd700, #ff9800);
+      color: #3e2723;
+      box-shadow: 0 2px 6px rgba(255, 152, 0, 0.4);
+    }
+
+    .t3-btn-owned {
+      background: rgba(76, 175, 80, 0.15);
+      color: #81c784;
+      border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    /* 底部返回按鈕 */
+    .shop-footer {
+      padding: 10px 16px;
+      background: rgba(20, 12, 6, 0.95);
+      border-top: 1.5px solid rgba(255, 215, 0, 0.25);
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .btn-close-shop {
+      width: 100%;
+      max-width: 240px;
+      padding: 10px;
+      background: linear-gradient(135deg, #795548, #4e342e);
+      border: 1.5px solid rgba(255, 215, 0, 0.4);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部方案切換控制器 -->
+  <div class="top-controller">
+    <div class="controller-title">
+      <span>🎨</span> 請選擇商店設計風格方案
+    </div>
+    <div class="mode-tabs">
+      <button class="mode-tab-btn active" onclick="switchTemplate(1)">方案 1：魔導卡牌</button>
+      <button class="mode-tab-btn" onclick="switchTemplate(2)">方案 2：皇家工坊</button>
+      <button class="mode-tab-btn" onclick="switchTemplate(3)">方案 3：奇幻市集</button>
+    </div>
+    <div style="margin-top: 8px; text-align: center;">
+      <button onclick="resetDemoProgress()" style="background: rgba(255,255,255,0.08); border: 1px dashed rgba(255,215,0,0.4); color: #ffd54f; font-size: 11px; padding: 4px 10px; border-radius: 8px; cursor: pointer;">
+        🔄 重置測試購買進度 (非遊戲內退款)
+      </button>
+    </div>
+  </div>
+
+  <!-- 手機外框展示視窗 -->
+  <div class="phone-mockup">
+    
+    <!-- 頂部標題與水晶數量 -->
+    <div class="shop-header">
+      <div class="shop-title-area">
+        <span class="shop-title-icon">🏰</span>
+        <span class="shop-title-text" id="header-title">魔法工坊商店</span>
+      </div>
+      <div class="crystal-pill" title="當前魔法水晶餘額">
+        <span>💎</span>
+        <span class="num" id="crystal-count">120</span>
+      </div>
+    </div>
+
+    <!-- 解鎖狀態主頁籤 (全部 / 未解鎖 / 已解鎖) -->
+    <div class="status-tab-bar">
+      <button class="status-tab-btn active" id="tab-btn-all" onclick="setStatusTab('all', this)">
+        <span>📋 全部</span>
+      </button>
+      <button class="status-tab-btn" id="tab-btn-locked" onclick="setStatusTab('locked', this)">
+        <span>🛒 未解鎖</span>
+      </button>
+      <button class="status-tab-btn" id="tab-btn-unlocked" onclick="setStatusTab('unlocked', this)">
+        <span>📦 已解鎖</span>
+      </button>
+    </div>
+
+    <!-- 分類子過濾條 (全部 / 防禦塔 / 魔法技能) -->
+    <div class="sub-category-bar">
+      <div class="sub-filter-chip active" onclick="setKindFilter('all', this)">全部種類</div>
+      <div class="sub-filter-chip" onclick="setKindFilter('tower', this)">🌸 防禦塔</div>
+      <div class="sub-filter-chip" onclick="setKindFilter('skill', this)">☄️ 魔法技能</div>
+    </div>
+
+    <!-- 內容滾動區 -->
+    <div class="shop-scroll-area" id="shop-scroll-content">
+      <!-- 動態注入模板內容 -->
+    </div>
+
+    <!-- 底部返回按鈕 -->
+    <div class="shop-footer">
+      <button class="btn-close-shop" onclick="alert('已模擬點擊關閉商店返回主畫面')">關閉商店</button>
+    </div>
+
+  </div>
+
+  <script>
+    const SHOP_DATA = [
+      {
+        id: 'petal',
+        kind: 'tower',
+        name: '粉櫻花靈之箭',
+        icon: 'assets/towers/tower_petal.svg',
+        cost: 0,
+        owned: true,
+        badges: [{ text: '🎯 基礎速射', type: 'pierce' }, { text: '🏹 單體點殺', type: 'pierce' }],
+        desc: '翡翠光箭高速射擊，適合前中期平穩過渡與快速擊落飛行蜜蜂。',
+        stats: { dmg: '16', range: '120', rate: '1.1/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '16', range: '120', rate: '1.1/s', extra: '基礎光箭' },
+          { lv: 'Lv.2', dmg: '26', range: '135', rate: '1.3/s', extra: '光箭射速提升' },
+          { lv: 'Lv.3', dmg: '42', range: '150', rate: '1.5/s', extra: '粉櫻五重連發' },
+        ]
+      },
+      {
+        id: 'ice_crystal',
+        kind: 'tower',
+        name: '極光霜藍冰晶',
+        icon: 'assets/towers/tower_ice_crystal.svg',
+        cost: 40,
+        owned: false,
+        badges: [{ text: '🧊 霜凍減速 50%', type: 'slow' }, { text: '✨ 貫穿 3 體', type: 'pierce' }],
+        desc: '發射極寒冰晶貫穿前排 3 隻敵人，命中附加 50% 緩速持續 3 秒，聚怪控場核心。',
+        stats: { dmg: '12', range: '130', rate: '1.2/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '12', range: '130', rate: '1.2/s', extra: '緩速 50% (3s)' },
+          { lv: 'Lv.2', dmg: '22', range: '145', rate: '1.4/s', extra: '緩速 60% (3.5s)' },
+          { lv: 'Lv.3', dmg: '38', range: '160', rate: '1.7/s', extra: '緩速 70% (4s) + 貫穿 6 體' },
+        ]
+      },
+      {
+        id: 'mushroom',
+        kind: 'tower',
+        name: '魔幻蘑菇孢子壇',
+        icon: 'assets/towers/tower_mushroom.svg',
+        cost: 45,
+        owned: false,
+        badges: [{ text: '🧪 劇毒腐蝕', type: 'poison' }, { text: '🛡️ 無視護甲', type: 'poison' }],
+        desc: '噴灑劇毒綠霧孢子，每秒造成 18 點無視防禦的真實毒傷持續 4 秒，重裝鐵甲剋星。',
+        stats: { dmg: '15', range: '125', rate: '0.9/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '15', range: '125', rate: '0.9/s', extra: '毒傷 18/s (4s)' },
+          { lv: 'Lv.2', dmg: '25', range: '140', rate: '1.1/s', extra: '毒傷 30/s (5s)' },
+          { lv: 'Lv.3', dmg: '38', range: '155', rate: '1.3/s', extra: '毒傷 48/s (6s) 劇毒蔓延' },
+        ]
+      },
+      {
+        id: 'lavender',
+        kind: 'tower',
+        name: '月影薰衣草法杖',
+        icon: 'assets/towers/tower_lavender.svg',
+        cost: 55,
+        owned: false,
+        badges: [{ text: '⚡ 電弧連鎖 3 體', type: 'chain' }, { text: '🌊 群怪剋星', type: 'chain' }],
+        desc: '釋放月光電弧在多個目標間彈射跳躍，清繳密集蟲群與蝙蝠蜂潮極度高效。',
+        stats: { dmg: '28', range: '135', rate: '1.0/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '28', range: '135', rate: '1.0/s', extra: '連鎖彈射 3 體' },
+          { lv: 'Lv.2', dmg: '45', range: '150', rate: '1.2/s', extra: '連鎖彈射 4 體' },
+          { lv: 'Lv.3', dmg: '70', range: '165', rate: '1.4/s', extra: '連鎖彈射 5 體 + 增傷' },
+        ]
+      },
+      {
+        id: 'treant',
+        kind: 'tower',
+        name: '古木荊棘牢籠',
+        icon: 'assets/towers/tower_treant.svg',
+        cost: 65,
+        owned: false,
+        badges: [{ text: '⛓️ 劇烈緩速 65%', type: 'slow' }, { text: '💥 範圍重壓', type: 'aoe' }],
+        desc: '重砸蒼勁藤木，對範圍內敵人造成 65% 強力緩速與定身，並引發地面物理震裂。',
+        stats: { dmg: '35', range: '110', rate: '0.8/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '35', range: '110', rate: '0.8/s', extra: '緩速 65% + 50px 濺射' },
+          { lv: 'Lv.2', dmg: '55', range: '125', rate: '1.0/s', extra: '緩速 70% + 60px 濺射' },
+          { lv: 'Lv.3', dmg: '85', range: '140', rate: '1.2/s', extra: '緩速 80% + 75px 巨木牢籠' },
+        ]
+      },
+      {
+        id: 'cannon',
+        kind: 'tower',
+        name: '熔岩熾火巨砲',
+        icon: 'assets/towers/tower_cannon.svg',
+        cost: 75,
+        owned: false,
+        badges: [{ text: '💥 70px 範圍轟炸', type: 'aoe' }, { text: '🔥 毀滅高傷', type: 'aoe' }],
+        desc: '拋射高溫熔岩砲彈，落地引發大範圍劇烈爆炸，擁有全遊戲最高單發物理面傷。',
+        stats: { dmg: '60', range: '150', rate: '0.6/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '60', range: '150', rate: '0.6/s', extra: '70px 爆炸濺射' },
+          { lv: 'Lv.2', dmg: '95', range: '170', rate: '0.75/s', extra: '85px 爆炸濺射' },
+          { lv: 'Lv.3', dmg: '150', range: '190', rate: '0.9/s', extra: '105px 毀滅熔岩海' },
+        ]
+      },
+      {
+        id: 'laser',
+        kind: 'tower',
+        name: '星核日光雷射塔',
+        icon: 'assets/towers/tower_laser.svg',
+        cost: 90,
+        owned: false,
+        badges: [{ text: '⚡ 極速高頻', type: 'pierce' }, { text: '📏 直線貫穿', type: 'pierce' }],
+        desc: '超高頻率 (1.6/s) 聚能光束，射線貫穿直線上所有敵人，放置於長走廊傷害最大化。',
+        stats: { dmg: '40', range: '160', rate: '1.6/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '40', range: '160', rate: '1.6/s', extra: '直線貫穿 2 體' },
+          { lv: 'Lv.2', dmg: '65', range: '175', rate: '1.9/s', extra: '直線貫穿 3 體' },
+          { lv: 'Lv.3', dmg: '105', range: '195', rate: '2.2/s', extra: '全線貫穿 4 體' },
+        ]
+      },
+      {
+        id: 'sunflower',
+        kind: 'tower',
+        name: '暖陽向日葵金壇',
+        icon: 'assets/towers/tower_sunflower.svg',
+        cost: 30,
+        owned: false,
+        badges: [{ text: '💰 產金 +8/s', type: 'econ' }, { text: '📈 經濟核心', type: 'econ' }],
+        desc: '不進行攻擊，每秒定時產出 +8 陽光金幣，升級大幅增加金幣產能，越早蓋越賺。',
+        stats: { dmg: '0', range: '-', rate: '產金 +8/s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '-', range: '-', rate: '-', extra: '金幣產出 +8/s' },
+          { lv: 'Lv.2', dmg: '-', range: '-', rate: '-', extra: '金幣產出 +18/s' },
+          { lv: 'Lv.3', dmg: '-', range: '-', rate: '-', extra: '金幣產出 +32/s (陽光爆發)' },
+        ]
+      },
+      {
+        id: 'meteor',
+        kind: 'skill',
+        name: '流星轟炸 (主動技)',
+        icon: 'assets/skills/skill_meteor.svg',
+        cost: 50,
+        owned: false,
+        badges: [{ text: '🌋 全圖自選轟炸', type: 'skill' }, { text: '⏱️ 冷卻 30s', type: 'skill' }],
+        desc: '召喚天外熾熱流星群，對指定圓形區域造成毀滅性 350 點範圍爆炸傷害。',
+        stats: { dmg: '350', range: '全圖', rate: 'CD 30s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '350', range: '全圖選點', rate: 'CD 30s', extra: '範圍 100px 毀滅爆炸' }
+        ]
+      },
+      {
+        id: 'freeze',
+        kind: 'skill',
+        name: '絕對零度 (主動技)',
+        icon: 'assets/skills/skill_freeze.svg',
+        cost: 50,
+        owned: false,
+        badges: [{ text: '🧊 全場定身凍結', type: 'skill' }, { text: '⏱️ 冷卻 45s', type: 'skill' }],
+        desc: '降下極地暴風雪，強制全場所有移動中的敵人減速 80% 並冰凍定身 3.5 秒。',
+        stats: { dmg: '50', range: '全場', rate: 'CD 45s' },
+        levels: [
+          { lv: 'Lv.1', dmg: '50', range: '全場敵人', rate: 'CD 45s', extra: '定身 3.5 秒 + 緩速 80%' }
+        ]
+      }
+    ];
+
+    let currentTemplate = 1;
+    let currentStatusTab = 'all'; // 'all', 'locked', 'unlocked'
+    let currentKindFilter = 'all'; // 'all', 'tower', 'skill'
+    let crystals = 120;
+
+    function getBadgeClass(type) {
+      switch (type) {
+        case 'slow': return 'badge-slow';
+        case 'poison': return 'badge-poison';
+        case 'chain': return 'badge-chain';
+        case 'aoe': return 'badge-aoe';
+        case 'pierce': return 'badge-pierce';
+        case 'econ': return 'badge-econ';
+        case 'skill': return 'badge-skill';
+        default: return 'badge-pierce';
+      }
+    }
+
+    function buyItem(id) {
+      const item = SHOP_DATA.find(x => x.id === id);
+      if (!item || item.owned) return;
+      
+      if (crystals < item.cost) {
+        alert('💎 水晶不足！請在關卡中達成三星寶箱以收集魔法水晶。');
+        return;
+      }
+      item.owned = true;
+      crystals -= item.cost;
+      document.getElementById('crystal-count').textContent = crystals;
+      render();
+    }
+
+    function resetDemoProgress() {
+      SHOP_DATA.forEach(item => {
+        item.owned = (item.id === 'petal'); // 僅初始塔預設擁有
+      });
+      crystals = 120;
+      document.getElementById('crystal-count').textContent = crystals;
+      render();
+    }
+
+    function toggleCardExpand(el) {
+      el.classList.toggle('expanded');
+    }
+
+    function switchTemplate(num) {
+      currentTemplate = num;
+      document.querySelectorAll('.mode-tab-btn').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx + 1 === num);
+      });
+      render();
+    }
+
+    function setStatusTab(tab, el) {
+      currentStatusTab = tab;
+      document.querySelectorAll('.status-tab-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      render();
+    }
+
+    function setKindFilter(filter, el) {
+      currentKindFilter = filter;
+      document.querySelectorAll('.sub-filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      render();
+    }
+
+    // 渲染方案 1 卡牌單體 HTML
+    function renderT1Card(item) {
+      return `
+        <div class="t1-card ${item.owned ? 'owned' : ''}">
+          <div class="t1-top">
+            <div class="t1-icon-box">
+              <img src="${item.icon}" alt="${item.name}">
+            </div>
+            <div class="t1-name-box">
+              <div class="t1-name">${item.name}</div>
+              <div class="t1-badges">
+                ${item.badges.map(b => `<span class="role-badge ${getBadgeClass(b.type)}">${b.text}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="t1-desc">${item.desc}</div>
+          <div class="t1-stats-row">
+            <span>⚔️ ${item.stats.dmg}</span>
+            <span>🎯 ${item.stats.range}</span>
+            <span>⏱️ ${item.stats.rate}</span>
+          </div>
+          <button class="t1-btn ${item.owned ? 't1-btn-owned' : 't1-btn-buy'}" ${item.owned ? 'disabled' : `onclick="buyItem('${item.id}')"`}>
+            ${item.owned ? '✅ 已解鎖' : `💎 ${item.cost} 解鎖`}
+          </button>
+        </div>
+      `;
+    }
+
+    // 渲染方案 2 皇家工坊單體 HTML
+    function renderT2Card(item) {
+      return `
+        <div class="t2-card" onclick="toggleCardExpand(this)">
+          <div class="t2-main-row">
+            <div class="t2-icon-wrap">
+              <img src="${item.icon}" alt="${item.name}">
+            </div>
+            <div class="t2-info-col">
+              <div class="t2-title-line">
+                <span class="t2-name">${item.name}</span>
+                ${item.badges.map(b => `<span class="role-badge ${getBadgeClass(b.type)}">${b.text}</span>`).join('')}
+              </div>
+              <div class="t2-desc-line">${item.desc}</div>
+              <div class="t2-expand-hint">📊 點擊展開 Lv.1~3 成長數據 ▾</div>
+            </div>
+            <div class="t2-action-col" onclick="event.stopPropagation()">
+              ${item.owned 
+                ? `<span class="t2-owned-tag">✅ 已解鎖</span>`
+                : `<button class="t2-buy-btn" onclick="buyItem('${item.id}')">💎 ${item.cost}</button>`
+              }
+            </div>
+          </div>
+          <div class="t2-accordion">
+            <table class="t2-levels-table">
+              <thead>
+                <tr><th>等級</th><th>傷害</th><th>射程</th><th>頻率</th><th>特殊效果</th></tr>
+              </thead>
+              <tbody>
+                ${item.levels.map(l => `
+                  <tr>
+                    <td><b>${l.lv}</b></td>
+                    <td>${l.dmg}</td>
+                    <td>${l.range}</td>
+                    <td>${l.rate}</td>
+                    <td><span style="color:#ffe082;">${l.extra}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    // 渲染方案 3 奇幻市集單體 HTML
+    function renderT3Card(item) {
+      return `
+        <div class="t3-card">
+          <div class="t3-avatar">
+            <img src="${item.icon}" alt="${item.name}">
+          </div>
+          <div class="t3-detail">
+            <div class="t3-name-row">
+              <span class="t3-name">${item.name}</span>
+              ${item.badges.map(b => `<span class="role-badge ${getBadgeClass(b.type)}">${b.text}</span>`).join('')}
+            </div>
+            <div class="t3-effect-tip">${item.desc}</div>
+          </div>
+          <div class="t3-buy-area">
+            <button class="t3-btn ${item.owned ? 't3-btn-owned' : 't3-btn-buy'}" ${item.owned ? 'disabled' : `onclick="buyItem('${item.id}')"`}>
+              ${item.owned ? '✅ 已解鎖' : `💎 ${item.cost}`}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      const container = document.getElementById('shop-scroll-content');
+
+      // 先依種類過濾 (全部 / 防禦塔 / 技能)
+      let list = SHOP_DATA.filter(item => {
+        if (currentKindFilter === 'tower') return item.kind === 'tower';
+        if (currentKindFilter === 'skill') return item.kind === 'skill';
+        return true;
+      });
+
+      const lockedList = list.filter(x => !x.owned);
+      const unlockedList = list.filter(x => x.owned);
+
+      let targetList = [];
+      let isSplitView = false;
+
+      if (currentStatusTab === 'locked') {
+        targetList = lockedList;
+      } else if (currentStatusTab === 'unlocked') {
+        targetList = unlockedList;
+      } else {
+        isSplitView = true;
+      }
+
+      // 空狀態檢查
+      if (!isSplitView && targetList.length === 0) {
+        if (currentStatusTab === 'locked') {
+          container.innerHTML = `
+            <div class="empty-state-box">
+              <div class="empty-icon">🎉</div>
+              <div class="empty-text">太厲害了！你已成功解鎖所有塔防單位與魔法技能！</div>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="empty-state-box">
+              <div class="empty-icon">📦</div>
+              <div class="empty-text">尚無已解鎖項目<br>請前往「未解鎖」頁籤消耗魔法水晶解鎖！</div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      if (currentTemplate === 1) {
+        // 方案 1：魔導卡牌矩陣
+        let html = `<div class="template-card-matrix">`;
+        if (isSplitView) {
+          if (lockedList.length > 0) {
+            html += `<div class="section-header-banner"><span class="section-header-title">🛒 未解鎖商品</span></div>`;
+            html += `<div class="cards-grid">${lockedList.map(renderT1Card).join('')}</div>`;
+          }
+          if (unlockedList.length > 0) {
+            html += `<div class="section-header-banner" style="margin-top:16px;"><span class="section-header-title">📦 已解鎖圖鑑</span></div>`;
+            html += `<div class="cards-grid">${unlockedList.map(renderT1Card).join('')}</div>`;
+          }
+        } else {
+          html += `<div class="cards-grid">${targetList.map(renderT1Card).join('')}</div>`;
+        }
+        html += `</div>`;
+        container.innerHTML = html;
+
+      } else if (currentTemplate === 2) {
+        // 方案 2：皇家工坊檢視錄
+        let html = `<div class="template-workshop"><div class="workshop-list">`;
+        if (isSplitView) {
+          if (lockedList.length > 0) {
+            html += `<div class="section-header-banner"><span class="section-header-title">🛒 未解鎖軍械</span></div>`;
+            html += lockedList.map(renderT2Card).join('');
+          }
+          if (unlockedList.length > 0) {
+            html += `<div class="section-header-banner" style="margin-top:16px;"><span class="section-header-title">📦 已解鎖圖鑑</span></div>`;
+            html += unlockedList.map(renderT2Card).join('');
+          }
+        } else {
+          html += targetList.map(renderT2Card).join('');
+        }
+        html += `</div></div>`;
+        container.innerHTML = html;
+
+      } else if (currentTemplate === 3) {
+        // 方案 3：精靈奇幻市集 (流派分區)
+        const groups = [
+          { title: '❄️ 控場妨礙系 (緩速 / 定身 / 牽制)', filter: x => x.badges.some(b => b.type === 'slow') },
+          { title: '🧪 劇毒持續 DoT (無視護甲真實傷害)', filter: x => x.badges.some(b => b.type === 'poison') },
+          { title: '⚡ 範圍爆發與連鎖彈射', filter: x => x.badges.some(b => b.type === 'chain' || b.type === 'aoe') },
+          { title: '🌻 經濟成長與單體速射', filter: x => x.badges.some(b => b.type === 'econ' || b.id === 'petal' || b.id === 'laser') },
+          { title: '☄️ 守護者主動魔法技能', filter: x => x.kind === 'skill' },
+        ];
+
+        let html = `<div class="template-market">`;
+
+        if (isSplitView) {
+          if (lockedList.length > 0) {
+            html += `<div class="section-header-banner"><span class="section-header-title">🛒 未解鎖市集</span></div>`;
+            groups.forEach(grp => {
+              const grpItems = lockedList.filter(grp.filter);
+              if (grpItems.length === 0) return;
+              html += `
+                <div class="market-section">
+                  <div class="market-sec-title">${grp.title}</div>
+                  <div class="market-items-row">${grpItems.map(renderT3Card).join('')}</div>
+                </div>
+              `;
+            });
+          }
+          if (unlockedList.length > 0) {
+            html += `<div class="section-header-banner" style="margin-top:16px;"><span class="section-header-title">📦 已解鎖圖鑑</span></div>`;
+            groups.forEach(grp => {
+              const grpItems = unlockedList.filter(grp.filter);
+              if (grpItems.length === 0) return;
+              html += `
+                <div class="market-section">
+                  <div class="market-sec-title">${grp.title}</div>
+                  <div class="market-items-row">${grpItems.map(renderT3Card).join('')}</div>
+                </div>
+              `;
+            });
+          }
+        } else {
+          groups.forEach(grp => {
+            const grpItems = targetList.filter(grp.filter);
+            if (grpItems.length === 0) return;
+            html += `
+              <div class="market-section">
+                <div class="market-sec-title">${grp.title}</div>
+                <div class="market-items-row">${grpItems.map(renderT3Card).join('')}</div>
+              </div>
+            `;
+          });
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>

@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🏰 可愛塔防 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.3.1-dev">
+  <link rel="stylesheet" href="style.css?v=1.3.1">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -202,16 +202,40 @@
       </div>
     </div>
 
-    <!-- 商店彈窗：用魔法水晶永久解鎖塔與技能 -->
+    <!-- 商店彈窗：用魔法水晶永久解鎖塔與技能 (方案一：魔導卡牌矩陣) -->
     <div id="shop-modal" class="screen hidden">
-      <div class="screen-content leaderboard-modal-content">
-        <div class="shop-balance-row">💎 <span id="shop-crystal-balance">0</span></div>
-        <h2 style="margin-bottom:8px;">塔與技能商店</h2>
-        <div class="leaderboard-modal-card">
-          <div id="shop-item-list" class="shop-item-list"></div>
+      <div class="screen-content shop-modal-content">
+        <div class="shop-header-row">
+          <div class="shop-title-wrap">
+            <span class="shop-title-icon">🏰</span>
+            <h2 style="margin:0; font-size:18px; color:var(--gold,#ffd700);">魔法工坊商店</h2>
+          </div>
+          <div class="crystal-pill" title="當前魔法水晶餘額">
+            <span>💎</span>
+            <span class="num" id="shop-crystal-balance">0</span>
+          </div>
         </div>
-        <div class="shop-item-info hidden" id="shop-item-info"></div>
-        <button id="close-shop-btn" class="btn-primary" style="margin-top: 14px;">關閉商店</button>
+
+        <!-- 主狀態頁籤：全部 / 未解鎖 / 已解鎖 -->
+        <div class="shop-status-tabs">
+          <button class="shop-status-tab-btn active" data-tab="all"><span>📋 全部</span></button>
+          <button class="shop-status-tab-btn" data-tab="locked"><span>🛒 未解鎖</span></button>
+          <button class="shop-status-tab-btn" data-tab="unlocked"><span>📦 已解鎖</span></button>
+        </div>
+
+        <!-- 子分類過濾條：全部種類 / 防禦塔 / 魔法技能 -->
+        <div class="shop-sub-filters">
+          <button class="shop-sub-filter-btn active" data-filter="all">全部種類</button>
+          <button class="shop-sub-filter-btn" data-filter="tower">🌸 防禦塔</button>
+          <button class="shop-sub-filter-btn" data-filter="skill">☄️ 魔法技能</button>
+        </div>
+
+        <!-- 卡牌矩陣滾動容器 -->
+        <div class="shop-modal-scroll">
+          <div id="shop-item-list" class="shop-cards-container"></div>
+        </div>
+
+        <button id="close-shop-btn" class="btn-primary" style="margin-top: 10px; width: 100%;">關閉商店</button>
       </div>
     </div>
 
@@ -316,6 +340,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.3.1-dev"></script>
+  <script src="game.js?v=1.3.1"></script>
 </body>
 </html>

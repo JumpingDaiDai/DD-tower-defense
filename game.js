@@ -477,32 +477,95 @@ const SHOP_ITEMS = {
   },
 };
 
+// 方案一：魔導卡牌矩陣元數據 (包含圖示、定位標籤、機制解說與三圍數值)
+const SHOP_METADATA = {
+  petal: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_petal.svg',
+    badges: [{ text: '🎯 基礎速射', type: 'pierce' }, { text: '🏹 單體點殺', type: 'pierce' }],
+    desc: '翡翠光箭高速射擊，適合前中期平穩過渡與快速擊落飛行蜜蜂。',
+    stats: { dmg: '16', range: '120', rate: '1.1/s' },
+  },
+  sunflower: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_sunflower.svg',
+    badges: [{ text: '💰 產金 +8/s', type: 'econ' }, { text: '📈 經濟核心', type: 'econ' }],
+    desc: '不進行攻擊，每秒定時產出 +8 陽光金幣，升級大幅增加金幣產能，越早蓋越賺。',
+    stats: { dmg: '0', range: '-', rate: '產金 +8/s' },
+  },
+  ice_crystal: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_ice_crystal.svg',
+    badges: [{ text: '🧊 霜凍減速 50%', type: 'slow' }, { text: '✨ 貫穿 3 體', type: 'pierce' }],
+    desc: '發射極寒冰晶貫穿前排 3 隻敵人，命中附加 50% 緩速持續 3 秒，聚怪控場核心。',
+    stats: { dmg: '12', range: '130', rate: '1.2/s' },
+  },
+  mushroom: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_mushroom.svg',
+    badges: [{ text: '🧪 劇毒腐蝕', type: 'poison' }, { text: '🛡️ 無視護甲', type: 'poison' }],
+    desc: '噴灑劇毒綠霧孢子，每秒造成 18 點無視防禦的真實毒傷持續 4 秒，重裝鐵甲剋星。',
+    stats: { dmg: '15', range: '125', rate: '0.9/s' },
+  },
+  lavender: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_lavender.svg',
+    badges: [{ text: '⚡ 電弧連鎖 3 體', type: 'chain' }, { text: '🌊 群怪剋星', type: 'chain' }],
+    desc: '釋放月光電弧在多個目標間彈射跳躍，清繳密集蟲群與蝙蝠蜂潮極度高效。',
+    stats: { dmg: '28', range: '135', rate: '1.0/s' },
+  },
+  treant: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_treant.svg',
+    badges: [{ text: '⛓️ 劇烈緩速 65%', type: 'slow' }, { text: '💥 範圍重壓', type: 'aoe' }],
+    desc: '重砸蒼勁藤木，對範圍內敵人造成 65% 強力緩速與定身，並引發地面物理震裂。',
+    stats: { dmg: '35', range: '110', rate: '0.8/s' },
+  },
+  cannon: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_cannon.svg',
+    badges: [{ text: '💥 70px 範圍轟炸', type: 'aoe' }, { text: '🔥 毀滅高傷', type: 'aoe' }],
+    desc: '拋射高溫熔岩砲彈，落地引發大範圍劇烈爆炸，擁有全遊戲最高單發物理面傷。',
+    stats: { dmg: '60', range: '150', rate: '0.6/s' },
+  },
+  laser: {
+    kind: 'tower',
+    icon: 'assets/towers/tower_laser.svg',
+    badges: [{ text: '⚡ 極速高頻', type: 'pierce' }, { text: '📏 直線貫穿', type: 'pierce' }],
+    desc: '超高頻率 (1.6/s) 聚能光束，射線貫穿直線上所有敵人，放置於長走廊傷害最大化。',
+    stats: { dmg: '40', range: '160', rate: '1.6/s' },
+  },
+  meteor: {
+    kind: 'skill',
+    icon: 'assets/skills/skill_meteor.svg',
+    badges: [{ text: '🌋 全圖自選轟炸', type: 'skill' }, { text: '⏱️ 冷卻 30s', type: 'skill' }],
+    desc: '召喚天外熾熱流星群，對指定圓形區域造成毀滅性 350 點範圍爆炸傷害。',
+    stats: { dmg: '350', range: '全圖選點', rate: 'CD 30s' },
+  },
+  freeze: {
+    kind: 'skill',
+    icon: 'assets/skills/skill_freeze.svg',
+    badges: [{ text: '🧊 全場定身凍結', type: 'skill' }, { text: '⏱️ 冷卻 45s', type: 'skill' }],
+    desc: '降下極地暴風雪，強制全場所有移動中的敵人減速 80% 並冰凍定身 3.5 秒。',
+    stats: { dmg: '50', range: '全場敵人', rate: 'CD 45s' },
+  }
+};
+
+function getShopBadgeClass(type) {
+  switch (type) {
+    case 'slow': return 'badge-slow';
+    case 'poison': return 'badge-poison';
+    case 'chain': return 'badge-chain';
+    case 'aoe': return 'badge-aoe';
+    case 'pierce': return 'badge-pierce';
+    case 'econ': return 'badge-econ';
+    case 'skill': return 'badge-skill';
+    default: return 'badge-pierce';
+  }
+}
+
 // 通關關卡「首度達成」1★/2★/3★ 各發放一次的水晶獎勵（寶箱）
 const CHEST_REWARDS = [10, 20, 40];
-
-// 商店商品按住顯示的詳細資訊卡內容
-function buildShopItemInfoHTML(kind, key) {
-  if (kind === 'skill') {
-    const item = SHOP_ITEMS.skills[key];
-    if (!item) return '';
-    return `
-      <div class="shop-info-title">${item.name}</div>
-      <div class="shop-info-desc">${item.desc || ''}</div>
-    `;
-  }
-  const data = TOWER_DATA[key];
-  if (!data) return '';
-  const stats = [];
-  if (data.damage) stats.push(`傷害 ${data.damage}`);
-  if (data.range) stats.push(`射程 ${data.range}`);
-  if (data.fireRate) stats.push(`射速 ${data.fireRate}/s`);
-  if (data.goldPerSecond) stats.push(`金幣 +${data.goldPerSecond}/s`);
-  return `
-    <div class="shop-info-title">${data.name}</div>
-    <div class="shop-info-desc">${data.description || ''}</div>
-    <div class="shop-info-stats">${stats.join(' · ')}</div>
-  `;
-}
 
 const CRYSTALS_KEY = 'dd_td_crystals_v1';
 let _crystalsMemoryFallback = null;
@@ -2493,6 +2556,10 @@ class Game {
     this.lastTime = 0;
     this.animFrame = null;
 
+    // Shop tabs & filters
+    this.shopStatusTab = 'all'; // 'all', 'locked', 'unlocked'
+    this.shopKindFilter = 'all'; // 'all', 'tower', 'skill'
+
     // Build tower map for quick lookup
     this.towerGrid = {};
   }
@@ -3393,6 +3460,29 @@ class Game {
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
     bindTap('open-shop-btn', () => this.openShopModal());
     bindTap('close-shop-btn', () => this.closeShopModal());
+    
+    // 商店主狀態頁籤 (全部 / 未解鎖 / 已解鎖)
+    document.querySelectorAll('.shop-status-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.shop-status-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.shopStatusTab = btn.dataset.tab;
+        this.renderShopItems();
+        this.sfx.play('tap');
+      });
+    });
+
+    // 商店子種類過濾 (全部種類 / 防禦塔 / 魔法技能)
+    document.querySelectorAll('.shop-sub-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.shop-sub-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.shopKindFilter = btn.dataset.filter;
+        this.renderShopItems();
+        this.sfx.play('tap');
+      });
+    });
+
     bindTap('lb-tab-score', () => this.switchLeaderboardTab('score'));
     bindTap('lb-tab-gold', () => this.switchLeaderboardTab('gold'));
     bindTap('speed-btn', () => this.toggleSpeed());
@@ -4580,64 +4670,139 @@ class Game {
     this.sfx.play('tap');
   }
 
+  renderShopT1Card(item, balance) {
+    const meta = SHOP_METADATA[item.key] || {
+      icon: item.kind === 'skill' ? 'assets/skills/skill_meteor.svg' : 'assets/towers/tower_petal.svg',
+      badges: [{ text: item.kind === 'skill' ? '☄️ 主動魔法' : '🌸 守護花靈', type: 'pierce' }],
+      desc: item.desc || '',
+      stats: { dmg: '-', range: '-', rate: '-' }
+    };
+    const canAfford = balance >= item.cost;
+    const badgeHtml = meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
+    
+    return `
+      <div class="shop-card-t1 ${item.unlocked ? 'owned' : ''}">
+        <div class="shop-card-t1-top">
+          <div class="shop-card-t1-icon">
+            <img src="${meta.icon}" alt="${item.name}">
+          </div>
+          <div class="shop-card-t1-name-box">
+            <div class="shop-card-t1-name" title="${item.name}">${item.name}</div>
+            <div class="shop-card-t1-badges">${badgeHtml}</div>
+          </div>
+        </div>
+        <div class="shop-card-t1-desc">${meta.desc}</div>
+        <div class="shop-card-t1-stats">
+          <span>⚔️ ${meta.stats.dmg}</span>
+          <span>🎯 ${meta.stats.range}</span>
+          <span>⏱️ ${meta.stats.rate}</span>
+        </div>
+        <button class="shop-card-t1-btn ${item.unlocked ? 'btn-owned' : 'btn-buy'}" 
+                data-kind="${item.kind}" 
+                data-key="${item.key}" 
+                ${item.unlocked ? 'disabled' : (canAfford ? '' : 'disabled')}>
+          ${item.unlocked ? '✅ 已解鎖' : `💎 ${item.cost} 解鎖`}
+        </button>
+      </div>
+    `;
+  }
+
   renderShopItems() {
     this.updateCrystalBalanceUI();
-    const list = document.getElementById('shop-item-list');
-    if (!list) return;
+    const container = document.getElementById('shop-item-list');
+    if (!container) return;
     const balance = loadCrystals();
 
-    const rows = [];
+    // 彙整所有塔與技能清單
+    const allItems = [];
+    
+    // 初始免費塔 (粉櫻)
+    allItems.push({
+      kind: 'tower',
+      key: 'petal',
+      name: TOWER_DATA.petal?.name || '粉櫻花靈之箭',
+      cost: 0,
+      unlocked: true,
+      desc: SHOP_METADATA.petal?.desc
+    });
+
+    // 商店解鎖塔
     for (const [key, item] of Object.entries(SHOP_ITEMS.towers)) {
       const unlocked = isTowerUnlocked(key);
       const name = TOWER_DATA[key]?.name || key;
-      rows.push({ kind: 'tower', key, name, cost: item.cost, unlocked });
-    }
-    for (const [key, item] of Object.entries(SHOP_ITEMS.skills)) {
-      const unlocked = isSkillUnlocked(key);
-      rows.push({ kind: 'skill', key, name: item.name, cost: item.cost, unlocked });
+      allItems.push({ kind: 'tower', key, name, cost: item.cost, unlocked, desc: SHOP_METADATA[key]?.desc });
     }
 
-    list.innerHTML = rows.map(row => {
-      if (row.unlocked) {
-        return `
-          <div class="shop-item shop-item-owned" data-kind="${row.kind}" data-key="${row.key}">
-            <span class="shop-item-name">${row.name}</span>
-            <span class="shop-item-status">✅ 已解鎖</span>
+    // 商店解鎖技能
+    for (const [key, item] of Object.entries(SHOP_ITEMS.skills)) {
+      const unlocked = isSkillUnlocked(key);
+      allItems.push({ kind: 'skill', key, name: item.name, cost: item.cost, unlocked, desc: item.desc });
+    }
+
+    // 依種類過濾 (全部 / 防禦塔 / 魔法技能)
+    const filteredByKind = allItems.filter(item => {
+      if (this.shopKindFilter === 'tower') return item.kind === 'tower';
+      if (this.shopKindFilter === 'skill') return item.kind === 'skill';
+      return true;
+    });
+
+    const lockedList = filteredByKind.filter(x => !x.unlocked);
+    const unlockedList = filteredByKind.filter(x => x.unlocked);
+
+    let targetList = [];
+    let isSplitView = false;
+
+    if (this.shopStatusTab === 'locked') {
+      targetList = lockedList;
+    } else if (this.shopStatusTab === 'unlocked') {
+      targetList = unlockedList;
+    } else {
+      isSplitView = true; // 全部頁籤：分區呈現
+    }
+
+    // 空狀態處理
+    if (!isSplitView && targetList.length === 0) {
+      if (this.shopStatusTab === 'locked') {
+        container.innerHTML = `
+          <div class="shop-empty-box">
+            <div class="shop-empty-icon">🎉</div>
+            <div class="shop-empty-text">太厲害了！你已成功解鎖所有塔防單位與魔法技能！</div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="shop-empty-box">
+            <div class="shop-empty-icon">📦</div>
+            <div class="shop-empty-text">尚無已解鎖項目<br>請前往「未解鎖」頁籤消耗魔法水晶解鎖！</div>
           </div>
         `;
       }
-      const canAfford = balance >= row.cost;
-      return `
-        <div class="shop-item" data-kind="${row.kind}" data-key="${row.key}">
-          <span class="shop-item-name">${row.name}</span>
-          <button class="shop-buy-btn" data-kind="${row.kind}" data-key="${row.key}" ${canAfford ? '' : 'disabled'}>
-            💎${row.cost}
-          </button>
-        </div>
-      `;
-    }).join('');
+      return;
+    }
 
-    list.querySelectorAll('.shop-buy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    // 方案一：魔導卡牌矩陣渲染
+    let html = '';
+    if (isSplitView) {
+      if (lockedList.length > 0) {
+        html += `<div class="shop-section-banner"><span class="shop-section-title">🛒 未解鎖商品</span></div>`;
+        html += `<div class="shop-cards-grid">${lockedList.map(item => this.renderShopT1Card(item, balance)).join('')}</div>`;
+      }
+      if (unlockedList.length > 0) {
+        html += `<div class="shop-section-banner" style="margin-top:14px;"><span class="shop-section-title">📦 已解鎖圖鑑</span></div>`;
+        html += `<div class="shop-cards-grid">${unlockedList.map(item => this.renderShopT1Card(item, balance)).join('')}</div>`;
+      }
+    } else {
+      html += `<div class="shop-cards-grid">${targetList.map(item => this.renderShopT1Card(item, balance)).join('')}</div>`;
+    }
+
+    container.innerHTML = html;
+
+    // 綁定購買點擊事件
+    container.querySelectorAll('.shop-card-t1-btn.btn-buy:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         this.buyShopItem(btn.dataset.kind, btn.dataset.key);
       });
-    });
-
-    // 按住商品卡片顯示詳細資訊，放開就消失
-    const infoEl = document.getElementById('shop-item-info');
-    list.querySelectorAll('.shop-item').forEach(row => {
-      const showInfo = () => {
-        if (!infoEl) return;
-        infoEl.innerHTML = buildShopItemInfoHTML(row.dataset.kind, row.dataset.key);
-        infoEl.classList.remove('hidden');
-      };
-      const hideInfo = () => infoEl?.classList.add('hidden');
-      row.addEventListener('mousedown', showInfo);
-      row.addEventListener('mouseup', hideInfo);
-      row.addEventListener('mouseleave', hideInfo);
-      row.addEventListener('touchstart', showInfo, { passive: true });
-      row.addEventListener('touchend', hideInfo);
-      row.addEventListener('touchcancel', hideInfo);
     });
   }
 
