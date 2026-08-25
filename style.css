@@ -572,6 +572,12 @@ html, body {
   z-index: 101;
 }
 
+/* 首頁內容框固定寬度，不然切換關卡時因為關卡名稱文字長度不同，
+   .screen-content 會跟著縮放內容寬度，連帶讓英雄榜/商店卡片也一起變大變小 */
+#menu-screen .screen-content {
+  width: min(380px, 92vw);
+}
+
 .menu-version-badge {
   display: inline-block;
   font-size: 11px;
