@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.6.8-dev',
+  VERSION: 'v1.7.0-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
