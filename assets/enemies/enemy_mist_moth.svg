@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- 幽靈半透明迷霧雙翼漸層 (零粒子) -->
+    <linearGradient id="mothTwilightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4081" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#7c4dff" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#18ffff" stop-opacity="0.6"/>
+    </linearGradient>
+    <!-- 迷霧核心柔化漸層 -->
+    <radialGradient id="mothBodyGrad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#ede7f6" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#311b92" stop-opacity="0.6"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 1. 飄渺半透明陰影 -->
+  <ellipse cx="50" cy="88" rx="24" ry="6" fill="rgba(124, 77, 255, 0.2)"/>
+
+  <!-- 2. 幽幻半透明迷霧雙翼 (四翅帶薄暮漸層) -->
+  <g opacity="0.85">
+    <!-- 左右上主翅 -->
+    <ellipse cx="30" cy="40" rx="22" ry="30" fill="url(#mothTwilightGrad)" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" transform="rotate(-25 30 40)"/>
+    <ellipse cx="70" cy="40" rx="22" ry="30" fill="url(#mothTwilightGrad)" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" transform="rotate(25 70 40)"/>
+
+    <!-- 左右下副翅 -->
+    <ellipse cx="34" cy="65" rx="16" ry="20" fill="url(#mothTwilightGrad)" stroke="rgba(124,77,255,0.6)" stroke-width="1" transform="rotate(-15 34 65)"/>
+    <ellipse cx="66" cy="65" rx="16" ry="20" fill="url(#mothTwilightGrad)" stroke="rgba(124,77,255,0.6)" stroke-width="1" transform="rotate(15 66 65)"/>
+
+    <!-- 翅膀符文透光魔眼 -->
+    <circle cx="28" cy="38" r="6.5" fill="#18ffff" opacity="0.9"/>
+    <circle cx="28" cy="38" r="3.5" fill="#311b92"/>
+    <circle cx="27" cy="37" r="1.2" fill="#ffffff"/>
+
+    <circle cx="72" cy="38" r="6.5" fill="#18ffff" opacity="0.9"/>
+    <circle cx="72" cy="38" r="3.5" fill="#311b92"/>
+    <circle cx="71" cy="37" r="1.2" fill="#ffffff"/>
+  </g>
+
+  <!-- 3. 半透明幽靈絨毛身軀 -->
+  <ellipse cx="50" cy="52" rx="5.5" ry="20" fill="url(#mothBodyGrad)" stroke="#512da8" stroke-width="1.2"/>
+  <!-- 腹部靈光發光紋 -->
+  <path d="M 46,50 Q 50,54 54,50" fill="none" stroke="#18ffff" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M 47,56 Q 50,60 53,56" fill="none" stroke="#18ffff" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 4. 幽蛾頭部與神秘眼瞳 -->
+  <circle cx="50" cy="34" r="5.5" fill="#311b92"/>
+  <ellipse cx="47" cy="33.5" rx="1.8" ry="2.2" fill="#ff4081"/>
+  <ellipse cx="53" cy="33.5" rx="1.8" ry="2.2" fill="#ff4081"/>
+  <circle cx="46.5" cy="33" r="0.7" fill="#ffffff"/>
+  <circle cx="52.5" cy="33" r="0.7" fill="#ffffff"/>
+
+  <!-- 5. 羽毛狀長觸角 -->
+  <path d="M 48,29 Q 38,16 26,10" fill="none" stroke="#e040fb" stroke-width="2" stroke-linecap="round"/>
+  <path d="M 52,29 Q 62,16 74,10" fill="none" stroke="#e040fb" stroke-width="2" stroke-linecap="round"/>
+</svg>

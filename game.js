@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.6.2-dev',
+  VERSION: 'v1.6.8-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -229,6 +229,7 @@ const TOWER_DATA = {
   petal: {
     name: '粉櫻花靈之箭',
     cost: 100,
+    damageType: 'physical',
     range: 120,
     damage: 21,
     fireRate: 1.1,
@@ -260,6 +261,7 @@ const TOWER_DATA = {
   lavender: {
     name: '月影薰衣草法杖',
     cost: 220,
+    damageType: 'magic',
     range: 135,
     damage: 28,
     fireRate: 1.0,
@@ -278,6 +280,7 @@ const TOWER_DATA = {
   mushroom: {
     name: '魔幻蘑菇孢子壇',
     cost: 180,
+    damageType: 'poison',
     range: 125,
     damage: 15,
     fireRate: 0.9,
@@ -296,6 +299,7 @@ const TOWER_DATA = {
   treant: {
     name: '古木荊棘牢籠',
     cost: 260,
+    damageType: 'physical',
     range: 110,
     damage: 35,
     fireRate: 0.8,
@@ -315,6 +319,7 @@ const TOWER_DATA = {
   cannon: {
     name: '熔岩熾火巨砲',
     cost: 300,
+    damageType: 'physical',
     range: 150,
     damage: 60,
     fireRate: 0.6,
@@ -332,6 +337,7 @@ const TOWER_DATA = {
   ice_crystal: {
     name: '極光霜藍冰晶',
     cost: 150,
+    damageType: 'magic',
     range: 130,
     damage: 12,
     fireRate: 1.2,
@@ -351,6 +357,7 @@ const TOWER_DATA = {
   laser: {
     name: '星核日光雷射塔',
     cost: 350,
+    damageType: 'magic',
     range: 160,
     damage: 40,
     fireRate: 1.6,
@@ -372,9 +379,11 @@ const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
   bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
   snail: { name: '蝸牛', emoji: '🐌', hp: 190, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, armor: 0.25 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, resist: { physical: 0.25 } },
   butterfly: { name: '蝴蝶', emoji: '🦋', hp: 95, speed: 65, reward: 18, damage: 1, canEnrage: true },
   dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
+  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 420, speed: 34, reward: 45, damage: 3, resist: { physical: 0.6 } },
+  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 150, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.6 } },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -480,16 +489,16 @@ const WAVE_DATA_L6 = [
   { enemies: [{ type: 'bee', count: 18, interval: 0.32 }, { type: 'snail', count: 7, interval: 1.15 }, { type: 'beetle', count: 4, interval: 1.15 }], bonus: 195 },
   { enemies: [{ type: 'bee', count: 20, interval: 0.26 }, { type: 'beetle', count: 7, interval: 0.95 }, { type: 'butterfly', count: 7, interval: 0.6 }], bonus: 225 },
   { enemies: [{ type: 'caterpillar', count: 11, interval: 0.36 }, { type: 'snail', count: 8, interval: 1.05 }, { type: 'beetle', count: 7, interval: 0.8 }], bonus: 285 },
-  { enemies: [{ type: 'bee', count: 25, interval: 0.22 }, { type: 'beetle', count: 9, interval: 0.72 }, { type: 'butterfly', count: 9, interval: 0.45 }], bonus: 315 },
-  { enemies: [{ type: 'butterfly', count: 16, interval: 0.29 }, { type: 'bee', count: 20, interval: 0.23 }, { type: 'dragon', count: 2, interval: 2.6 }], bonus: 450 },
+  { enemies: [{ type: 'bee', count: 25, interval: 0.22 }, { type: 'beetle', count: 9, interval: 0.72 }, { type: 'butterfly', count: 9, interval: 0.45 }, { type: 'mist_moth', count: 3, interval: 0.9 }], bonus: 315 },
+  { enemies: [{ type: 'butterfly', count: 16, interval: 0.29 }, { type: 'bee', count: 20, interval: 0.23 }, { type: 'dragon', count: 2, interval: 2.6 }, { type: 'armored_ladybug', count: 3, interval: 1.3 }], bonus: 450 },
   { enemies: [{ type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 12, interval: 0.6 }, { type: 'bee', count: 16, interval: 0.26 }], bonus: 420 },
-  { enemies: [{ type: 'bee', count: 36, interval: 0.14 }, { type: 'butterfly', count: 22, interval: 0.2 }, { type: 'beetle', count: 7, interval: 0.65 }], bonus: 480 },
-  { enemies: [{ type: 'dragon', count: 3, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.52 }, { type: 'caterpillar', count: 18, interval: 0.26 }], bonus: 630 },
+  { enemies: [{ type: 'bee', count: 36, interval: 0.14 }, { type: 'butterfly', count: 22, interval: 0.2 }, { type: 'beetle', count: 7, interval: 0.65 }, { type: 'mist_moth', count: 4, interval: 0.8 }], bonus: 480 },
+  { enemies: [{ type: 'dragon', count: 3, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.52 }, { type: 'caterpillar', count: 18, interval: 0.26 }, { type: 'armored_ladybug', count: 4, interval: 0.95 }], bonus: 630 },
   { enemies: [{ type: 'butterfly', count: 30, interval: 0.16 }, { type: 'beetle', count: 16, interval: 0.45 }, { type: 'snail', count: 9, interval: 0.65 }], bonus: 570 },
-  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 25, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.45 }], bonus: 630 },
-  { enemies: [{ type: 'snail', count: 18, interval: 0.37 }, { type: 'dragon', count: 4, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.37 }], bonus: 750 },
+  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 25, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.45 }, { type: 'mist_moth', count: 5, interval: 0.65 }], bonus: 630 },
+  { enemies: [{ type: 'snail', count: 18, interval: 0.37 }, { type: 'dragon', count: 4, interval: 2.2 }, { type: 'beetle', count: 12, interval: 0.37 }, { type: 'armored_ladybug', count: 5, interval: 0.75 }], bonus: 750 },
   { enemies: [{ type: 'beetle', count: 22, interval: 0.29 }, { type: 'butterfly', count: 30, interval: 0.14 }, { type: 'snail', count: 16, interval: 0.32 }, { type: 'bee', count: 25, interval: 0.1 }], bonus: 840 },
-  { enemies: [{ type: 'dragon', count: 8, interval: 2.4 }, { type: 'beetle', count: 18, interval: 0.33 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'bee', count: 38, interval: 0.07 }], bonus: 1300 },
+  { enemies: [{ type: 'dragon', count: 8, interval: 2.4 }, { type: 'beetle', count: 18, interval: 0.33 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'bee', count: 38, interval: 0.07 }, { type: 'armored_ladybug', count: 7, interval: 0.5 }, { type: 'mist_moth', count: 7, interval: 0.55 }], bonus: 1300 },
 ];
 
 // 第七關（原終極關）：龍第 7 波就出 3 隻，最終波 10 隻龍同場
@@ -499,16 +508,16 @@ const WAVE_DATA_L7 = [
   { enemies: [{ type: 'bee', count: 20, interval: 0.28 }, { type: 'snail', count: 8, interval: 1.0 }, { type: 'beetle', count: 5, interval: 1.0 }], bonus: 260 },
   { enemies: [{ type: 'bee', count: 22, interval: 0.22 }, { type: 'beetle', count: 8, interval: 0.85 }, { type: 'butterfly', count: 8, interval: 0.52 }], bonus: 300 },
   { enemies: [{ type: 'caterpillar', count: 12, interval: 0.32 }, { type: 'snail', count: 9, interval: 0.95 }, { type: 'beetle', count: 8, interval: 0.7 }], bonus: 380 },
-  { enemies: [{ type: 'bee', count: 28, interval: 0.19 }, { type: 'beetle', count: 10, interval: 0.62 }, { type: 'butterfly', count: 11, interval: 0.4 }], bonus: 420 },
-  { enemies: [{ type: 'butterfly', count: 18, interval: 0.25 }, { type: 'bee', count: 22, interval: 0.2 }, { type: 'dragon', count: 3, interval: 2.4 }], bonus: 600 },
+  { enemies: [{ type: 'bee', count: 28, interval: 0.19 }, { type: 'beetle', count: 10, interval: 0.62 }, { type: 'butterfly', count: 11, interval: 0.4 }, { type: 'mist_moth', count: 4, interval: 0.85 }], bonus: 420 },
+  { enemies: [{ type: 'butterfly', count: 18, interval: 0.25 }, { type: 'bee', count: 22, interval: 0.2 }, { type: 'dragon', count: 3, interval: 2.4 }, { type: 'armored_ladybug', count: 4, interval: 1.2 }], bonus: 600 },
   { enemies: [{ type: 'snail', count: 14, interval: 0.7 }, { type: 'beetle', count: 14, interval: 0.52 }, { type: 'bee', count: 18, interval: 0.22 }], bonus: 560 },
-  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 25, interval: 0.17 }, { type: 'beetle', count: 8, interval: 0.55 }], bonus: 640 },
-  { enemies: [{ type: 'dragon', count: 4, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.46 }, { type: 'caterpillar', count: 20, interval: 0.22 }], bonus: 840 },
+  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 25, interval: 0.17 }, { type: 'beetle', count: 8, interval: 0.55 }, { type: 'mist_moth', count: 5, interval: 0.75 }], bonus: 640 },
+  { enemies: [{ type: 'dragon', count: 4, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.46 }, { type: 'caterpillar', count: 20, interval: 0.22 }, { type: 'armored_ladybug', count: 5, interval: 0.85 }], bonus: 840 },
   { enemies: [{ type: 'butterfly', count: 34, interval: 0.14 }, { type: 'beetle', count: 18, interval: 0.4 }, { type: 'snail', count: 10, interval: 0.55 }], bonus: 760 },
-  { enemies: [{ type: 'bee', count: 50, interval: 0.09 }, { type: 'butterfly', count: 28, interval: 0.14 }, { type: 'beetle', count: 10, interval: 0.4 }], bonus: 840 },
-  { enemies: [{ type: 'snail', count: 20, interval: 0.32 }, { type: 'dragon', count: 5, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.32 }], bonus: 1000 },
+  { enemies: [{ type: 'bee', count: 50, interval: 0.09 }, { type: 'butterfly', count: 28, interval: 0.14 }, { type: 'beetle', count: 10, interval: 0.4 }, { type: 'mist_moth', count: 6, interval: 0.6 }], bonus: 840 },
+  { enemies: [{ type: 'snail', count: 20, interval: 0.32 }, { type: 'dragon', count: 5, interval: 2.0 }, { type: 'beetle', count: 14, interval: 0.32 }, { type: 'armored_ladybug', count: 6, interval: 0.65 }], bonus: 1000 },
   { enemies: [{ type: 'beetle', count: 25, interval: 0.25 }, { type: 'butterfly', count: 34, interval: 0.12 }, { type: 'snail', count: 18, interval: 0.28 }, { type: 'bee', count: 28, interval: 0.09 }], bonus: 1120 },
-  { enemies: [{ type: 'dragon', count: 10, interval: 2.2 }, { type: 'beetle', count: 20, interval: 0.29 }, { type: 'butterfly', count: 34, interval: 0.11 }, { type: 'bee', count: 42, interval: 0.06 }], bonus: 1600 },
+  { enemies: [{ type: 'dragon', count: 10, interval: 2.2 }, { type: 'beetle', count: 20, interval: 0.29 }, { type: 'butterfly', count: 34, interval: 0.11 }, { type: 'bee', count: 42, interval: 0.06 }, { type: 'armored_ladybug', count: 8, interval: 0.42 }, { type: 'mist_moth', count: 8, interval: 0.48 }], bonus: 1600 },
 ];
 
 // 第八關：時光沙漏 (雙三角咽喉)，重裝鐵甲蟲與小龍群突破
@@ -518,16 +527,16 @@ const WAVE_DATA_L8 = [
   { enemies: [{ type: 'bee', count: 22, interval: 0.26 }, { type: 'snail', count: 9, interval: 0.95 }, { type: 'beetle', count: 6, interval: 0.95 }], bonus: 280 },
   { enemies: [{ type: 'bee', count: 24, interval: 0.2 }, { type: 'beetle', count: 9, interval: 0.8 }, { type: 'butterfly', count: 9, interval: 0.48 }], bonus: 320 },
   { enemies: [{ type: 'caterpillar', count: 14, interval: 0.3 }, { type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 9, interval: 0.65 }], bonus: 400 },
-  { enemies: [{ type: 'bee', count: 30, interval: 0.18 }, { type: 'beetle', count: 11, interval: 0.58 }, { type: 'butterfly', count: 12, interval: 0.38 }], bonus: 450 },
-  { enemies: [{ type: 'butterfly', count: 20, interval: 0.23 }, { type: 'bee', count: 24, interval: 0.18 }, { type: 'dragon', count: 3, interval: 2.2 }], bonus: 650 },
+  { enemies: [{ type: 'bee', count: 30, interval: 0.18 }, { type: 'beetle', count: 11, interval: 0.58 }, { type: 'butterfly', count: 12, interval: 0.38 }, { type: 'mist_moth', count: 4, interval: 0.8 }], bonus: 450 },
+  { enemies: [{ type: 'butterfly', count: 20, interval: 0.23 }, { type: 'bee', count: 24, interval: 0.18 }, { type: 'dragon', count: 3, interval: 2.2 }, { type: 'armored_ladybug', count: 5, interval: 1.1 }], bonus: 650 },
   { enemies: [{ type: 'snail', count: 15, interval: 0.65 }, { type: 'beetle', count: 15, interval: 0.48 }, { type: 'bee', count: 20, interval: 0.2 }], bonus: 600 },
-  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.5 }], bonus: 680 },
-  { enemies: [{ type: 'dragon', count: 5, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.42 }, { type: 'caterpillar', count: 22, interval: 0.2 }], bonus: 900 },
+  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'beetle', count: 9, interval: 0.5 }, { type: 'mist_moth', count: 6, interval: 0.7 }], bonus: 680 },
+  { enemies: [{ type: 'dragon', count: 5, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.42 }, { type: 'caterpillar', count: 22, interval: 0.2 }, { type: 'armored_ladybug', count: 6, interval: 0.8 }], bonus: 900 },
   { enemies: [{ type: 'butterfly', count: 36, interval: 0.13 }, { type: 'beetle', count: 20, interval: 0.38 }, { type: 'snail', count: 11, interval: 0.52 }], bonus: 820 },
-  { enemies: [{ type: 'bee', count: 55, interval: 0.08 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'beetle', count: 11, interval: 0.38 }], bonus: 900 },
-  { enemies: [{ type: 'snail', count: 22, interval: 0.3 }, { type: 'dragon', count: 6, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.3 }], bonus: 1100 },
+  { enemies: [{ type: 'bee', count: 55, interval: 0.08 }, { type: 'butterfly', count: 30, interval: 0.13 }, { type: 'beetle', count: 11, interval: 0.38 }, { type: 'mist_moth', count: 7, interval: 0.55 }], bonus: 900 },
+  { enemies: [{ type: 'snail', count: 22, interval: 0.3 }, { type: 'dragon', count: 6, interval: 1.9 }, { type: 'beetle', count: 15, interval: 0.3 }, { type: 'armored_ladybug', count: 7, interval: 0.6 }], bonus: 1100 },
   { enemies: [{ type: 'beetle', count: 28, interval: 0.23 }, { type: 'butterfly', count: 36, interval: 0.11 }, { type: 'snail', count: 20, interval: 0.26 }, { type: 'bee', count: 30, interval: 0.08 }], bonus: 1200 },
-  { enemies: [{ type: 'dragon', count: 11, interval: 2.0 }, { type: 'beetle', count: 22, interval: 0.27 }, { type: 'butterfly', count: 36, interval: 0.1 }, { type: 'bee', count: 45, interval: 0.05 }], bonus: 1750 },
+  { enemies: [{ type: 'dragon', count: 11, interval: 2.0 }, { type: 'beetle', count: 22, interval: 0.27 }, { type: 'butterfly', count: 36, interval: 0.1 }, { type: 'bee', count: 45, interval: 0.05 }, { type: 'armored_ladybug', count: 9, interval: 0.4 }, { type: 'mist_moth', count: 9, interval: 0.45 }], bonus: 1750 },
 ];
 
 // 第九關：大峽谷迴旋 (垂直長廊)，高速蜜蜂與狂暴蝴蝶海
@@ -537,16 +546,16 @@ const WAVE_DATA_L9 = [
   { enemies: [{ type: 'bee', count: 24, interval: 0.24 }, { type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 7, interval: 0.9 }], bonus: 300 },
   { enemies: [{ type: 'bee', count: 26, interval: 0.18 }, { type: 'beetle', count: 10, interval: 0.75 }, { type: 'butterfly', count: 10, interval: 0.45 }], bonus: 350 },
   { enemies: [{ type: 'caterpillar', count: 15, interval: 0.28 }, { type: 'snail', count: 11, interval: 0.85 }, { type: 'beetle', count: 10, interval: 0.6 }], bonus: 430 },
-  { enemies: [{ type: 'bee', count: 32, interval: 0.17 }, { type: 'beetle', count: 12, interval: 0.55 }, { type: 'butterfly', count: 13, interval: 0.36 }], bonus: 480 },
-  { enemies: [{ type: 'butterfly', count: 22, interval: 0.21 }, { type: 'bee', count: 26, interval: 0.17 }, { type: 'dragon', count: 4, interval: 2.1 }], bonus: 700 },
+  { enemies: [{ type: 'bee', count: 32, interval: 0.17 }, { type: 'beetle', count: 12, interval: 0.55 }, { type: 'butterfly', count: 13, interval: 0.36 }, { type: 'mist_moth', count: 5, interval: 0.75 }], bonus: 480 },
+  { enemies: [{ type: 'butterfly', count: 22, interval: 0.21 }, { type: 'bee', count: 26, interval: 0.17 }, { type: 'dragon', count: 4, interval: 2.1 }, { type: 'armored_ladybug', count: 5, interval: 1.05 }], bonus: 700 },
   { enemies: [{ type: 'snail', count: 16, interval: 0.6 }, { type: 'beetle', count: 16, interval: 0.45 }, { type: 'bee', count: 22, interval: 0.18 }], bonus: 650 },
-  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 28, interval: 0.15 }, { type: 'beetle', count: 10, interval: 0.48 }], bonus: 730 },
-  { enemies: [{ type: 'dragon', count: 6, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.4 }, { type: 'caterpillar', count: 24, interval: 0.18 }], bonus: 960 },
+  { enemies: [{ type: 'bee', count: 45, interval: 0.1 }, { type: 'butterfly', count: 28, interval: 0.15 }, { type: 'beetle', count: 10, interval: 0.48 }, { type: 'mist_moth', count: 6, interval: 0.65 }], bonus: 730 },
+  { enemies: [{ type: 'dragon', count: 6, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.4 }, { type: 'caterpillar', count: 24, interval: 0.18 }, { type: 'armored_ladybug', count: 7, interval: 0.75 }], bonus: 960 },
   { enemies: [{ type: 'butterfly', count: 38, interval: 0.12 }, { type: 'beetle', count: 22, interval: 0.36 }, { type: 'snail', count: 12, interval: 0.5 }], bonus: 880 },
-  { enemies: [{ type: 'bee', count: 60, interval: 0.07 }, { type: 'butterfly', count: 32, interval: 0.12 }, { type: 'beetle', count: 12, interval: 0.36 }], bonus: 960 },
-  { enemies: [{ type: 'snail', count: 24, interval: 0.28 }, { type: 'dragon', count: 7, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.28 }], bonus: 1180 },
+  { enemies: [{ type: 'bee', count: 60, interval: 0.07 }, { type: 'butterfly', count: 32, interval: 0.12 }, { type: 'beetle', count: 12, interval: 0.36 }, { type: 'mist_moth', count: 8, interval: 0.5 }], bonus: 960 },
+  { enemies: [{ type: 'snail', count: 24, interval: 0.28 }, { type: 'dragon', count: 7, interval: 1.8 }, { type: 'beetle', count: 16, interval: 0.28 }, { type: 'armored_ladybug', count: 8, interval: 0.55 }], bonus: 1180 },
   { enemies: [{ type: 'beetle', count: 30, interval: 0.21 }, { type: 'butterfly', count: 38, interval: 0.1 }, { type: 'snail', count: 22, interval: 0.24 }, { type: 'bee', count: 32, interval: 0.07 }], bonus: 1300 },
-  { enemies: [{ type: 'dragon', count: 12, interval: 1.9 }, { type: 'beetle', count: 24, interval: 0.25 }, { type: 'butterfly', count: 38, interval: 0.09 }, { type: 'bee', count: 48, interval: 0.05 }], bonus: 1900 },
+  { enemies: [{ type: 'dragon', count: 12, interval: 1.9 }, { type: 'beetle', count: 24, interval: 0.25 }, { type: 'butterfly', count: 38, interval: 0.09 }, { type: 'bee', count: 48, interval: 0.05 }, { type: 'armored_ladybug', count: 10, interval: 0.38 }, { type: 'mist_moth', count: 10, interval: 0.42 }], bonus: 1900 },
 ];
 
 // 第十關：四葉風車 (多向外旋)，四面八方重兵襲來
@@ -556,16 +565,16 @@ const WAVE_DATA_L10 = [
   { enemies: [{ type: 'bee', count: 26, interval: 0.22 }, { type: 'snail', count: 11, interval: 0.85 }, { type: 'beetle', count: 8, interval: 0.85 }], bonus: 330 },
   { enemies: [{ type: 'bee', count: 28, interval: 0.16 }, { type: 'beetle', count: 11, interval: 0.7 }, { type: 'butterfly', count: 11, interval: 0.42 }], bonus: 380 },
   { enemies: [{ type: 'caterpillar', count: 16, interval: 0.26 }, { type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 11, interval: 0.55 }], bonus: 470 },
-  { enemies: [{ type: 'bee', count: 35, interval: 0.15 }, { type: 'beetle', count: 13, interval: 0.52 }, { type: 'butterfly', count: 14, interval: 0.34 }], bonus: 520 },
-  { enemies: [{ type: 'butterfly', count: 24, interval: 0.19 }, { type: 'bee', count: 28, interval: 0.15 }, { type: 'dragon', count: 4, interval: 2.0 }], bonus: 760 },
+  { enemies: [{ type: 'bee', count: 35, interval: 0.15 }, { type: 'beetle', count: 13, interval: 0.52 }, { type: 'butterfly', count: 14, interval: 0.34 }, { type: 'mist_moth', count: 5, interval: 0.7 }], bonus: 520 },
+  { enemies: [{ type: 'butterfly', count: 24, interval: 0.19 }, { type: 'bee', count: 28, interval: 0.15 }, { type: 'dragon', count: 4, interval: 2.0 }, { type: 'armored_ladybug', count: 6, interval: 1.0 }], bonus: 760 },
   { enemies: [{ type: 'snail', count: 18, interval: 0.55 }, { type: 'beetle', count: 18, interval: 0.42 }, { type: 'bee', count: 24, interval: 0.16 }], bonus: 700 },
-  { enemies: [{ type: 'bee', count: 48, interval: 0.09 }, { type: 'butterfly', count: 30, interval: 0.14 }, { type: 'beetle', count: 11, interval: 0.45 }], bonus: 790 },
-  { enemies: [{ type: 'dragon', count: 7, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.38 }, { type: 'caterpillar', count: 26, interval: 0.16 }], bonus: 1040 },
+  { enemies: [{ type: 'bee', count: 48, interval: 0.09 }, { type: 'butterfly', count: 30, interval: 0.14 }, { type: 'beetle', count: 11, interval: 0.45 }, { type: 'mist_moth', count: 7, interval: 0.6 }], bonus: 790 },
+  { enemies: [{ type: 'dragon', count: 7, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.38 }, { type: 'caterpillar', count: 26, interval: 0.16 }, { type: 'armored_ladybug', count: 8, interval: 0.7 }], bonus: 1040 },
   { enemies: [{ type: 'butterfly', count: 40, interval: 0.11 }, { type: 'beetle', count: 24, interval: 0.34 }, { type: 'snail', count: 13, interval: 0.48 }], bonus: 950 },
-  { enemies: [{ type: 'bee', count: 65, interval: 0.06 }, { type: 'butterfly', count: 35, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.34 }], bonus: 1040 },
-  { enemies: [{ type: 'snail', count: 26, interval: 0.26 }, { type: 'dragon', count: 8, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.26 }], bonus: 1280 },
+  { enemies: [{ type: 'bee', count: 65, interval: 0.06 }, { type: 'butterfly', count: 35, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.34 }, { type: 'mist_moth', count: 9, interval: 0.46 }], bonus: 1040 },
+  { enemies: [{ type: 'snail', count: 26, interval: 0.26 }, { type: 'dragon', count: 8, interval: 1.7 }, { type: 'beetle', count: 18, interval: 0.26 }, { type: 'armored_ladybug', count: 9, interval: 0.5 }], bonus: 1280 },
   { enemies: [{ type: 'beetle', count: 32, interval: 0.19 }, { type: 'butterfly', count: 40, interval: 0.09 }, { type: 'snail', count: 24, interval: 0.22 }, { type: 'bee', count: 35, interval: 0.06 }], bonus: 1400 },
-  { enemies: [{ type: 'dragon', count: 13, interval: 1.8 }, { type: 'beetle', count: 26, interval: 0.23 }, { type: 'butterfly', count: 40, interval: 0.08 }, { type: 'bee', count: 52, interval: 0.04 }], bonus: 2100 },
+  { enemies: [{ type: 'dragon', count: 13, interval: 1.8 }, { type: 'beetle', count: 26, interval: 0.23 }, { type: 'butterfly', count: 40, interval: 0.08 }, { type: 'bee', count: 52, interval: 0.04 }, { type: 'armored_ladybug', count: 11, interval: 0.35 }, { type: 'mist_moth', count: 11, interval: 0.4 }], bonus: 2100 },
 ];
 
 // 第十一關：雙子虹橋 (雙島空域)，巨龍長隊與甲蟲方陣
@@ -575,16 +584,16 @@ const WAVE_DATA_L11 = [
   { enemies: [{ type: 'bee', count: 28, interval: 0.2 }, { type: 'snail', count: 12, interval: 0.8 }, { type: 'beetle', count: 9, interval: 0.8 }], bonus: 360 },
   { enemies: [{ type: 'bee', count: 30, interval: 0.14 }, { type: 'beetle', count: 12, interval: 0.65 }, { type: 'butterfly', count: 12, interval: 0.39 }], bonus: 410 },
   { enemies: [{ type: 'caterpillar', count: 18, interval: 0.24 }, { type: 'snail', count: 13, interval: 0.75 }, { type: 'beetle', count: 12, interval: 0.5 }], bonus: 510 },
-  { enemies: [{ type: 'bee', count: 38, interval: 0.13 }, { type: 'beetle', count: 14, interval: 0.48 }, { type: 'butterfly', count: 15, interval: 0.31 }], bonus: 570 },
-  { enemies: [{ type: 'butterfly', count: 26, interval: 0.17 }, { type: 'bee', count: 30, interval: 0.14 }, { type: 'dragon', count: 5, interval: 1.9 }], bonus: 830 },
+  { enemies: [{ type: 'bee', count: 38, interval: 0.13 }, { type: 'beetle', count: 14, interval: 0.48 }, { type: 'butterfly', count: 15, interval: 0.31 }, { type: 'mist_moth', count: 6, interval: 0.65 }], bonus: 570 },
+  { enemies: [{ type: 'butterfly', count: 26, interval: 0.17 }, { type: 'bee', count: 30, interval: 0.14 }, { type: 'dragon', count: 5, interval: 1.9 }, { type: 'armored_ladybug', count: 6, interval: 0.95 }], bonus: 830 },
   { enemies: [{ type: 'snail', count: 20, interval: 0.5 }, { type: 'beetle', count: 20, interval: 0.38 }, { type: 'bee', count: 26, interval: 0.15 }], bonus: 770 },
-  { enemies: [{ type: 'bee', count: 52, interval: 0.08 }, { type: 'butterfly', count: 33, interval: 0.13 }, { type: 'beetle', count: 12, interval: 0.4 }], bonus: 860 },
-  { enemies: [{ type: 'dragon', count: 8, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.35 }, { type: 'caterpillar', count: 28, interval: 0.14 }], bonus: 1140 },
+  { enemies: [{ type: 'bee', count: 52, interval: 0.08 }, { type: 'butterfly', count: 33, interval: 0.13 }, { type: 'beetle', count: 12, interval: 0.4 }, { type: 'mist_moth', count: 8, interval: 0.55 }], bonus: 860 },
+  { enemies: [{ type: 'dragon', count: 8, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.35 }, { type: 'caterpillar', count: 28, interval: 0.14 }, { type: 'armored_ladybug', count: 8, interval: 0.65 }], bonus: 1140 },
   { enemies: [{ type: 'butterfly', count: 43, interval: 0.1 }, { type: 'beetle', count: 26, interval: 0.31 }, { type: 'snail', count: 14, interval: 0.45 }], bonus: 1040 },
-  { enemies: [{ type: 'bee', count: 70, interval: 0.05 }, { type: 'butterfly', count: 38, interval: 0.1 }, { type: 'beetle', count: 14, interval: 0.31 }], bonus: 1140 },
-  { enemies: [{ type: 'snail', count: 28, interval: 0.24 }, { type: 'dragon', count: 9, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.24 }], bonus: 1390 },
+  { enemies: [{ type: 'bee', count: 70, interval: 0.05 }, { type: 'butterfly', count: 38, interval: 0.1 }, { type: 'beetle', count: 14, interval: 0.31 }, { type: 'mist_moth', count: 9, interval: 0.42 }], bonus: 1140 },
+  { enemies: [{ type: 'snail', count: 28, interval: 0.24 }, { type: 'dragon', count: 9, interval: 1.6 }, { type: 'beetle', count: 20, interval: 0.24 }, { type: 'armored_ladybug', count: 10, interval: 0.46 }], bonus: 1390 },
   { enemies: [{ type: 'beetle', count: 35, interval: 0.17 }, { type: 'butterfly', count: 43, interval: 0.08 }, { type: 'snail', count: 26, interval: 0.2 }, { type: 'bee', count: 38, interval: 0.05 }], bonus: 1530 },
-  { enemies: [{ type: 'dragon', count: 14, interval: 1.7 }, { type: 'beetle', count: 28, interval: 0.21 }, { type: 'butterfly', count: 43, interval: 0.07 }, { type: 'bee', count: 56, interval: 0.035 }], bonus: 2300 },
+  { enemies: [{ type: 'dragon', count: 14, interval: 1.7 }, { type: 'beetle', count: 28, interval: 0.21 }, { type: 'butterfly', count: 43, interval: 0.07 }, { type: 'bee', count: 56, interval: 0.035 }, { type: 'armored_ladybug', count: 12, interval: 0.32 }, { type: 'mist_moth', count: 12, interval: 0.37 }], bonus: 2300 },
 ];
 
 // 第十二關（真・神話終極關）：迷宮核心 (極限微操)，16 隻終極巨龍全軍壓境
@@ -594,16 +603,16 @@ const WAVE_DATA_L12 = [
   { enemies: [{ type: 'bee', count: 30, interval: 0.18 }, { type: 'snail', count: 13, interval: 0.75 }, { type: 'beetle', count: 10, interval: 0.75 }], bonus: 400 },
   { enemies: [{ type: 'bee', count: 32, interval: 0.12 }, { type: 'beetle', count: 13, interval: 0.6 }, { type: 'butterfly', count: 13, interval: 0.36 }], bonus: 460 },
   { enemies: [{ type: 'caterpillar', count: 20, interval: 0.21 }, { type: 'snail', count: 14, interval: 0.7 }, { type: 'beetle', count: 13, interval: 0.45 }], bonus: 570 },
-  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'beetle', count: 15, interval: 0.44 }, { type: 'butterfly', count: 17, interval: 0.28 }], bonus: 640 },
-  { enemies: [{ type: 'butterfly', count: 28, interval: 0.15 }, { type: 'bee', count: 32, interval: 0.12 }, { type: 'dragon', count: 6, interval: 1.8 }], bonus: 930 },
+  { enemies: [{ type: 'bee', count: 42, interval: 0.11 }, { type: 'beetle', count: 15, interval: 0.44 }, { type: 'butterfly', count: 17, interval: 0.28 }, { type: 'mist_moth', count: 6, interval: 0.6 }], bonus: 640 },
+  { enemies: [{ type: 'butterfly', count: 28, interval: 0.15 }, { type: 'bee', count: 32, interval: 0.12 }, { type: 'dragon', count: 6, interval: 1.8 }, { type: 'armored_ladybug', count: 7, interval: 0.9 }], bonus: 930 },
   { enemies: [{ type: 'snail', count: 22, interval: 0.45 }, { type: 'beetle', count: 22, interval: 0.34 }, { type: 'bee', count: 28, interval: 0.13 }], bonus: 860 },
-  { enemies: [{ type: 'bee', count: 56, interval: 0.07 }, { type: 'butterfly', count: 36, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.36 }], bonus: 970 },
-  { enemies: [{ type: 'dragon', count: 9, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.31 }, { type: 'caterpillar', count: 30, interval: 0.12 }], bonus: 1280 },
+  { enemies: [{ type: 'bee', count: 56, interval: 0.07 }, { type: 'butterfly', count: 36, interval: 0.11 }, { type: 'beetle', count: 13, interval: 0.36 }, { type: 'mist_moth', count: 8, interval: 0.5 }], bonus: 970 },
+  { enemies: [{ type: 'dragon', count: 9, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.31 }, { type: 'caterpillar', count: 30, interval: 0.12 }, { type: 'armored_ladybug', count: 9, interval: 0.6 }], bonus: 1280 },
   { enemies: [{ type: 'butterfly', count: 46, interval: 0.09 }, { type: 'beetle', count: 28, interval: 0.28 }, { type: 'snail', count: 16, interval: 0.4 }], bonus: 1160 },
-  { enemies: [{ type: 'bee', count: 75, interval: 0.045 }, { type: 'butterfly', count: 42, interval: 0.09 }, { type: 'beetle', count: 16, interval: 0.28 }], bonus: 1280 },
-  { enemies: [{ type: 'snail', count: 30, interval: 0.21 }, { type: 'dragon', count: 10, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.21 }], bonus: 1550 },
+  { enemies: [{ type: 'bee', count: 75, interval: 0.045 }, { type: 'butterfly', count: 42, interval: 0.09 }, { type: 'beetle', count: 16, interval: 0.28 }, { type: 'mist_moth', count: 10, interval: 0.4 }], bonus: 1280 },
+  { enemies: [{ type: 'snail', count: 30, interval: 0.21 }, { type: 'dragon', count: 10, interval: 1.5 }, { type: 'beetle', count: 22, interval: 0.21 }, { type: 'armored_ladybug', count: 11, interval: 0.42 }], bonus: 1550 },
   { enemies: [{ type: 'beetle', count: 38, interval: 0.15 }, { type: 'butterfly', count: 46, interval: 0.07 }, { type: 'snail', count: 28, interval: 0.18 }, { type: 'bee', count: 42, interval: 0.045 }], bonus: 1720 },
-  { enemies: [{ type: 'dragon', count: 16, interval: 1.6 }, { type: 'beetle', count: 30, interval: 0.19 }, { type: 'butterfly', count: 46, interval: 0.06 }, { type: 'bee', count: 60, interval: 0.03 }], bonus: 2600 },
+  { enemies: [{ type: 'dragon', count: 16, interval: 1.6 }, { type: 'beetle', count: 30, interval: 0.19 }, { type: 'butterfly', count: 46, interval: 0.06 }, { type: 'bee', count: 60, interval: 0.03 }, { type: 'armored_ladybug', count: 13, interval: 0.3 }, { type: 'mist_moth', count: 13, interval: 0.34 }], bonus: 2600 },
 ];
 
 // ─── 5.1 關卡定義：地圖 + 專屬波次 (12 大關卡全部獨立專屬地圖) ─────
@@ -748,6 +757,33 @@ function debugAddEssence(n) {
   return total;
 }
 window.dbgAddEssence = debugAddEssence;
+
+// 測試用：不用實際打到那一波，直接在偵錯面板的小畫布上畫出指定怪物，用來確認美術是不是真的接上了
+// （跟 Enemy.render() 走同一套判斷順序：SVG 圖片 → 手繪 Sprites 函式 → emoji fallback）
+function debugPreviewEnemy(typeKey) {
+  const canvas = document.getElementById('debug-enemy-preview-canvas');
+  const data = ENEMY_DATA[typeKey];
+  if (!canvas || !data) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.scale(1.6, 1.6);
+  const drawFunc = Sprites['drawEnemy_' + typeKey];
+  let usedFallback = false;
+  if (drawFunc) {
+    drawFunc.call(Sprites, ctx, performance.now() / 1000, false);
+  } else {
+    usedFallback = true;
+    ctx.font = '28px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(data.emoji, 0, 0);
+  }
+  ctx.restore();
+  dbgLog(`🧪 預覽怪物：${data.name}（${usedFallback ? '⚠️ 目前是 emoji fallback，還沒有手繪精靈' : '✅ 使用手繪 Sprites 精靈'}）`);
+}
+window.dbgPreviewEnemy = debugPreviewEnemy;
 
 // ─── 5.3 商店：永久貨幣、塔與技能解鎖 ─────────────────
 // 一開始就能用的塔（不用商店解鎖）；其餘的塔與 2 個主動技能都要用「魔法水晶」在商店解鎖
@@ -1794,6 +1830,154 @@ const Sprites = {
       ctx.beginPath(); ctx.arc(2.5, -5, 1.2, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
+  },
+
+  // 7. 裝甲瓢蟲 (S3 龜甲陣青銅圓盾衛士 / 黃金神盾王)
+  drawEnemy_armored_ladybug: function(ctx, time, isBoss) {
+    ctx.save();
+    const bob = Math.sin(time * 5) * 1.0;
+    ctx.translate(0, bob);
+
+    if (isBoss) {
+      // 腳足 (強化金甲足)
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 6, 2); ctx.lineTo(s * 13, 8); ctx.lineTo(s * 15, 15);
+        ctx.moveTo(s * 5, 8); ctx.lineTo(s * 11, 15);
+        ctx.stroke();
+      });
+
+      // 巨型神金凸面圓盾 (Boss 形態)
+      const rg = ctx.createRadialGradient(-3, -3, 2, 0, 0, 16);
+      rg.addColorStop(0, '#fffde7'); rg.addColorStop(0.3, '#ffd600'); rg.addColorStop(0.7, '#ff8f00'); rg.addColorStop(1, '#b71c1c');
+      ctx.fillStyle = rg;
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // 盾面鉚釘環
+      ctx.fillStyle = '#b71c1c';
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        const rx = Math.cos(a) * 12;
+        const ry = Math.sin(a) * 12;
+        ctx.beginPath(); ctx.arc(rx, ry, 1.3, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // 盾心紅寶石撞擊錐 (Umbo)
+      ctx.fillStyle = '#b71c1c';
+      ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-1.2, -1.2, 2.2, 0, Math.PI * 2); ctx.fill();
+
+      // 皇冠
+      this.drawMiniCrown(ctx, 0, -18);
+
+      // 雙目
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath(); ctx.arc(-3.5, -12, 1.3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5, -12, 1.3, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // 普通 S3 龜甲陣青銅圓盾
+      // 短粗重裝足
+      ctx.strokeStyle = '#212121'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 6, 2); ctx.lineTo(s * 11, 7); ctx.lineTo(s * 13, 13);
+        ctx.moveTo(s * 5, 7); ctx.lineTo(s * 9, 13);
+        ctx.stroke();
+      });
+
+      // 巨型凸面青銅圓盾 (覆蓋全背與頭頂)
+      const rg = ctx.createRadialGradient(-3, -3, 2, 0, 0, 14);
+      rg.addColorStop(0, '#ffe082'); rg.addColorStop(0.3, '#ffb300'); rg.addColorStop(0.8, '#ff6f00'); rg.addColorStop(1, '#3e2723');
+      ctx.fillStyle = rg;
+      ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(0, 0, 13.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // 盾圈鉚釘環
+      ctx.fillStyle = '#3e2723';
+      for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+        const rx = Math.cos(a) * 10.5;
+        const ry = Math.sin(a) * 10.5;
+        ctx.beginPath(); ctx.arc(rx, ry, 1.1, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // 盾心尖銳撞擊錐 (Umbo)
+      ctx.fillStyle = '#b71c1c';
+      ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-1, -1, 1.8, 0, Math.PI * 2); ctx.fill();
+
+      // 盾下露出的亮藍機械雙目
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath(); ctx.arc(-3, -11, 1.1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -11, 1.1, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  },
+
+  // 8. 迷霧幽蛾 (M4 隱匿呼吸薄暮 / 零粒子純漸層)
+  drawEnemy_mist_moth: function(ctx, time, isBoss) {
+    ctx.save();
+    const bob = Math.sin(time * 4) * 2;
+    const flap = Math.sin(time * 20) * 0.4;
+    // 呼吸式隱匿半透明度 (35% ~ 75% 波動，零額外粒子)
+    const pulse = 0.45 + Math.sin(time * 3) * 0.28;
+    ctx.translate(0, bob);
+
+    ctx.save();
+    ctx.globalAlpha = isBoss ? Math.min(1, pulse + 0.2) : pulse;
+
+    // 幽幻雙翅 (薄暮彩光)
+    ctx.save();
+    ctx.rotate(flap * 0.3);
+    const wg = ctx.createLinearGradient(-12, -10, 12, 10);
+    if (isBoss) {
+      wg.addColorStop(0, '#ffd600'); wg.addColorStop(0.5, '#e040fb'); wg.addColorStop(1, '#00e5ff');
+    } else {
+      wg.addColorStop(0, '#ff4081'); wg.addColorStop(0.5, '#7c4dff'); wg.addColorStop(1, '#18ffff');
+    }
+    ctx.fillStyle = wg;
+    ctx.strokeStyle = isBoss ? '#ffd600' : 'rgba(255,255,255,0.7)';
+    ctx.lineWidth = 1;
+
+    // 主副翅
+    [-1, 1].forEach(s => {
+      ctx.beginPath(); ctx.ellipse(s * 8, -4, 7.5, 11, s * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(s * 6, 5, 5, 7.5, s * 0.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+      // 符文魔眼
+      ctx.fillStyle = '#18ffff';
+      ctx.beginPath(); ctx.arc(s * 8, -4, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#311b92';
+      ctx.beginPath(); ctx.arc(s * 8, -4, 1, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+
+    // 幽靈絨毛身軀
+    ctx.fillStyle = isBoss ? '#fffde7' : '#ede7f6';
+    ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+    // 羽毛觸角
+    ctx.strokeStyle = '#e040fb'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(-1.5, -6); ctx.quadraticCurveTo(-6, -12, -10, -14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(1.5, -6); ctx.quadraticCurveTo(6, -12, 10, -14); ctx.stroke();
+
+    if (isBoss) {
+      this.drawMiniCrown(ctx, 0, -13);
+      ctx.fillStyle = '#ff4081';
+      ctx.beginPath(); ctx.arc(-1.5, -6, 1.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5, -6, 1.2, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = '#ff4081';
+      ctx.beginPath(); ctx.arc(-1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-1.8, -5.8, 0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(1.2, -5.8, 0.4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    ctx.restore();
   }
 };
 
@@ -2117,7 +2301,7 @@ class Enemy {
     // 特性旗標與技能計時
     this.canEnrage = !!data.canEnrage;
     this.isEnraged = false;
-    this.armor = data.armor || 0; // 0.5 = 50% 物理減傷
+    this.resist = data.resist || {}; // e.g. { physical: 0.6 } = 對物理傷害減傷 60%
     this.isBoss = !!data.isBoss;
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
     this.summonedStages = new Set();
@@ -2210,14 +2394,12 @@ class Enemy {
     }
   }
 
-  takeDamage(amount, slowFactor, slowDuration, poisonDps, poisonDuration, isPhysical = false, game = null) {
+  takeDamage(amount, slowFactor, slowDuration, poisonDps, poisonDuration, damageType = null, game = null) {
     if (typeof amount !== 'number' || isNaN(amount) || amount <= 0) return;
 
-    // 鐵甲甲蟲物理減傷 25%（原本 50% 太重，新手開局只有 petal 這種物理塔可用時打不動），非物理（毒/雷/冰/流星）全額承受
-    let finalAmount = amount;
-    if (this.armor > 0 && isPhysical) {
-      finalAmount = amount * (1 - this.armor);
-    }
+    // 依傷害類型套用該敵人對應抗性；damageType 為 null 或該敵人沒有對應抗性一律不減傷
+    const resistRatio = this.resist[damageType] || 0;
+    const finalAmount = amount * (1 - resistRatio);
     this.hp = Math.max(0, this.hp - finalAmount);
     this.hitFlash = 1;
 
@@ -2326,6 +2508,12 @@ class Enemy {
       const drawFunc = Sprites['drawEnemy_' + this.typeKey];
       if (drawFunc) {
         drawFunc.call(Sprites, ctx, this.animTime, !!this.isBoss);
+      } else {
+        // Fallback：還沒有手繪 Canvas 精靈的敵人類型直接畫 emoji，避免整隻怪變成隱形（只剩陰影＋血條）
+        ctx.font = '28px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.emoji, 0, 0);
       }
     }
 
@@ -2373,6 +2561,7 @@ class Projectile {
     this.piercing = tower.getStats().piercing || 0;
     this.piercedEnemies = new Set();
     this.towerType = tower.typeKey;
+    this.damageType = TOWER_DATA[tower.typeKey]?.damageType || 'physical';
 
     // Thunder Chain & Poison DOT properties
     this.chainCount = tower.getStats().chainCount || 0;
@@ -2419,10 +2608,9 @@ class Projectile {
 
   onHit(game) {
     if (this.target && this.target.alive) {
-      const isPhysical = (this.towerType === 'petal' || this.towerType === 'candy');
       // 穿透彈每貫穿一體衰減 20% 傷害，比照連鎖閃電的衰減比例，避免穿透塔在多怪排隊時全額暴擊每一隻
       const pierceFalloff = this.piercing > 0 ? Math.pow(0.8, this.piercedEnemies.size) : 1;
-      this.target.takeDamage(this.damage * pierceFalloff, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, isPhysical, game);
+      this.target.takeDamage(this.damage * pierceFalloff, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, this.damageType, game);
       this.piercedEnemies.add(this.target);
       this.chainedEnemies.add(this.target);
 
@@ -2443,7 +2631,7 @@ class Projectile {
           if (nextTarget) {
             this.chainedEnemies.add(nextTarget);
             const chainDmg = this.damage * Math.pow(0.8, c); // 每次彈射衰減 20% 傷害
-            nextTarget.takeDamage(chainDmg, null, 0, 0, 0, false, game); // 閃電為魔法傷害
+            nextTarget.takeDamage(chainDmg, null, 0, 0, 0, 'magic', game); // 閃電為魔法傷害
 
             // 閃電折射火花粒子
             for (let k = 0; k < 5; k++) {
@@ -2931,6 +3119,14 @@ class AssetManager {
       icon_star: 'assets/ui/icon_star.svg',
       icon_settings: 'assets/ui/icon_settings.svg',
       icon_trophy: 'assets/ui/icon_trophy.svg',
+      enemy_caterpillar: 'assets/enemies/enemy_caterpillar.svg',
+      enemy_bee: 'assets/enemies/enemy_bee.svg',
+      enemy_snail: 'assets/enemies/enemy_snail.svg',
+      enemy_beetle: 'assets/enemies/enemy_beetle.svg',
+      enemy_butterfly: 'assets/enemies/enemy_butterfly.svg',
+      enemy_dragon: 'assets/enemies/enemy_dragon.svg',
+      enemy_armored_ladybug: 'assets/enemies/enemy_armored_ladybug.svg',
+      enemy_mist_moth: 'assets/enemies/enemy_mist_moth.svg',
     };
 
     const promises = [];
@@ -4245,50 +4441,50 @@ class Game {
       e.preventDefault();
     }, { passive: false });
 
-    // 阻斷 iOS 快速雙擊觸發 Viewport Zoom（在 touchstart 階段若兩次間隔小於 350ms 且非可點擊元件，直接 preventDefault）
-    let lastTouchTime = 0;
+    // 阻斷 iOS 快速雙擊觸發 Viewport Zoom：同一個位置附近、350ms 內點第二次才算雙擊。
+    // 按鈕/榮譽榜彈窗過去被整個排除在外，理由是怕擋住點擊，但這樣快速連點按鈕
+    // （例如商店「締結契約」）或在榮譽榜裡連點，就完全沒有防護，會被 iOS 判定成雙擊放大。
+    // bindTap 綁定的按鈕本來就是靠自己的 touchend 處理點擊，不吃這裡的 preventDefault；
+    // 商店這類用原生 click 事件的按鈕，最多只是「350ms 內同位置的第二下不會再觸發一次」，
+    // 對一次性購買按鈕來說是好事（不會被連點誤買兩次）。
+    //
+    // 注意：判斷「是不是雙擊」一定要在 touchstart 當下就算好、記住結果給 touchend 用，
+    // 不能讓 touchend 自己重新拿 lastTapTime 去比較——touchstart 結尾已經把 lastTapTime
+    // 更新成「這次觸控自己」的時間，等這次的 touchend 觸發時再比一次，比出來的其實是
+    // 「這次觸控按了多久」，一般正常點擊都遠小於 300ms，等於每次單純點擊都會被誤判成
+    // 雙擊而擋掉，按鈕就完全點不到了。
+    let lastTapTime = 0;
+    let lastTapX = 0;
+    let lastTapY = 0;
+    let currentTapIsDouble = false;
+    const isDoubleTapExempt = (target) => target && (
+      target.tagName === 'SELECT' ||
+      target.tagName === 'OPTION' ||
+      target.closest('select') ||
+      target.closest('.level-carousel-card') ||
+      target.closest('.tower-item') ||
+      target.closest('.menu-champion-card') ||
+      target.closest('#debug-container')
+    );
     document.addEventListener('touchstart', (e) => {
       const now = Date.now();
-      if (now - lastTouchTime <= 350) {
-        // 如果不是按鈕或卡片元件，阻止雙擊放大行為（商店的頁籤/卡片按鈕都是 <button>，
-        // 一律會被下面的 isClickable 判斷排除，不能額外用 #shop-modal 整包攔截，否則商店本身也點不動）
-        const isClickable = e.target && (
-          e.target.tagName === 'BUTTON' ||
-          e.target.tagName === 'SELECT' ||
-          e.target.tagName === 'OPTION' ||
-          e.target.closest('button') ||
-          e.target.closest('select') ||
-          e.target.closest('.level-carousel-card') ||
-          e.target.closest('.tower-item') ||
-          e.target.closest('.menu-champion-card') ||
-          e.target.closest('.leaderboard-modal-content') ||
-          e.target.closest('#debug-container')
-        );
-        if (!isClickable && e.cancelable) {
-          e.preventDefault();
-        }
+      const touch = e.touches[0];
+      currentTapIsDouble = !!touch
+        && (now - lastTapTime <= 350)
+        && Math.hypot(touch.clientX - lastTapX, touch.clientY - lastTapY) < 40;
+      if (currentTapIsDouble && !isDoubleTapExempt(e.target) && e.cancelable) {
+        e.preventDefault();
       }
-      lastTouchTime = now;
+      if (touch) {
+        lastTapTime = now;
+        lastTapX = touch.clientX;
+        lastTapY = touch.clientY;
+      }
     }, { passive: false });
 
     document.addEventListener('touchend', (e) => {
-      const now = Date.now();
-      if (now - lastTouchTime <= 300) {
-        const isClickable = e.target && (
-          e.target.tagName === 'BUTTON' ||
-          e.target.tagName === 'SELECT' ||
-          e.target.tagName === 'OPTION' ||
-          e.target.closest('button') ||
-          e.target.closest('select') ||
-          e.target.closest('.level-carousel-card') ||
-          e.target.closest('.tower-item') ||
-          e.target.closest('.menu-champion-card') ||
-          e.target.closest('.leaderboard-modal-content') ||
-          e.target.closest('#debug-container')
-        );
-        if (!isClickable && e.cancelable) {
-          e.preventDefault();
-        }
+      if (currentTapIsDouble && !isDoubleTapExempt(e.target) && e.cancelable) {
+        e.preventDefault();
       }
     }, { passive: false });
 
@@ -4614,13 +4810,13 @@ class Game {
       });
     }
 
-    // 範圍傷害判定
+    // 範圍傷害判定（技能為「真實傷害」，無視所有敵人抗性，不歸屬任何塔的傷害類型）
     let hitCount = 0;
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
       const d = dist(px, py, enemy.x, enemy.y);
       if (d <= skill.range) {
-        enemy.takeDamage(skill.damage, null, 0);
+        enemy.takeDamage(skill.damage, null, 0, 0, 0, 'true', this);
         hitCount++;
       }
     }
@@ -5719,7 +5915,18 @@ class Game {
       item.classList.remove('selected');
       const details = item.querySelector('.tower-details');
       if (details) {
-        details.innerHTML = `<div class="tower-cost">💰${cost}</div>`;
+        // 不能用 details.innerHTML = ... 整個砍掉重建：如果手指拖曳的起點剛好按在
+        // .tower-cost 這個子元素上，拖曳途中只要金幣變動觸發這裡重繪，原本那個元素
+        // 就從 DOM 上消失了，瀏覽器會直接停止再送出這根手指後續的 touchmove/touchend
+        // （這是拖曳建塔會卡住不跟手的真正原因）。改成原地更新文字，同一個節點留著不動。
+        let costEl = details.querySelector('.tower-cost');
+        if (!costEl) {
+          costEl = document.createElement('div');
+          costEl.className = 'tower-cost';
+          details.appendChild(costEl);
+        }
+        const costText = `💰${cost}`;
+        if (costEl.textContent !== costText) costEl.textContent = costText;
       }
     });
   }
@@ -5828,7 +6035,7 @@ class Game {
           if (!enemy.alive || proj.piercedEnemies.has(enemy)) continue;
           const d = dist(proj.x, proj.y, enemy.x, enemy.y);
           if (d <= proj.splashRadius) {
-            enemy.takeDamage(proj.damage * 0.5, proj.slowFactor, proj.slowDuration, 0, 0, false, this);
+            enemy.takeDamage(proj.damage * 0.5, proj.slowFactor, proj.slowDuration, 0, 0, proj.damageType, this);
           }
         }
         // Splash effect

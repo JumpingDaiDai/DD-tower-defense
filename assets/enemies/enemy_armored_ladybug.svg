@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <!-- 青銅凸面重盾立體球形漸層 -->
+    <radialGradient id="bronzeShieldGrad" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#fff8e1"/>
+      <stop offset="25%" stop-color="#ffd54f"/>
+      <stop offset="60%" stop-color="#ff8f00"/>
+      <stop offset="100%" stop-color="#3e2723"/>
+    </radialGradient>
+    <!-- 盾心金屬尖錐漸層 (Umbo) -->
+    <radialGradient id="umboGrad" cx="35%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#ff8a80"/>
+      <stop offset="40%" stop-color="#d50000"/>
+      <stop offset="100%" stop-color="#4a0007"/>
+    </radialGradient>
+    <!-- 金屬鉚釘漸層 -->
+    <radialGradient id="rivetGrad" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#ffe082"/>
+      <stop offset="100%" stop-color="#4e342e"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 1. 落地沉重陰影 -->
+  <ellipse cx="50" cy="88" rx="36" ry="9" fill="rgba(0,0,0,0.3)"/>
+
+  <!-- 2. 短粗重裝足 (盾下伸出之強化足) -->
+  <g stroke="#263238" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- 左足 -->
+    <path d="M 28,45 L 12,38 L 8,46"/>
+    <path d="M 24,60 L 8,62 L 6,70"/>
+    <path d="M 26,74 L 14,84 L 12,90"/>
+    <!-- 右足 -->
+    <path d="M 72,45 L 88,38 L 92,46"/>
+    <path d="M 76,60 L 92,62 L 94,70"/>
+    <path d="M 74,74 L 86,84 L 88,90"/>
+  </g>
+
+  <!-- 3. 盾牌上方露出的瓢蟲頭部與護目鏡雙目 -->
+  <path d="M 38,28 Q 50,16 62,28 Q 65,34 50,36 Q 35,34 38,28 Z" fill="#212121" stroke="#37474f" stroke-width="2"/>
+  <!-- 雙眼亮藍光學護目鏡 -->
+  <ellipse cx="43" cy="26" rx="3" ry="4" fill="#00e5ff"/>
+  <ellipse cx="57" cy="26" rx="3" ry="4" fill="#00e5ff"/>
+  <circle cx="44" cy="25" r="1.2" fill="#ffffff"/>
+  <circle cx="58" cy="25" r="1.2" fill="#ffffff"/>
+  <!-- 觸角天線 -->
+  <path d="M 43,20 Q 36,10 30,6" fill="none" stroke="#263238" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="30" cy="6" r="2.5" fill="#ff1744"/>
+  <path d="M 57,20 Q 64,10 70,6" fill="none" stroke="#263238" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="70" cy="6" r="2.5" fill="#ff1744"/>
+
+  <!-- 4. 巨型青銅凸面圓盾 (覆蓋全背主體) -->
+  <circle cx="50" cy="56" r="33" fill="url(#bronzeShieldGrad)" stroke="#3e2723" stroke-width="3"/>
+
+  <!-- 5. 盾面八方位重裝鉚釘環 -->
+  <circle cx="50" cy="28" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="70" cy="36" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="78" cy="56" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="70" cy="76" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="50" cy="84" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="30" cy="76" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="22" cy="56" r="2.8" fill="url(#rivetGrad)"/>
+  <circle cx="30" cy="36" r="2.8" fill="url(#rivetGrad)"/>
+
+  <!-- 6. 內層同心咬合防護環 -->
+  <circle cx="50" cy="56" r="20" fill="none" stroke="#3e2723" stroke-width="2" stroke-dasharray="6,4"/>
+
+  <!-- 7. 盾心尖銳撞擊突刺錐 (Umbo) -->
+  <circle cx="50" cy="56" r="12" fill="url(#umboGrad)" stroke="#3e2723" stroke-width="2"/>
+  <!-- 錐尖金屬高光點 -->
+  <circle cx="47" cy="53" r="3.5" fill="#ffd54f" opacity="0.9"/>
+  <circle cx="46" cy="52" r="1.5" fill="#ffffff"/>
+
+  <!-- 8. 迎光弧形立體高光白邊 -->
+  <path d="M 28,40 Q 40,28 62,32" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="3" stroke-linecap="round"/>
+</svg>

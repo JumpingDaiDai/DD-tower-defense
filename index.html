@@ -406,9 +406,21 @@
           +100 ✨
         </button>
       </div>
+      <div style="border-bottom:1px solid #444;border-top:1px solid #444;padding:6px 0 4px;margin:8px 0 6px;font-weight:bold;color:#ffcc00;">
+        👾 怪物美術預覽（不用打到那一波）
+      </div>
+      <canvas id="debug-enemy-preview-canvas" width="80" height="80" style="display:block;background:#111;border-radius:6px;margin:0 auto 6px;"></canvas>
+      <div style="display:flex;gap:4px;">
+        <button style="flex:1;background:#fce4ec;color:#880e4f;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgPreviewEnemy) window.dbgPreviewEnemy('armored_ladybug');">
+          🐞 裝甲瓢蟲
+        </button>
+        <button style="flex:1;background:#ede7f6;color:#4a148c;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgPreviewEnemy) window.dbgPreviewEnemy('mist_moth');">
+          🦇 迷霧幽蛾
+        </button>
+      </div>
     </div>
   </div>
 
-  <script src="game.js?v=1.6.2"></script>
+  <script src="game.js?v=1.6.8"></script>
 </body>
 </html>
