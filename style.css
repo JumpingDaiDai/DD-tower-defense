@@ -545,7 +545,10 @@ html, body {
   justify-content: center;
 }
 
-/* --- Screens (Overlay - 4號晨曦暖陽金沙明亮背景) --- */
+.hidden {
+  display: none !important;
+}
+
 .screen {
   position: absolute;
   inset: 0;
@@ -592,10 +595,129 @@ html, body {
 }
 
 .title-illustration {
-  margin-bottom: 6px;
+  margin: 0 auto 6px;
   animation: bounce-in 0.6s ease-out;
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: relative;
+  width: fit-content;
+}
+
+.spirit-tree-up-badge {
+  position: absolute;
+  top: -2px;
+  right: -6px;
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 230, 118, 0.6), 0 0 10px rgba(0, 229, 255, 0.4);
+  pointer-events: none;
+  animation: spirit-up-float 1.2s ease-in-out infinite alternate;
+  letter-spacing: 0.5px;
+  z-index: 5;
+}
+
+/* 精靈樹可升級時的超亮晶晶流光光暈 + 環繞星光閃爍（純 CSS 幾何閃爍，無粒子腳本） */
+#menu-title-canvas.spirit-tree-glowing {
+  animation: spirit-tree-aura 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes spirit-tree-aura {
+  0% {
+    filter: drop-shadow(0 0 8px #00e676) drop-shadow(0 0 16px #00e5ff) drop-shadow(0 0 24px #ffd700);
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 16px #00e676) drop-shadow(0 0 28px #00e5ff) drop-shadow(0 0 40px #ffea00) brightness(1.15);
+    transform: scale(1.06);
+  }
+  100% {
+    filter: drop-shadow(0 0 10px #00e676) drop-shadow(0 0 20px #00e5ff) drop-shadow(0 0 30px #ffd700);
+    transform: scale(1.02);
+  }
+}
+
+/* 四周環繞閃爍的亮晶晶星芒 */
+.spirit-tree-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.sparkle-star {
+  position: absolute;
+  font-family: serif;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff9c4;
+  text-shadow: 0 0 6px #ffd700, 0 0 12px #00e5ff;
+  animation: sparkle-twinkle 1.2s ease-in-out infinite alternate;
+}
+
+.sp-1 {
+  top: -4px;
+  left: 6px;
+  font-size: 16px;
+  color: #00e5ff;
+  animation-delay: 0s;
+  animation-duration: 1.1s;
+}
+
+.sp-2 {
+  top: 18px;
+  right: -8px;
+  font-size: 14px;
+  color: #ffd700;
+  animation-delay: 0.3s;
+  animation-duration: 1.4s;
+}
+
+.sp-3 {
+  bottom: 8px;
+  left: -6px;
+  font-size: 15px;
+  color: #69f0ae;
+  animation-delay: 0.6s;
+  animation-duration: 0.9s;
+}
+
+.sp-4 {
+  top: -8px;
+  right: 18px;
+  font-size: 13px;
+  animation-delay: 0.2s;
+  animation-duration: 1.3s;
+}
+
+@keyframes sparkle-twinkle {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.6) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3) rotate(35deg);
+    filter: brightness(1.4);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scale(0.8) rotate(-15deg);
+  }
+}
+
+@keyframes spirit-up-float {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.08);
+  }
 }
 
 .end-illustration {
@@ -837,6 +959,17 @@ html, body {
   justify-content: center;
   border: none;
   outline: none;
+}
+
+.btn-end-next {
+  background: linear-gradient(135deg, #00e676, #00b0ff);
+  color: #fff;
+  font-weight: 900;
+  box-shadow: 0 4px 14px rgba(0, 230, 118, 0.4);
+}
+
+.btn-end-next:active {
+  transform: scale(0.94);
 }
 
 .btn-end-primary {
@@ -1280,6 +1413,14 @@ html, body {
   margin-bottom: 6px;
 }
 
+.shop-card-t1-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
 .shop-card-t1-icon {
   width: 40px;
   height: 40px;
@@ -1290,6 +1431,19 @@ html, body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.shop-card-t1-cost-pill {
+  background: rgba(255, 167, 38, 0.2);
+  border: 1px solid rgba(255, 183, 77, 0.6);
+  color: #ffe082;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 1px 5px;
+  border-radius: 6px;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .shop-card-t1-icon img {
@@ -1344,6 +1498,7 @@ html, body {
 .badge-aoe { background: rgba(255, 61, 0, 0.2); color: #ff9e80; border: 1px solid rgba(255, 61, 0, 0.5); }
 .badge-pierce { background: rgba(255, 193, 7, 0.2); color: #ffe57f; border: 1px solid rgba(255, 193, 7, 0.5); }
 .badge-econ { background: rgba(255, 234, 0, 0.2); color: #ffff8d; border: 1px solid rgba(255, 234, 0, 0.5); }
+.badge-gold-cost { background: rgba(255, 167, 38, 0.25); color: #ffe082; border: 1px solid rgba(255, 167, 38, 0.65); font-weight: 900; }
 .badge-skill { background: rgba(255, 64, 129, 0.2); color: #ff80ab; border: 1px solid rgba(255, 64, 129, 0.5); }
 
 .shop-card-t1-desc {
@@ -1396,11 +1551,27 @@ html, body {
   cursor: not-allowed;
 }
 
-.shop-card-t1-btn.btn-owned {
-  background: rgba(76, 175, 80, 0.2);
-  color: #81c784;
-  border: 1px solid rgba(76, 175, 80, 0.4);
-  cursor: default;
+.shop-card-t1-btn.btn-refund {
+  background: linear-gradient(135deg, #ef5350, #c62828);
+  color: #fff;
+  border: 1px solid #ef5350;
+  box-shadow: 0 2px 8px rgba(239, 83, 80, 0.35);
+  cursor: pointer;
+}
+
+.shop-card-t1-btn.btn-refund:hover {
+  background: linear-gradient(135deg, #f44336, #b71c1c);
+}
+
+.shop-card-t1-btn.btn-refund:active {
+  transform: scale(0.96);
+}
+
+.shop-card-t1-btn.btn-starter {
+  background: rgba(76, 175, 80, 0.15);
+  color: #a5d6a7;
+  border: 1px solid rgba(76, 175, 80, 0.35);
+  cursor: not-allowed;
 }
 
 /* 分區標題 */

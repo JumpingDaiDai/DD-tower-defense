@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#fffdf5">
-  <title>🏰 可愛塔防 - DD Tower Defense</title>
+  <title>🌳 精靈樹保衛戰 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.6.0">
+  <link rel="stylesheet" href="style.css?v=1.6.1">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -128,11 +128,22 @@
     <div id="menu-screen" class="screen">
       <div class="screen-content">
         <div id="menu-version-badge" class="menu-version-badge"></div>
-        <div class="title-illustration">
-          <canvas id="menu-title-canvas" width="80" height="80"></canvas>
+        <div>
+          <div class="title-illustration">
+            <div id="spirit-tree-sparkles" class="spirit-tree-sparkles hidden">
+              <span class="sparkle-star sp-1">✦</span>
+              <span class="sparkle-star sp-2">✧</span>
+              <span class="sparkle-star sp-3">✦</span>
+              <span class="sparkle-star sp-4">✨</span>
+            </div>
+            <canvas id="menu-title-canvas" width="80" height="80"></canvas>
+            <div id="spirit-tree-up-badge" class="spirit-tree-up-badge hidden">
+              <span>UP ▲</span>
+            </div>
+          </div>
         </div>
-        <h1>可愛塔防</h1>
-        <p class="subtitle">保護花園不被可愛小怪物們攻陷！</p>
+        <h1>精靈樹保衛戰</h1>
+        <p class="subtitle">保護精靈樹不被小怪物們攻陷！</p>
 
         <!-- 首頁高分榜 (僅展示第一名，點擊開啟完整英雄榜) -->
         <div id="open-leaderboard-btn" class="menu-champion-card" title="點擊查看 Top 10 英雄榜">
@@ -220,11 +231,11 @@
           </div>
         </div>
 
-        <!-- 主狀態頁籤：全部 / 未解鎖 / 已解鎖 -->
+        <!-- 主狀態頁籤：全部 / 未締約 / 已締約 -->
         <div class="shop-status-tabs">
-          <button class="shop-status-tab-btn active" data-tab="all"><span>📋 全部</span></button>
-          <button class="shop-status-tab-btn" data-tab="locked"><span>🛒 未解鎖</span></button>
-          <button class="shop-status-tab-btn" data-tab="unlocked"><span>📦 已解鎖</span></button>
+          <button class="shop-status-tab-btn active" data-tab="all"><span>全部</span></button>
+          <button class="shop-status-tab-btn" data-tab="locked"><span>未締約</span></button>
+          <button class="shop-status-tab-btn" data-tab="unlocked"><span>已締約</span></button>
         </div>
 
         <!-- 子分類過濾條：全部種類 / 防禦塔 / 魔法技能 -->
@@ -248,7 +259,6 @@
       <div class="screen-content shop-modal-content" style="max-height:none;height:auto;">
         <div class="shop-header-row">
           <div class="shop-title-wrap">
-            <span class="shop-title-icon">🌳</span>
             <h2 style="margin:0; font-size:18px; color:var(--gold,#ffd700);">精靈樹 <span id="spirit-tree-level-badge"></span></h2>
           </div>
           <div class="crystal-pill" title="當前精華餘額">
@@ -257,19 +267,19 @@
           </div>
         </div>
 
-        <div style="padding:14px 4px; text-align:center;">
+        <div style="padding:14px 0 4px; text-align:center; width: 100%;">
           <div style="color:#d4b896; font-size:12px; margin-bottom:4px;">目前強化</div>
           <div id="spirit-tree-current-bonus" style="color:#fff8e7; font-weight:800; font-size:14px; margin-bottom:16px;"></div>
 
           <div id="spirit-tree-next-box">
             <div style="color:#d4b896; font-size:12px; margin-bottom:4px;">下一級</div>
             <div id="spirit-tree-next-bonus" style="color:#80d8ff; font-weight:800; font-size:14px; margin-bottom:10px;"></div>
-            <button id="spirit-tree-upgrade-btn" class="btn-primary" style="width:100%;">升級</button>
+            <button id="spirit-tree-upgrade-btn" class="btn-primary" style="width:100%; margin-bottom: 8px;">升級</button>
           </div>
-          <div id="spirit-tree-maxed-text" class="hidden" style="color:#ffd700; font-weight:800; font-size:14px;">🌟 精靈樹已滿級！</div>
-        </div>
+          <div id="spirit-tree-maxed-text" class="hidden" style="color:#ffd700; font-weight:800; font-size:14px; margin-bottom: 12px;">🌟 精靈樹已滿級！</div>
 
-        <button id="close-spirit-tree-btn" class="btn-primary" style="margin-top: 10px; width: 100%;">關閉</button>
+          <button id="close-spirit-tree-btn" class="btn-primary" style="width: 100%;">關閉</button>
+        </div>
       </div>
     </div>
 
@@ -305,7 +315,7 @@
         <div class="end-illustration">
           <canvas id="victory-canvas" width="70" height="70"></canvas>
         </div>
-        <h1>花園保衛成功！</h1>
+        <h1>精靈樹保衛成功！</h1>
         <p class="end-subtitle">恭喜擊退所有入侵波次！</p>
         <div id="victory-stars" class="victory-stars"></div>
         <div id="victory-chest-reward" class="victory-chest-reward hidden"></div>
@@ -324,7 +334,11 @@
           </div>
         </div>
 
-        <div class="end-action-buttons">
+        <div class="end-action-buttons" style="flex-wrap: wrap;">
+          <button id="next-level-btn" class="btn-end-action btn-end-next">
+            <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+            <span>進入下一關</span>
+          </button>
           <button id="replay-btn" class="btn-end-action btn-end-primary">
             <svg class="btn-icon" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
             <span>再玩一次</span>
@@ -367,6 +381,11 @@
         <option value="4">通關第 5 關</option>
         <option value="5">通關第 6 關</option>
         <option value="6">通關第 7 關</option>
+        <option value="7">通關第 8 關</option>
+        <option value="8">通關第 9 關</option>
+        <option value="9">通關第 10 關</option>
+        <option value="10">通關第 11 關</option>
+        <option value="11">通關第 12 關 (全通關)</option>
       </select>
       <select id="debug-stars-select" style="width:100%;margin-bottom:8px;padding:3px;">
         <option value="1">1 ★</option>
@@ -377,14 +396,19 @@
         套用
       </button>
       <div style="border-bottom:1px solid #444;border-top:1px solid #444;padding:6px 0 4px;margin:8px 0 6px;font-weight:bold;color:#00e5ff;">
-        💎 水晶測試
+        💎 貨幣測試
       </div>
-      <button style="width:100%;background:#00e5ff;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgAddCrystals) window.dbgAddCrystals(100);">
-        +100 💎
-      </button>
+      <div style="display:flex;gap:4px;">
+        <button style="flex:1;background:#00e5ff;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgAddCrystals) window.dbgAddCrystals(100);">
+          +100 💎
+        </button>
+        <button style="flex:1;background:#69f0ae;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgAddEssence) window.dbgAddEssence(100);">
+          +100 ✨
+        </button>
+      </div>
     </div>
   </div>
 
-  <script src="game.js?v=1.6.0"></script>
+  <script src="game.js?v=1.6.1"></script>
 </body>
 </html>

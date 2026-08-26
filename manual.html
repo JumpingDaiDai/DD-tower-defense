@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📚 精靈樹保衛戰 - 開發者總覽手冊 (Developer Portal)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --primary: #2d1e0f;
+      --gold: #ff9800;
+      --border: #f0e6d6;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffdf5 0%, #fdf6e7 100%);
+      color: #3e2723;
+      padding: 30px 16px 60px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container {
+      width: 100%;
+      max-width: 960px;
+    }
+    .header {
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      border-radius: 24px;
+      padding: 28px 20px;
+      margin-bottom: 28px;
+      box-shadow: 0 10px 30px rgba(62, 39, 35, 0.07);
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: #2d1e0f;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 13.5px;
+      color: #8d6e63;
+      margin-bottom: 16px;
+    }
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+    .badge {
+      background: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      color: #2e7d32;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* 區塊標題 */
+    .section-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: #3e2723;
+      margin: 24px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-left: 6px;
+      border-left: 4px solid var(--gold);
+    }
+
+    /* 連結卡片矩陣 */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .doc-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 14px rgba(62, 39, 35, 0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.2s ease-in-out;
+    }
+    .doc-card:hover {
+      transform: translateY(-3px);
+      border-color: #ffd54f;
+      box-shadow: 0 8px 24px rgba(255, 179, 0, 0.18);
+    }
+    .doc-card.main-game {
+      background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);
+      border-color: #ffb300;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .card-icon {
+      font-size: 24px;
+    }
+    .card-tag {
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #efebe9;
+      color: #4e342e;
+    }
+    .card-tag.primary {
+      background: linear-gradient(135deg, #ff9800, #f57c00);
+      color: #fff;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: #2d1e0f;
+      margin-bottom: 6px;
+    }
+    .card-filename {
+      font-size: 12px;
+      color: #0288d1;
+      font-family: monospace;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #795548;
+      line-height: 1.45;
+      margin-bottom: 12px;
+      flex: 1;
+    }
+    .card-btn {
+      width: 100%;
+      background: #fbf6ee;
+      border: 1px solid #ebd9c5;
+      padding: 6px 0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #5d4037;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .doc-card:hover .card-btn {
+      background: #ffecb3;
+      border-color: #ffd54f;
+      color: #3e2723;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 精靈樹保衛戰・開發手冊總覽</h1>
+      <p class="subtitle">收錄專案內所有 HTML 規格文件、美術展示、數值獎勵與核心遊戲入口</p>
+      <div class="badge-bar">
+        <span class="badge">🎮 遊戲版本：v1.6.1</span>
+        <span class="badge">📄 HTML 總數：15 個文件</span>
+        <span class="badge">🎨 手繪 Canvas + 向量 SVG 架構</span>
+      </div>
+    </div>
+
+    <!-- 核心遊戲入口 -->
+    <div class="section-title">🎮 核心遊戲入口</div>
+    <div class="grid">
+      <a class="doc-card main-game" href="index.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🌳</span>
+            <span class="card-tag primary">主遊戲</span>
+          </div>
+          <div class="card-title">精靈樹保衛戰 (遊戲本體)</div>
+          <div class="card-filename">index.html</div>
+          <div class="card-desc">包含 12 大挑戰關卡、魔法工坊契約/退還商店、世界樹升級、主動魔法技能與排行榜。</div>
+        </div>
+        <div class="card-btn">🚀 開啟遊戲</div>
+      </a>
+    </div>
+
+    <!-- 關卡與數值手冊 -->
+    <div class="section-title">📊 關卡、地圖與數值獎勵</div>
+    <div class="grid">
+      <a class="doc-card" href="level-info.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">📜</span>
+            <span class="card-tag">關卡數據</span>
+          </div>
+          <div class="card-title">全關卡波次與怪物手冊</div>
+          <div class="card-filename">level-info.html</div>
+          <div class="card-desc">12 大關卡全部 15 波出怪陣容、間隔、血量倍率與通關獎勵總覽表。</div>
+        </div>
+        <div class="card-btn">查看關卡明細 ➔</div>
+      </a>
+
+      <a class="doc-card" href="maps-preview.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🗺️</span>
+            <span class="card-tag">地圖圖鑑</span>
+          </div>
+          <div class="card-title">全地圖路線視覺圖鑑</div>
+          <div class="card-filename">maps-preview.html</div>
+          <div class="card-desc">收錄 12 款 6×8 網格幾何戰術地圖 Canvas 即時渲染、起終點與實戰佈陣指南。</div>
+        </div>
+        <div class="card-btn">查看地圖圖鑑 ➔</div>
+      </a>
+
+      <a class="doc-card" href="spirit-tree-rewards.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🌳</span>
+            <span class="card-tag">數值曲線</span>
+          </div>
+          <div class="card-title">世界樹等級強化獎勵表</div>
+          <div class="card-filename">spirit-tree-rewards.html</div>
+          <div class="card-desc">Lv.1～Lv.7 金幣 +20/+30 交錯升級與偶數級生命 +2 成長效益表。</div>
+        </div>
+        <div class="card-btn">查看數值表 ➔</div>
+      </a>
+
+      <a class="doc-card" href="PLAN.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">📝</span>
+            <span class="card-tag">開發計畫</span>
+          </div>
+          <div class="card-title">架構與開發規劃手冊</div>
+          <div class="card-filename">PLAN.html</div>
+          <div class="card-desc">遊戲架構設計、系統模組切分、版本演進與功能規劃紀錄。</div>
+        </div>
+        <div class="card-btn">查看規劃文件 ➔</div>
+      </a>
+    </div>
+
+    <!-- 美術與單位展示 -->
+    <div class="section-title">🎨 美術、角色與特效展示</div>
+    <div class="grid">
+      <a class="doc-card" href="tower-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🌸</span>
+            <span class="card-tag">防禦塔</span>
+          </div>
+          <div class="card-title">防禦塔美術圖鑑</div>
+          <div class="card-filename">tower-showcase.html</div>
+          <div class="card-desc">粉櫻花靈、向日葵、薰衣草、古木、熔岩巨砲等全防禦塔 Canvas 渲染展示。</div>
+        </div>
+        <div class="card-btn">查看防禦塔 ➔</div>
+      </a>
+
+      <a class="doc-card" href="monster-all-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">👾</span>
+            <span class="card-tag">全怪獸</span>
+          </div>
+          <div class="card-title">怪物全陣容展示</div>
+          <div class="card-filename">monster-all-showcase.html</div>
+          <div class="card-desc">毛毛蟲、蜜蜂、蝸牛、鐵甲甲蟲、蝴蝶與小龍 BOSS 向量動畫展示。</div>
+        </div>
+        <div class="card-btn">查看怪獸陣容 ➔</div>
+      </a>
+
+      <a class="doc-card" href="monster-caterpillar-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🐛</span>
+            <span class="card-tag">毛毛蟲</span>
+          </div>
+          <div class="card-title">毛毛蟲手繪風格展示</div>
+          <div class="card-filename">monster-caterpillar-showcase.html</div>
+          <div class="card-desc">基礎怪獸毛毛蟲的各階段向量繪製細節與多角度展示。</div>
+        </div>
+        <div class="card-btn">查看展示 ➔</div>
+      </a>
+
+      <a class="doc-card" href="skill-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">☄️</span>
+            <span class="card-tag">魔法技能</span>
+          </div>
+          <div class="card-title">主動魔法技能展示</div>
+          <div class="card-filename">skill-showcase.html</div>
+          <div class="card-desc">流星轟炸、極度冰凍等主動魔法施放圖示與粒子特效展示。</div>
+        </div>
+        <div class="card-btn">查看魔法技能 ➔</div>
+      </a>
+
+      <a class="doc-card" href="tree-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🌲</span>
+            <span class="card-tag">世界樹</span>
+          </div>
+          <div class="card-title">精靈樹美術展示</div>
+          <div class="card-filename">tree-showcase.html</div>
+          <div class="card-desc">守護核心精靈樹的立體高光手繪插畫與生長特效展示。</div>
+        </div>
+        <div class="card-btn">查看世界樹 ➔</div>
+      </a>
+
+      <a class="doc-card" href="shop-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🏰</span>
+            <span class="card-tag">工坊商店</span>
+          </div>
+          <div class="card-title">魔法工坊商店原型</div>
+          <div class="card-filename">shop-showcase.html</div>
+          <div class="card-desc">魔導卡牌矩陣、契約締結與解約退還介面原型展示。</div>
+        </div>
+        <div class="card-btn">查看商店原型 ➔</div>
+      </a>
+
+      <a class="doc-card" href="tile-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🧱</span>
+            <span class="card-tag">地圖地磚</span>
+          </div>
+          <div class="card-title">網格地磚與裝飾物展示</div>
+          <div class="card-filename">tile-showcase.html</div>
+          <div class="card-desc">草地、石徑走道、花朵小草地圖裝飾物等網格單元展示。</div>
+        </div>
+        <div class="card-btn">查看地磚展示 ➔</div>
+      </a>
+
+      <a class="doc-card" href="theme-showcase.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🎨</span>
+            <span class="card-tag">主題風格</span>
+          </div>
+          <div class="card-title">主題配色與調色盤</div>
+          <div class="card-filename">theme-showcase.html</div>
+          <div class="card-desc">馬卡龍萌系、晨光溫暖風、魔導琉璃等主題配色規範對焦。</div>
+        </div>
+        <div class="card-btn">查看配色規範 ➔</div>
+      </a>
+
+      <a class="doc-card" href="gallery.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">🖼️</span>
+            <span class="card-tag">畫廊</span>
+          </div>
+          <div class="card-title">全域美術畫廊 (Gallery)</div>
+          <div class="card-filename">gallery.html</div>
+          <div class="card-desc">包含所有角色、裝飾物、ICON 與視覺素材的集中展示大廳。</div>
+        </div>
+        <div class="card-btn">查看畫廊 ➔</div>
+      </a>
+
+      <a class="doc-card" href="assets-manifest.html" target="_blank">
+        <div>
+          <div class="card-top">
+            <span class="card-icon">📦</span>
+            <span class="card-tag">資源清單</span>
+          </div>
+          <div class="card-title">靜態資源清冊 (Manifest)</div>
+          <div class="card-filename">assets-manifest.html</div>
+          <div class="card-desc">專案內所有 SVG、音效 SFX、字型與靜態資源依賴對照清單。</div>
+        </div>
+        <div class="card-btn">查看資源清冊 ➔</div>
+      </a>
+    </div>
+
+  </div>
+</body>
+</html>
