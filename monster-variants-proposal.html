@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🛡️ 裝甲瓢蟲 & 迷霧幽蛾 多風格設計提案展示頁</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #0f111a;
+  color: #c0caf5;
+  padding: 30px 20px 80px;
+}
+header {
+  max-width: 1100px;
+  margin: 0 auto 30px;
+  text-align: center;
+  background: #1a1c29;
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+header h1 {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ff9e64;
+  margin-bottom: 8px;
+}
+header p {
+  color: #9aa5ce;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.section {
+  max-width: 1100px;
+  margin: 0 auto 36px;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-left: 4px solid #ff9e64;
+  padding-left: 12px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffc777;
+}
+.section-desc {
+  font-size: 13px;
+  color: #7a88cf;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: #1e2030;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  position: relative;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: #ff9e64;
+  box-shadow: 0 8px 24px rgba(255, 158, 100, 0.25);
+}
+.card.featured {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: linear-gradient(145deg, #222436 0%, #292416 100%);
+}
+.badge-id {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #ff9e64;
+  color: #0f111a;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.card.featured .badge-id {
+  background: #ffd600;
+}
+.preview-box {
+  background: #13141f;
+  border-radius: 12px;
+  padding: 10px;
+  margin: 20px 0 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 900;
+  color: #c0caf5;
+  margin-bottom: 4px;
+}
+.card-theme {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #7aa2f7;
+  margin-bottom: 6px;
+}
+.card-features {
+  font-size: 12px;
+  color: #7a88cf;
+  line-height: 1.4;
+  text-align: left;
+  background: rgba(0,0,0,0.25);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+canvas {
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ 裝甲瓢蟲 & 迷霧幽蛾 — 造型風格方案矩陣</h1>
+  <p>請直接查看即時 Canvas 動態效果，回覆您喜愛的編號（如「瓢蟲選 A2、幽蛾選 B3」或組合建議）！</p>
+</header>
+
+<!-- ==================== 1. 裝甲瓢蟲風格矩陣 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">🐞 裝甲瓢蟲 (Armored Ladybug) — 強化重裝系列 (5 種)</span>
+    <span class="section-desc">物理減傷 60% · 強化外骨骼、金屬重裝甲、鉸接鋼板</span>
+  </div>
+  <div class="grid">
+    <!-- A1 -->
+    <div class="card">
+      <span class="badge-id">A1</span>
+      <div class="preview-box"><canvas id="cvA1" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">全罩式要塞鋼甲</div>
+        <div class="card-theme">Titanium Fortress</div>
+        <div class="card-features">
+          • 雙層加厚鈦合金背板<br>
+          • 菱形防爆重裝甲護膝<br>
+          • 額前強化合金面罩
+        </div>
+      </div>
+    </div>
+
+    <!-- A2 -->
+    <div class="card featured">
+      <span class="badge-id">A2</span>
+      <div class="preview-box"><canvas id="cvA2" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">鋼鐵蒸汽履帶 (推薦)</div>
+        <div class="card-theme">Steampunk Heavy Mech</div>
+        <div class="card-features">
+          • 齒輪動力核心與微排氣<br>
+          • 三段式金屬折疊背甲<br>
+          • 雙重黃銅咬合鉚釘列
+        </div>
+      </div>
+    </div>
+
+    <!-- A3 -->
+    <div class="card">
+      <span class="badge-id">A3</span>
+      <div class="preview-box"><canvas id="cvA3" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">黑曜石多重防暴盾</div>
+        <div class="card-theme">Riot Shield Obsidian</div>
+        <div class="card-features">
+          • 左右雙重厚重外擴盾翼<br>
+          • 紅光警戒雙目與金屬角<br>
+          • 菱格反衝擊紋路
+        </div>
+      </div>
+    </div>
+
+    <!-- A4 -->
+    <div class="card">
+      <span class="badge-id">A4</span>
+      <div class="preview-box"><canvas id="cvA4" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">尖刺重型攻城甲</div>
+        <div class="card-theme">Spiked Siege Behemoth</div>
+        <div class="card-features">
+          • 裝甲邊緣帶 6 枚倒刺<br>
+          • 頭部全封閉式衝角撞錘<br>
+          • 鑄鐵消光重質感
+        </div>
+      </div>
+    </div>
+
+    <!-- A5 -->
+    <div class="card">
+      <span class="badge-id">A5</span>
+      <div class="preview-box"><canvas id="cvA5" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">能量護盾機甲</div>
+        <div class="card-theme">Hex-Shield Cyber Bug</div>
+        <div class="card-features">
+          • 六角形高能防禦矩陣<br>
+          • 懸浮外掛能量裝甲片<br>
+          • 青藍色高壓能量脈衝
+        </div>
+      </div>
+    </div>
+
+    <!-- S1 -->
+    <div class="card featured" style="border-color:#ff5252; background:linear-gradient(145deg,#24181a,#2a1e20);">
+      <span class="badge-id" style="background:#ff1744; color:#fff;">S1 推薦</span>
+      <div class="preview-box"><canvas id="cvS1" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">先鋒重型塔盾瓢蟲</div>
+        <div class="card-theme">Vanguard Heavy Tower Shield</div>
+        <div class="card-features">
+          • <strong>正前方手持超大合金防暴塔盾</strong><br>
+          • 盾面帶黃金十字/觀測窄窗<br>
+          • 身體後縮於盾後推進
+        </div>
+      </div>
+    </div>
+
+    <!-- S2 -->
+    <div class="card" style="border-color:#ffd54f;">
+      <span class="badge-id" style="background:#ffd600; color:#212121;">S2 推薦</span>
+      <div class="preview-box"><canvas id="cvS2" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">雙持騎士鳶盾瓢蟲</div>
+        <div class="card-theme">Dual Knight Kite-Shields</div>
+        <div class="card-features">
+          • <strong>左右兩側各持一面騎士風鳶盾</strong><br>
+          • 雙盾前後交錯拍打護衛<br>
+          • 緋紅底色配金屬鉚釘邊框
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 -->
+    <div class="card">
+      <span class="badge-id">S3</span>
+      <div class="preview-box"><canvas id="cvS3" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">龜甲陣圓盾衛士</div>
+        <div class="card-theme">Roman Legion Buckler Testudo</div>
+        <div class="card-features">
+          • <strong>頭頂斜上方頂著一面巨型青銅凸面圓盾</strong><br>
+          • 盾心帶尖銳撞擊突刺 (Umbo)<br>
+          • 僅露出雙眼與強壯短足
+        </div>
+      </div>
+    </div>
+
+    <!-- S4 -->
+    <div class="card">
+      <span class="badge-id">S4</span>
+      <div class="preview-box"><canvas id="cvS4" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">機械鉸接展開巨盾</div>
+        <div class="card-theme">Hydraulic Deployable Barrier</div>
+        <div class="card-features">
+          • <strong>背部掛載液壓重盾，前推展開成防禦牆</strong><br>
+          • 亮藍光學力場發生器<br>
+          • 純重工業機械風格
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. 迷霧幽蛾風格矩陣 ==================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">🦇 迷霧幽蛾 (Mist Moth) — 幽幻羽翼系列 (5 種)</span>
+    <span class="section-desc">魔法減傷 60% · 幽靈隱匿、魔力折射、浮空迷霧</span>
+  </div>
+  <div class="grid">
+    <!-- B1 -->
+    <div class="card">
+      <span class="badge-id">B1</span>
+      <div class="preview-box"><canvas id="cvB1" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">幽冥千羽魔蛾</div>
+        <div class="card-theme">Phantom Feathered</div>
+        <div class="card-features">
+          • 雙層多裂羽狀主副翼<br>
+          • 拖曳幽冥散落微光粒子<br>
+          • 神秘紫黑漸層羽毛觸角
+        </div>
+      </div>
+    </div>
+
+    <!-- B2 -->
+    <div class="card featured">
+      <span class="badge-id">B2</span>
+      <div class="preview-box"><canvas id="cvB2" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">月華星霧絲綢 (推薦)</div>
+        <div class="card-theme">Astral Silk & Moonmist</div>
+        <div class="card-features">
+          • 宛如絲綢飄動的半透明翼<br>
+          • 雙重星月魔眼符文透光<br>
+          • 螢光藍綠環繞星雲
+        </div>
+      </div>
+    </div>
+
+    <!-- B3 -->
+    <div class="card">
+      <span class="badge-id">B3</span>
+      <div class="preview-box"><canvas id="cvB3" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">紫晶幻影殘影</div>
+        <div class="card-theme">Crystal Mirage Ghost</div>
+        <div class="card-features">
+          • 左右雙重半透明鏡像分身<br>
+          • 幾何結晶稜鏡折射雙翼<br>
+          • 閃爍隱匿頻閃效果
+        </div>
+      </div>
+    </div>
+
+    <!-- B4 -->
+    <div class="card">
+      <span class="badge-id">B4</span>
+      <div class="preview-box"><canvas id="cvB4" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">骷髏面紋夜煞</div>
+        <div class="card-theme">Death's-Head Dusk Moth</div>
+        <div class="card-features">
+          • 背部經典神秘骷髏金紋<br>
+          • 尖端深邃夜空黑紫漸變<br>
+          • 赤紅魔眼與暗黑威懾
+        </div>
+      </div>
+    </div>
+
+    <!-- B5 -->
+    <div class="card">
+      <span class="badge-id">B5</span>
+      <div class="preview-box"><canvas id="cvB5" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">極光漩渦靈蛾</div>
+        <div class="card-theme">Aurora Swirl Spirit</div>
+        <div class="card-features">
+          • 北極光動態色相流轉雙翅<br>
+          • 環狀能量渦流粒子環<br>
+          • 萌系圓球發光本體
+        </div>
+      </div>
+    </div>
+
+    <!-- M1 -->
+    <div class="card featured" style="border-color:#b388ff; background:linear-gradient(145deg,#1f182a,#281830);">
+      <span class="badge-id" style="background:#d500f9; color:#fff;">M1 推薦</span>
+      <div class="preview-box"><canvas id="cvM1" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">幽魂半透明紗翼 (零粒子)</div>
+        <div class="card-theme">Spectral Radial Vapor</div>
+        <div class="card-features">
+          • <strong>整隻本體與雙翼純 45% 半透明</strong><br>
+          • 雙翅自帶青紫迷霧羽化放射漸層<br>
+          • 零粒子特效、零多餘運算、極致絲滑
+        </div>
+      </div>
+    </div>
+
+    <!-- M2 -->
+    <div class="card featured" style="border-color:#00e5ff; background:linear-gradient(145deg,#16222e,#1a2838);">
+      <span class="badge-id" style="background:#00e5ff; color:#0f111a;">M2 推薦</span>
+      <div class="preview-box"><canvas id="cvM2" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">無邊界羽化煙翼 (零粒子)</div>
+        <div class="card-theme">Soft Feathered Fade</div>
+        <div class="card-features">
+          • <strong>翅膀邊緣完全無硬黑邊，半透明淡化</strong><br>
+          • 宛如一團濃縮青紫霧氣拍翅<br>
+          • 浮空呼吸感強烈
+        </div>
+      </div>
+    </div>
+
+    <!-- M3 -->
+    <div class="card" style="border-color:#80d8ff;">
+      <span class="badge-id" style="background:#80d8ff; color:#0f111a;">M3 推薦</span>
+      <div class="preview-box"><canvas id="cvM3" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">多重薄紗疊層 (零粒子)</div>
+        <div class="card-theme">Layered Chiffon Shroud</div>
+        <div class="card-features">
+          • <strong>3 層不同透明度的同心薄紗羽翼</strong><br>
+          • 疊加產生水墨化開的半透明層次<br>
+          • 純代碼幾何透明度疊加
+        </div>
+      </div>
+    </div>
+
+    <!-- M4 -->
+    <div class="card" style="border-color:#ff80ab;">
+      <span class="badge-id" style="background:#ff80ab; color:#0f111a;">M4</span>
+      <div class="preview-box"><canvas id="cvM4" width="90" height="90"></canvas></div>
+      <div>
+        <div class="card-title">隱匿呼吸薄暮 (零粒子)</div>
+        <div class="card-theme">Breathing Twilight Mirage</div>
+        <div class="card-features">
+          • <strong>本體透明度隨時間進行 30%～70% 呼吸切換</strong><br>
+          • 翅膀帶螢光符文透光紋理<br>
+          • 隱身與半透明感最強
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function loop(id, fn) {
+  const cv = document.getElementById(id);
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  let t = 0;
+  function draw() {
+    ctx.clearRect(0, 0, 90, 90);
+    ctx.save();
+    ctx.translate(45, 45);
+    fn(ctx, t);
+    ctx.restore();
+    t += 0.02;
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+}
+
+// -------------------------------------------------------------
+// A1. 全罩式要塞鋼甲
+// -------------------------------------------------------------
+loop('cvA1', function(ctx, t) {
+  const bob = Math.sin(t * 5) * 1.0;
+  ctx.translate(0, bob);
+  // 重裝機械多關節足
+  ctx.strokeStyle = '#263238'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s*6, -4); ctx.lineTo(s*12, -8); ctx.lineTo(s*15, -4);
+    ctx.moveTo(s*7, 1);  ctx.lineTo(s*13, 1);  ctx.lineTo(s*16, 5);
+    ctx.moveTo(s*6, 6);  ctx.lineTo(s*12, 9);  ctx.lineTo(s*14, 14);
+    ctx.stroke();
+  });
+  // 外層加厚鈦金基底
+  ctx.fillStyle = '#455a64';
+  ctx.beginPath(); ctx.ellipse(0, 1, 12, 11, 0, 0, Math.PI*2); ctx.fill();
+  // 紅金屬背甲
+  const g = ctx.createRadialGradient(-3, -3, 2, 0, 0, 11);
+  g.addColorStop(0, '#ff5252'); g.addColorStop(0.6, '#b71c1c'); g.addColorStop(1, '#3e0910');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 10, 9.5, 0, 0, Math.PI*2); ctx.fill();
+  // 雙層鋼板加固疊片
+  ctx.fillStyle = '#78909c';
+  ctx.fillRect(-8, -4, 16, 3); ctx.fillRect(-7, 2, 14, 3);
+  // 中線咬合
+  ctx.strokeStyle = '#212121'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(0, 10); ctx.stroke();
+  // 鋼盔與護目鏡
+  ctx.fillStyle = '#212121';
+  ctx.beginPath(); ctx.ellipse(0, -8, 5.5, 4, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#cfd8dc'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.arc(0, -9, 5, Math.PI, 0); ctx.stroke();
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillRect(-3, -9, 6, 2);
+});
+
+// -------------------------------------------------------------
+// A2. 鋼鐵蒸汽履帶 (推薦)
+// -------------------------------------------------------------
+loop('cvA2', function(ctx, t) {
+  const bob = Math.sin(t * 6) * 1.2;
+  ctx.translate(0, bob);
+  // 蒸汽排氣微粒
+  if (Math.random() < 0.3) {
+    ctx.fillStyle = 'rgba(200,200,200,0.5)';
+    ctx.beginPath(); ctx.arc(-5 + (Math.random()-0.5)*4, -14, 2, 0, Math.PI*2); ctx.fill();
+  }
+  // 黃銅重足
+  ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 2.2;
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s*6, -3); ctx.lineTo(s*11, -7); ctx.lineTo(s*13, -3);
+    ctx.moveTo(s*7, 2);  ctx.lineTo(s*12, 2);  ctx.lineTo(s*14, 6);
+    ctx.moveTo(s*6, 7);  ctx.lineTo(s*11, 10); ctx.lineTo(s*12, 14);
+    ctx.stroke();
+  });
+  // 齒輪底座盤
+  ctx.fillStyle = '#ff8f00';
+  ctx.beginPath(); ctx.ellipse(0, 1, 11.5, 10.5, 0, 0, Math.PI*2); ctx.fill();
+  // 緋紅主裝甲 (三段折疊階梯)
+  const g = ctx.createRadialGradient(-3, -3, 2, 0, 0, 11);
+  g.addColorStop(0, '#ff5252'); g.addColorStop(0.5, '#c62828'); g.addColorStop(1, '#4a0e17');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 10, 9, 0, 0, Math.PI*2); ctx.fill();
+  // 黃銅鉚釘列 (左右各 3 顆)
+  ctx.fillStyle = '#ffd54f'; ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 0.6;
+  [-5, 5].forEach(x => {
+    [-4, 1, 6].forEach(y => {
+      ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    });
+  });
+  // 中部鋼板脊線
+  ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(0, 9); ctx.stroke();
+  // 蒸汽排氣管 (背後左側)
+  ctx.fillStyle = '#78909c';
+  ctx.fillRect(-6, -12, 2.5, 6);
+  // 面罩與金色感應天線
+  ctx.fillStyle = '#263238';
+  ctx.beginPath(); ctx.ellipse(0, -7.5, 4.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-2, -8, 1.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(2, -8, 1.1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// A3. 黑曜石多重防暴盾
+// -------------------------------------------------------------
+loop('cvA3', function(ctx, t) {
+  const bob = Math.sin(t * 4.5) * 1.0;
+  ctx.translate(0, bob);
+  // 外擴盾翼 (深色黑曜石裝甲)
+  ctx.fillStyle = '#263238'; ctx.strokeStyle = '#90a4ae'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.ellipse(-9, 1, 5, 9, -0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(9, 1, 5, 9, 0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  // 核心紅寶石防禦核心
+  const g = ctx.createRadialGradient(-2, -2, 2, 0, 0, 9);
+  g.addColorStop(0, '#ff1744'); g.addColorStop(0.7, '#880e4f'); g.addColorStop(1, '#1a0008');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 7.5, 9, 0, 0, Math.PI*2); ctx.fill();
+  // 菱格防暴紋路
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(0, -6); ctx.lineTo(-4, 0); ctx.lineTo(0, 6); ctx.lineTo(4, 0); ctx.closePath();
+  ctx.stroke();
+  // 頭盔與紅光掃描眼
+  ctx.fillStyle = '#111';
+  ctx.beginPath(); ctx.ellipse(0, -8, 4.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ff1744';
+  const eyePulse = 0.5 + Math.sin(t*10)*0.5;
+  ctx.fillRect(-3, -9, 6, 1.8);
+});
+
+// -------------------------------------------------------------
+// A4. 尖刺重型攻城甲
+// -------------------------------------------------------------
+loop('cvA4', function(ctx, t) {
+  const bob = Math.sin(t * 5.5) * 1.1;
+  ctx.translate(0, bob);
+  // 裝甲側向 6 枚金屬尖刺
+  ctx.fillStyle = '#cfd8dc'; ctx.strokeStyle = '#37474f'; ctx.lineWidth = 1;
+  [-1, 1].forEach(s => {
+    [-4, 1, 6].forEach(y => {
+      ctx.beginPath();
+      ctx.moveTo(s*8, y-2); ctx.lineTo(s*14, y); ctx.lineTo(s*8, y+2);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+    });
+  });
+  // 鑄鐵重背甲
+  const g = ctx.createRadialGradient(-3, -3, 2, 0, 0, 10);
+  g.addColorStop(0, '#e53935'); g.addColorStop(0.6, '#8e0000'); g.addColorStop(1, '#212121');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 9, 8.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#212121'; ctx.lineWidth = 2; ctx.stroke();
+  // 頂部前凸衝角撞錘
+  ctx.fillStyle = '#78909c';
+  ctx.beginPath();
+  ctx.moveTo(-3, -7); ctx.lineTo(0, -14); ctx.lineTo(3, -7);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 雙眼
+  ctx.fillStyle = '#ffd600';
+  ctx.beginPath(); ctx.arc(-2, -6, 1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(2, -6, 1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// A5. 能量護盾機甲
+// -------------------------------------------------------------
+loop('cvA5', function(ctx, t) {
+  const bob = Math.sin(t * 5) * 1.0;
+  ctx.translate(0, bob);
+  // 六角形旋轉能量盾片
+  ctx.save();
+  ctx.rotate(t * 0.8);
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.6)'; ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const ang = (i * Math.PI) / 3;
+    const x = Math.cos(ang) * 14;
+    const y = Math.sin(ang) * 14;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.stroke();
+  ctx.restore();
+  // 科技緋紅內殼
+  const g = ctx.createRadialGradient(-2, -2, 2, 0, 0, 9);
+  g.addColorStop(0, '#ff4081'); g.addColorStop(0.6, '#c2185b'); g.addColorStop(1, '#1a237e');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 8.5, 8, 0, 0, Math.PI*2); ctx.fill();
+  // 脈衝導光線
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 1, 5, 0, Math.PI*2); ctx.stroke();
+  // 晶片目
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-2, -6, 1.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(2, -6, 1.2, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// S1. 先鋒重型塔盾瓢蟲 (正前方手持超大防暴塔盾)
+// -------------------------------------------------------------
+loop('cvS1', function(ctx, t) {
+  const bob = Math.sin(t * 5.5) * 1.0;
+  ctx.translate(0, bob);
+
+  // 1. 後方露出的小腳足與背部
+  ctx.strokeStyle = '#263238'; ctx.lineWidth = 2.2;
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s * 5, 2); ctx.lineTo(s * 11, 6); ctx.lineTo(s * 13, 12);
+    ctx.moveTo(s * 4, 7); ctx.lineTo(s * 9, 12); ctx.lineTo(s * 10, 16);
+    ctx.stroke();
+  });
+  // 圓滾紅色背甲 (稍微露出在盾牌上方)
+  const g = ctx.createRadialGradient(-2, 0, 1, 0, 2, 8);
+  g.addColorStop(0, '#ff5252'); g.addColorStop(0.6, '#b71c1c'); g.addColorStop(1, '#3e0910');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 4, 8, 7.5, 0, 0, Math.PI*2); ctx.fill();
+
+  // 萌萌大眼探頭在盾牌正上方
+  ctx.fillStyle = '#212121';
+  ctx.beginPath(); ctx.ellipse(0, -6, 4.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-1.8, -6.5, 1.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.8, -6.5, 1.1, 0, Math.PI*2); ctx.fill();
+
+  // 2. 正前方超大重型防暴塔盾 (Heavy Tower Shield)
+  const shieldBob = Math.sin(t * 5.5 + 0.3) * 0.8;
+  ctx.save();
+  ctx.translate(0, shieldBob);
+
+  // 塔盾金屬邊框 (外層)
+  ctx.fillStyle = '#37474f';
+  ctx.strokeStyle = '#90a4ae'; ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.roundRect(-13, -8, 26, 22, [4, 4, 10, 10]);
+  ctx.fill(); ctx.stroke();
+
+  // 塔盾內部緋紅漆面
+  const sg = ctx.createLinearGradient(-10, -8, 10, 14);
+  sg.addColorStop(0, '#ff1744'); sg.addColorStop(0.5, '#c62828'); sg.addColorStop(1, '#880e4f');
+  ctx.fillStyle = sg;
+  ctx.beginPath();
+  ctx.roundRect(-10.5, -5.5, 21, 17, [2, 2, 8, 8]);
+  ctx.fill();
+
+  // 塔盾黃金十字標記 / 觀測窗
+  ctx.fillStyle = '#ffd600';
+  ctx.fillRect(-10.5, 0, 21, 3.5);
+  ctx.fillRect(-1.8, -5.5, 3.6, 17);
+
+  // 觀測窄窗
+  ctx.fillStyle = '#1a1a24'; ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 0.8;
+  ctx.fillRect(-6, -3.5, 12, 2.2);
+  ctx.strokeRect(-6, -3.5, 12, 2.2);
+
+  // 盾面四角防爆鉚釘
+  ctx.fillStyle = '#eceff1';
+  [[-9, -4], [9, -4], [-8, 7], [8, 7]].forEach(([rx, ry]) => {
+    ctx.beginPath(); ctx.arc(rx, ry, 1.2, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+});
+
+// -------------------------------------------------------------
+// S2. 雙持騎士鳶盾瓢蟲 (左右兩側各持一面騎士風鳶盾)
+// -------------------------------------------------------------
+loop('cvS2', function(ctx, t) {
+  const bob = Math.sin(t * 6) * 1.0;
+  const shieldSwing = Math.sin(t * 6) * 0.2;
+  ctx.translate(0, bob);
+
+  // 本體
+  const g = ctx.createRadialGradient(-2, -2, 2, 0, 0, 9);
+  g.addColorStop(0, '#ff5252'); g.addColorStop(0.6, '#c62828'); g.addColorStop(1, '#3e0910');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(0, 1, 8.5, 8, 0, 0, Math.PI*2); ctx.fill();
+  // 背部黑曜石斑點
+  ctx.fillStyle = '#212121';
+  ctx.beginPath(); ctx.arc(0, 4, 1.8, 0, Math.PI*2); ctx.fill();
+
+  // 頭部與小角
+  ctx.fillStyle = '#263238';
+  ctx.beginPath(); ctx.ellipse(0, -6.5, 4, 3, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ff1744';
+  ctx.beginPath(); ctx.arc(-1.6, -6.8, 0.9, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.6, -6.8, 0.9, 0, Math.PI*2); ctx.fill();
+
+  // 左右雙持鳶盾 (Kite Shield)
+  [-1, 1].forEach(s => {
+    ctx.save();
+    ctx.translate(s * 8, 0);
+    ctx.rotate(s * (0.2 + shieldSwing * s));
+
+    // 鳶盾外型
+    ctx.fillStyle = '#ff8f00'; ctx.strokeStyle = '#263238'; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-s*4, -8);
+    ctx.lineTo(s*4, -8);
+    ctx.lineTo(s*4, 1);
+    ctx.lineTo(0, 11);
+    ctx.lineTo(-s*4, 1);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    // 盾心紅寶石
+    ctx.fillStyle = '#d50000';
+    ctx.beginPath();
+    ctx.moveTo(-s*2.5, -6); ctx.lineTo(s*2.5, -6); ctx.lineTo(s*2.5, 0); ctx.lineTo(0, 8); ctx.lineTo(-s*2.5, 0);
+    ctx.closePath(); ctx.fill();
+
+    // 鉚釘
+    ctx.fillStyle = '#ffd54f';
+    ctx.beginPath(); ctx.arc(0, -2, 1.2, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+});
+
+// -------------------------------------------------------------
+// S3. 龜甲陣圓盾衛士 (頭頂巨型青銅凸面圓盾)
+// -------------------------------------------------------------
+loop('cvS3', function(ctx, t) {
+  const bob = Math.sin(t * 5) * 1.0;
+  ctx.translate(0, bob);
+
+  // 短粗重裝足
+  ctx.strokeStyle = '#212121'; ctx.lineWidth = 2.5;
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s*6, 2); ctx.lineTo(s*11, 7); ctx.lineTo(s*13, 13);
+    ctx.moveTo(s*5, 7); ctx.lineTo(s*9, 13);
+    ctx.stroke();
+  });
+
+  // 巨型凸面青銅圓盾 (覆蓋全背與頭頂)
+  const rg = ctx.createRadialGradient(-3, -3, 2, 0, 0, 15);
+  rg.addColorStop(0, '#ffe082'); rg.addColorStop(0.3, '#ffb300'); rg.addColorStop(0.8, '#ff6f00'); rg.addColorStop(1, '#3e2723');
+  ctx.fillStyle = rg;
+  ctx.strokeStyle = '#3e2723'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // 盾圈鉚釘環
+  ctx.fillStyle = '#3e2723';
+  for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+    const rx = Math.cos(a) * 11;
+    const ry = Math.sin(a) * 11;
+    ctx.beginPath(); ctx.arc(rx, ry, 1.1, 0, Math.PI*2); ctx.fill();
+  }
+
+  // 盾心尖銳撞擊錐 (Umbo)
+  ctx.fillStyle = '#b71c1c';
+  ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffd600';
+  ctx.beginPath(); ctx.arc(-1, -1, 1.8, 0, Math.PI*2); ctx.fill();
+
+  // 盾下偷看的雙眼
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-3, -11, 1.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(3, -11, 1.1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// S4. 機械鉸接展開巨盾
+// -------------------------------------------------------------
+loop('cvS4', function(ctx, t) {
+  const bob = Math.sin(t * 5.5) * 1.0;
+  const unfold = 0.5 + Math.sin(t * 3) * 0.5; // 展開收縮
+  ctx.translate(0, bob);
+
+  // 機械本體
+  ctx.fillStyle = '#263238';
+  ctx.beginPath(); ctx.ellipse(0, 3, 7, 7, 0, 0, Math.PI*2); ctx.fill();
+
+  // 左右兩片液壓鉸接盾板 (隨時間向外展開)
+  [-1, 1].forEach(s => {
+    ctx.save();
+    ctx.translate(s * (6 + unfold * 4), -1);
+    ctx.rotate(s * (0.1 - unfold * 0.2));
+
+    ctx.fillStyle = '#78909c'; ctx.strokeStyle = '#263238'; ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.roundRect(-s*4, -8, 8, 16, 2);
+    ctx.fill(); ctx.stroke();
+
+    // 亮藍光學力場條紋
+    ctx.fillStyle = '#00e5ff';
+    ctx.fillRect(-s*2, -6, 4, 12);
+    ctx.restore();
+  });
+
+  // 中部固定主板
+  ctx.fillStyle = '#37474f'; ctx.strokeStyle = '#cfd8dc'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.roundRect(-4, -7, 8, 14, 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ff1744';
+  ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// B1. 幽冥千羽魔蛾
+// -------------------------------------------------------------
+loop('cvB1', function(ctx, t) {
+  const bob = Math.sin(t * 4) * 2;
+  const flap = Math.sin(t * 26) * 0.5;
+  ctx.translate(0, bob);
+  // 拖曳微粒
+  ctx.fillStyle = 'rgba(224, 64, 251, 0.4)';
+  ctx.beginPath(); ctx.arc(Math.sin(t*5)*6, 12, 1.5, 0, Math.PI*2); ctx.fill();
+
+  ctx.save();
+  ctx.rotate(flap * 0.4);
+  // 多層羽狀翼
+  const wg = ctx.createLinearGradient(-15, -10, 15, 10);
+  wg.addColorStop(0, '#e040fb'); wg.addColorStop(0.5, '#7c4dff'); wg.addColorStop(1, '#00e5ff');
+  ctx.fillStyle = wg; ctx.strokeStyle = '#d500f9'; ctx.lineWidth = 0.8;
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.ellipse(s*9, -7, 7, 11, s*0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(s*11, 2, 5, 8, s*0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(s*7, 8, 4, 6, s*0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  });
+  ctx.restore();
+  // 毛茸本體
+  ctx.fillStyle = '#4a148c';
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8, 0, 0, Math.PI*2); ctx.fill();
+  // 羽毛觸角
+  ctx.strokeStyle = '#e040fb'; ctx.lineWidth = 1.2;
+  [-1, 1].forEach(s => {
+    ctx.beginPath();
+    ctx.moveTo(s*1.5, -6); ctx.quadraticCurveTo(s*7, -13, s*11, -14); ctx.stroke();
+    for (let k = 1; k <= 4; k++) {
+      ctx.moveTo(s*(1.5+k*2), -6-k*1.5); ctx.lineTo(s*(1.5+k*2-1), -6-k*1.5-3); ctx.stroke();
+    }
+  });
+  ctx.fillStyle = '#ff4081';
+  ctx.beginPath(); ctx.arc(-1.5, -5.5, 1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5.5, 1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// B2. 月華星霧絲綢 (推薦)
+// -------------------------------------------------------------
+loop('cvB2', function(ctx, t) {
+  const bob = Math.sin(t * 3.5) * 2.2;
+  const flap = Math.sin(t * 22) * 0.45;
+  ctx.translate(0, bob);
+
+  // 外圍星霧光暈
+  ctx.globalAlpha = 0.4 + Math.sin(t * 6) * 0.2;
+  const halo = ctx.createRadialGradient(0, 0, 2, 0, 0, 18);
+  halo.addColorStop(0, 'rgba(0, 229, 255, 0.6)');
+  halo.addColorStop(0.6, 'rgba(124, 77, 255, 0.3)');
+  halo.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.save();
+  ctx.rotate(flap * 0.35);
+  // 絲綢飄逸透明雙翼
+  const wg = ctx.createRadialGradient(-6, -6, 2, 0, 0, 16);
+  wg.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+  wg.addColorStop(0.4, 'rgba(0, 229, 255, 0.85)');
+  wg.addColorStop(0.8, 'rgba(124, 77, 255, 0.75)');
+  wg.addColorStop(1, 'rgba(49, 27, 146, 0.5)');
+  ctx.fillStyle = wg; ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1;
+  [-1, 1].forEach(s => {
+    // 絲滑波浪主翼
+    ctx.beginPath();
+    ctx.moveTo(0, -3);
+    ctx.bezierCurveTo(s*10, -18, s*18, -8, s*16, 2);
+    ctx.bezierCurveTo(s*14, 8, s*6, 8, 0, 3);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // 星月符文眼
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(s*9, -4, 2.2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#311b92';
+    ctx.beginPath(); ctx.arc(s*9, -4, 1.2, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+
+  // 月光晶體身軀
+  const bg = ctx.createRadialGradient(-1, -1, 1, 0, 0, 8);
+  bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.5, '#7c4dff'); bg.addColorStop(1, '#1a237e');
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.2, 8, 0, 0, Math.PI*2); ctx.fill();
+  // 柔美觸角
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-1.5, -6); ctx.quadraticCurveTo(-6, -13, -10, -14); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1.5, -6); ctx.quadraticCurveTo(6, -13, 10, -14); ctx.stroke();
+  ctx.fillStyle = '#ff80ab';
+  ctx.beginPath(); ctx.arc(-1.5, -5.5, 0.9, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5.5, 0.9, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// B3. 紫晶幻影殘影
+// -------------------------------------------------------------
+loop('cvB3', function(ctx, t) {
+  const bob = Math.sin(t * 5) * 2;
+  ctx.translate(0, bob);
+  // 左右分身殘影
+  ctx.globalAlpha = 0.35;
+  [-8, 8].forEach(dx => {
+    ctx.save(); ctx.translate(dx, 0);
+    ctx.fillStyle = '#b388ff';
+    ctx.beginPath(); ctx.ellipse(-6, -4, 5, 8, -0.4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, -4, 5, 8, 0.4, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+  ctx.globalAlpha = 1;
+
+  // 稜鏡主翼
+  const g = ctx.createLinearGradient(-12, -8, 12, 8);
+  g.addColorStop(0, '#e040fb'); g.addColorStop(1, '#651fff');
+  ctx.fillStyle = g; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(-8, -4, 6.5, 9.5, -0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(8, -4, 6.5, 9.5, 0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // 核心
+  ctx.fillStyle = '#311b92';
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-1.5, -5, 1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5, 1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// B4. 骷髏面紋夜煞
+// -------------------------------------------------------------
+loop('cvB4', function(ctx, t) {
+  const bob = Math.sin(t * 4.5) * 1.8;
+  const flap = Math.sin(t * 24) * 0.4;
+  ctx.translate(0, bob);
+
+  ctx.save();
+  ctx.rotate(flap * 0.3);
+  // 暗黑夜幕雙翼
+  const wg = ctx.createLinearGradient(-15, -12, 0, 12);
+  wg.addColorStop(0, '#ffd600'); wg.addColorStop(0.3, '#311b92'); wg.addColorStop(1, '#0d0e15');
+  ctx.fillStyle = wg; ctx.strokeStyle = '#ffd600'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(-9, -5, 8, 11, -0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(9, -5, 8, 11, 0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+
+  // 骷髏金紋軀幹
+  ctx.fillStyle = '#1a1a24';
+  ctx.beginPath(); ctx.ellipse(0, 1, 4, 8.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffd600';
+  // 骷髏面紋
+  ctx.beginPath(); ctx.arc(0, -1, 2.2, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1a1a24';
+  ctx.beginPath(); ctx.arc(-0.8, -1.2, 0.6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(0.8, -1.2, 0.6, 0, Math.PI*2); ctx.fill();
+
+  // 赤紅魔眼
+  ctx.fillStyle = '#ff1744';
+  ctx.beginPath(); ctx.arc(-1.5, -6, 1.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -6, 1.1, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// B5. 極光漩渦靈蛾
+// -------------------------------------------------------------
+loop('cvB5', function(ctx, t) {
+  const bob = Math.sin(t * 4) * 2;
+  const flap = Math.sin(t * 20) * 0.4;
+  ctx.translate(0, bob);
+
+  // 極光動態漸層 (色相流轉)
+  const hue = (t * 40) % 360;
+  const wg = ctx.createLinearGradient(-15, -10, 15, 10);
+  wg.addColorStop(0, `hsl(${hue}, 100%, 65%)`);
+  wg.addColorStop(0.5, `hsl(${(hue+60)%360}, 100%, 60%)`);
+  wg.addColorStop(1, `hsl(${(hue+120)%360}, 100%, 55%)`);
+
+  ctx.save();
+  ctx.rotate(flap * 0.3);
+  ctx.fillStyle = wg; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.ellipse(-9, -5, 7.5, 10.5, -0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(9, -5, 7.5, 10.5, 0.4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.restore();
+
+  // 圓滾可愛本體
+  ctx.fillStyle = '#ede7f6';
+  ctx.beginPath(); ctx.ellipse(0, 1, 4.5, 7.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1a1a24';
+  ctx.beginPath(); ctx.arc(-1.8, -3, 1.2, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.8, -3, 1.2, 0, Math.PI*2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// M1. 幽魂半透明紗翼 (零粒子 · 純 45% 半透明 + 迷霧放射漸層)
+// -------------------------------------------------------------
+loop('cvM1', function(ctx, t) {
+  const bob = Math.sin(t * 3.5) * 2.2;
+  const flap = Math.sin(t * 22) * 0.45;
+  ctx.translate(0, bob);
+
+  // 1. 幽靈呼吸半透明度 (35% ~ 65%)
+  ctx.save();
+  ctx.globalAlpha = 0.5 + Math.sin(t * 4) * 0.15;
+
+  // 2. 靈霧薄紗外光環 (無粒子，純 RadialGradient 霧化擴散)
+  const mistHalo = ctx.createRadialGradient(0, 0, 2, 0, 0, 18);
+  mistHalo.addColorStop(0, 'rgba(224, 64, 251, 0.45)');
+  mistHalo.addColorStop(0.5, 'rgba(124, 77, 255, 0.25)');
+  mistHalo.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = mistHalo;
+  ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+
+  // 3. 紗狀雙翼 (高半透明放射漸層)
+  ctx.save();
+  ctx.rotate(flap * 0.35);
+
+  [-1, 1].forEach(s => {
+    // 主翅放射漸層 (中央白亮 -> 翼身粉紫 -> 邊緣完全淡化)
+    const wg = ctx.createRadialGradient(s * 7, -6, 1, s * 7, -6, 13);
+    wg.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+    wg.addColorStop(0.35, 'rgba(224, 64, 251, 0.8)');
+    wg.addColorStop(0.7, 'rgba(124, 77, 255, 0.6)');
+    wg.addColorStop(1, 'rgba(24, 255, 255, 0.15)');
+    ctx.fillStyle = wg;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.lineWidth = 0.8;
+
+    ctx.beginPath();
+    ctx.ellipse(s * 9, -6, 8, 12, s * 0.4, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 副翅
+    ctx.beginPath();
+    ctx.ellipse(s * 7, 5, 5, 8, s * 0.2, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // 晶透符文魔眼
+    ctx.fillStyle = '#18ffff';
+    ctx.beginPath(); ctx.arc(s * 8, -6, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#311b92';
+    ctx.beginPath(); ctx.arc(s * 8, -6, 1, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.restore();
+
+  // 4. 半透明水滴身軀
+  const bg = ctx.createRadialGradient(-1, -1, 1, 0, 0, 8);
+  bg.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+  bg.addColorStop(0.5, 'rgba(103, 58, 183, 0.7)');
+  bg.addColorStop(1, 'rgba(49, 27, 146, 0.4)');
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8.5, 0, 0, Math.PI * 2); ctx.fill();
+
+  // 觸角
+  ctx.strokeStyle = 'rgba(224, 64, 251, 0.8)'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-1.5, -6); ctx.quadraticCurveTo(-6, -13, -10, -14); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(1.5, -6); ctx.quadraticCurveTo(6, -13, 10, -14); ctx.stroke();
+
+  // 幽靈粉紫萌眼
+  ctx.fillStyle = '#ff4081';
+  ctx.beginPath(); ctx.arc(-1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+});
+
+// -------------------------------------------------------------
+// M2. 無邊界羽化煙翼 (零粒子 · 邊緣柔化漸隱至 0% 透明)
+// -------------------------------------------------------------
+loop('cvM2', function(ctx, t) {
+  const bob = Math.sin(t * 4) * 2;
+  const flap = Math.sin(t * 20) * 0.4;
+  ctx.translate(0, bob);
+
+  ctx.save();
+  ctx.globalAlpha = 0.7;
+
+  // 雙翅純靠 RadialGradient 向外完全透明羽化，完全無任何描邊線
+  ctx.save();
+  ctx.rotate(flap * 0.35);
+  [-1, 1].forEach(s => {
+    // 主翼羽化團
+    const wg = ctx.createRadialGradient(s * 8, -5, 1, s * 8, -5, 14);
+    wg.addColorStop(0, 'rgba(0, 229, 255, 0.95)');
+    wg.addColorStop(0.4, 'rgba(124, 77, 255, 0.7)');
+    wg.addColorStop(0.8, 'rgba(224, 64, 251, 0.3)');
+    wg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = wg;
+    ctx.beginPath(); ctx.ellipse(s * 9, -5, 9, 13, s * 0.45, 0, Math.PI * 2); ctx.fill();
+
+    // 副翼羽化團
+    const wgb = ctx.createRadialGradient(s * 6, 6, 1, s * 6, 6, 10);
+    wgb.addColorStop(0, 'rgba(124, 77, 255, 0.8)');
+    wgb.addColorStop(0.6, 'rgba(224, 64, 251, 0.3)');
+    wgb.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = wgb;
+    ctx.beginPath(); ctx.ellipse(s * 6, 6, 6, 9, s * 0.2, 0, Math.PI * 2); ctx.fill();
+
+    // 核心光點
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(s * 8, -5, 1.5, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.restore();
+
+  // 幽靈軀幹
+  const bg = ctx.createRadialGradient(0, 0, 1, 0, 0, 8);
+  bg.addColorStop(0, '#ffffff');
+  bg.addColorStop(0.5, '#673ab7');
+  bg.addColorStop(1, 'rgba(49, 27, 146, 0.2)');
+  ctx.fillStyle = bg;
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.arc(-1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.5, -5.5, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+});
+
+// -------------------------------------------------------------
+// M3. 多重薄紗疊層 (零粒子 · 3層同心薄紗透明度疊加)
+// -------------------------------------------------------------
+loop('cvM3', function(ctx, t) {
+  const bob = Math.sin(t * 3.5) * 2;
+  const flap = Math.sin(t * 20) * 0.4;
+  ctx.translate(0, bob);
+
+  ctx.save();
+  ctx.rotate(flap * 0.3);
+
+  // 3 層半透明薄紗幾何疊層
+  [-1, 1].forEach(s => {
+    // 第 1 層 (底層外擴大紗 25% 透明度)
+    ctx.fillStyle = 'rgba(224, 64, 251, 0.25)';
+    ctx.beginPath(); ctx.ellipse(s * 10, -5, 10, 14, s * 0.45, 0, Math.PI * 2); ctx.fill();
+
+    // 第 2 層 (中層紫青紗 40% 透明度)
+    ctx.fillStyle = 'rgba(128, 216, 255, 0.45)';
+    ctx.beginPath(); ctx.ellipse(s * 8, -5, 7.5, 11, s * 0.4, 0, Math.PI * 2); ctx.fill();
+
+    // 第 3 層 (核心白光紗 70% 透明度)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    ctx.beginPath(); ctx.ellipse(s * 6, -5, 4.5, 7.5, s * 0.35, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.restore();
+
+  // 本體
+  ctx.fillStyle = 'rgba(237, 231, 246, 0.85)';
+  ctx.beginPath(); ctx.ellipse(0, 1, 3, 7.5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#ff4081';
+  ctx.beginPath(); ctx.arc(-1.2, -5, 0.9, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(1.2, -5, 0.9, 0, Math.PI * 2); ctx.fill();
+});
+
+// -------------------------------------------------------------
+// M4. 隱匿呼吸薄暮 (零粒子 · 30%~75% 呼吸半透明度)
+// -------------------------------------------------------------
+loop('cvM4', function(ctx, t) {
+  const bob = Math.sin(t * 4) * 2;
+  const pulse = 0.45 + Math.sin(t * 3) * 0.3; // 呼吸隱匿透明度
+  ctx.translate(0, bob);
+
+  ctx.save();
+  ctx.globalAlpha = pulse;
+
+  // 雙翅
+  const wg = ctx.createLinearGradient(-12, -10, 12, 10);
+  wg.addColorStop(0, '#ff4081'); wg.addColorStop(0.5, '#7c4dff'); wg.addColorStop(1, '#18ffff');
+  ctx.fillStyle = wg;
+  ctx.beginPath(); ctx.ellipse(-8, -4, 7.5, 11, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(8, -4, 7.5, 11, 0.4, 0, Math.PI * 2); ctx.fill();
+
+  // 符文魔眼
+  ctx.fillStyle = '#18ffff';
+  ctx.beginPath(); ctx.arc(-8, -4, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(8, -4, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#311b92';
+  ctx.beginPath(); ctx.arc(-8, -4, 1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(8, -4, 1, 0, Math.PI * 2); ctx.fill();
+
+  // 軀幹
+  ctx.fillStyle = '#ede7f6';
+  ctx.beginPath(); ctx.ellipse(0, 1, 3.5, 8, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+});
+</script>
+</body>
+</html>

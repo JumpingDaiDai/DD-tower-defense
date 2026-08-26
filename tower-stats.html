@@ -83,6 +83,18 @@
     .tag-pierce { background: #fff8e1; color: #f57f17; }
     .tag-econ { background: #fffde7; color: #f9a825; }
 
+    .dmg-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .dmg-physical { background: #efebe9; color: #4e342e; border: 1px solid #d7ccc8; }
+    .dmg-magic { background: #ede7f6; color: #4a148c; border: 1px solid #d1c4e9; }
+    .dmg-poison { background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
+
     .back-link {
       display: block;
       text-align: center;
@@ -97,7 +109,7 @@
   <div class="container">
     <div class="header">
       <h1>🌸 防禦塔數值手冊</h1>
-      <p class="subtitle">8 座防禦塔的花費、傷害、射程、攻速與升級路線一覽（數值取自 game.js 的 TOWER_DATA，Lv1 為建造時即有、Lv2/3 為升級後數值）</p>
+      <p class="subtitle">8 座防禦塔的花費、傷害、射程、攻速與升級路線一覽（數值取自 game.js 的 TOWER_DATA，Lv1 為建造時即有、Lv2/3 為升級後數值）。第 6 關起會出現對特定傷害類型有抗性的怪物（🐞 裝甲瓢蟲抗物理 60%、🦇 迷霧幽蛾抗魔法 60%），建塔時請留意每座塔的傷害類型標籤，搭配不同類型才能應付後期關卡。</p>
     </div>
 
     <div id="tower-list"></div>
@@ -109,7 +121,7 @@
     // 直接複製自 game.js 的 TOWER_DATA，維持跟遊戲內數值一致；改動遊戲數值時記得同步更新這裡。
     const TOWER_DATA = {
       petal: {
-        name: '粉櫻花靈之箭', cost: 100,
+        name: '粉櫻花靈之箭', cost: 100, damageType: 'physical',
         description: '旋轉五瓣粉櫻 · 翡翠光箭速射',
         levels: [
           { damage: 21, range: 120, fireRate: 1.1 },
@@ -128,7 +140,7 @@
         ],
       },
       lavender: {
-        name: '月影薰衣草法杖', cost: 220,
+        name: '月影薰衣草法杖', cost: 220, damageType: 'magic',
         description: '幽紫薰衣草 · 月光電弧彈射（每彈射一次衰減 20% 傷害）',
         tag: { text: '⚡ 連鎖閃電', cls: 'tag-chain' },
         levels: [
@@ -138,8 +150,8 @@
         ],
       },
       mushroom: {
-        name: '魔幻蘑菇孢子壇', cost: 180,
-        description: '紫斑毒蕈 · 綠霧孢子持續腐蝕（無視護甲）',
+        name: '魔幻蘑菇孢子壇', cost: 180, damageType: 'poison',
+        description: '紫斑毒蕈 · 綠霧孢子持續腐蝕（持續傷害不經過抗性判定，永遠無視任何抗性）',
         tag: { text: '🧪 劇毒 DOT', cls: 'tag-poison' },
         levels: [
           { damage: 15, range: 125, fireRate: 0.9, poisonDps: 18, poisonDuration: 4.0 },
@@ -148,7 +160,7 @@
         ],
       },
       treant: {
-        name: '古木荊棘牢籠', cost: 260,
+        name: '古木荊棘牢籠', cost: 260, damageType: 'physical',
         description: '蒼勁藤木 · 尖刺定身與範圍震裂',
         tag: { text: '❄️ 減速 + 💥 範圍', cls: 'tag-slow' },
         levels: [
@@ -158,7 +170,7 @@
         ],
       },
       cannon: {
-        name: '熔岩熾火巨砲', cost: 300,
+        name: '熔岩熾火巨砲', cost: 300, damageType: 'physical',
         description: '熾熱熔岩 · 遠程劇烈重砲轟炸',
         tag: { text: '💥 範圍爆炸', cls: 'tag-aoe' },
         levels: [
@@ -168,7 +180,7 @@
         ],
       },
       ice_crystal: {
-        name: '極光霜藍冰晶', cost: 150,
+        name: '極光霜藍冰晶', cost: 150, damageType: 'magic',
         description: '極地冰晶 · 霜雪穿透與集體凍結（穿透每貫穿一體衰減 20% 傷害）',
         tag: { text: '❄️ 減速 + ✨ 穿透', cls: 'tag-pierce' },
         levels: [
@@ -178,7 +190,7 @@
         ],
       },
       laser: {
-        name: '星核日光雷射塔', cost: 350,
+        name: '星核日光雷射塔', cost: 350, damageType: 'magic',
         description: '高能光核 · 極速穿透高頻雷射（穿透每貫穿一體衰減 20% 傷害）',
         tag: { text: '✨ 高頻穿透', cls: 'tag-pierce' },
         levels: [
@@ -211,6 +223,8 @@
       }).join('');
 
       const tag = data.tag ? `<span class="special-tag ${data.tag.cls}">${data.tag.text}</span>` : '';
+      const dmgLabel = { physical: '⚔️ 物理', magic: '✨ 魔法', poison: '🧪 毒' }[data.damageType];
+      const dmgBadge = dmgLabel ? `<span class="dmg-badge dmg-${data.damageType}">${dmgLabel}</span>` : '';
       const specialRows = !isEcon ? data.levels.map((lv, i) =>
         `<div style="font-size:11.5px;color:#8d6e63;">Lv${i + 1}：${fmtSpecial(lv)}</div>`
       ).join('') : '';
@@ -226,7 +240,7 @@
             <span class="tower-cost">初始花費 💰${data.cost}</span>
           </div>
           <div class="tower-desc">${data.description}</div>
-          ${tag}
+          ${dmgBadge} ${tag}
           <table>
             <thead><tr>${headerCols}</tr></thead>
             <tbody>${rows}</tbody>
