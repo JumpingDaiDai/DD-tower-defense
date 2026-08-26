@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌸 防禦塔數值手冊 - DD Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --primary: #2d1e0f;
+      --gold: #ff9800;
+      --gold-dark: #e65100;
+      --border: #f0e6d6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffdf5 0%, #fdf6e7 100%);
+      color: #3e2723;
+      padding: 24px 16px 48px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container { width: 100%; max-width: 860px; }
+    .header {
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      border-radius: 24px;
+      padding: 24px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(62, 39, 35, 0.07);
+    }
+    h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #8d6e63; }
+
+    #tower-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 14px;
+    }
+    .tower-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 4px 14px rgba(62, 39, 35, 0.05);
+    }
+    .tower-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .tower-name { font-size: 17px; font-weight: 900; color: var(--primary); }
+    .tower-cost { font-size: 13px; font-weight: 800; color: var(--gold-dark); background: #fff3e0; padding: 3px 10px; border-radius: 10px; }
+    .tower-desc { font-size: 12.5px; color: #795548; margin-bottom: 12px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    th, td { padding: 5px 4px; text-align: center; }
+    thead th { color: #8d6e63; font-weight: 800; border-bottom: 2px solid var(--border); }
+    tbody tr:not(:last-child) td { border-bottom: 1px dashed var(--border); }
+    tbody td:first-child { text-align: left; font-weight: 800; color: var(--primary); white-space: nowrap; }
+    .upgrade-cost { color: var(--gold-dark); font-weight: 800; }
+    .special-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+    .tag-slow { background: #e1f5fe; color: #0277bd; }
+    .tag-poison { background: #e8f5e9; color: #2e7d32; }
+    .tag-chain { background: #f3e5f5; color: #8e24aa; }
+    .tag-aoe { background: #ffebee; color: #c62828; }
+    .tag-pierce { background: #fff8e1; color: #f57f17; }
+    .tag-econ { background: #fffde7; color: #f9a825; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #8d6e63;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🌸 防禦塔數值手冊</h1>
+      <p class="subtitle">8 座防禦塔的花費、傷害、射程、攻速與升級路線一覽（數值取自 game.js 的 TOWER_DATA，Lv1 為建造時即有、Lv2/3 為升級後數值）</p>
+    </div>
+
+    <div id="tower-list"></div>
+
+    <a class="back-link" href="manual.html">← 回開發手冊總覽</a>
+  </div>
+
+  <script>
+    // 直接複製自 game.js 的 TOWER_DATA，維持跟遊戲內數值一致；改動遊戲數值時記得同步更新這裡。
+    const TOWER_DATA = {
+      petal: {
+        name: '粉櫻花靈之箭', cost: 100,
+        description: '旋轉五瓣粉櫻 · 翡翠光箭速射',
+        levels: [
+          { damage: 21, range: 120, fireRate: 1.1 },
+          { damage: 31, range: 135, fireRate: 1.3, upgradeCost: 80 },
+          { damage: 47, range: 150, fireRate: 1.5, upgradeCost: 160 },
+        ],
+      },
+      sunflower: {
+        name: '暖陽向日葵金壇', cost: 75,
+        description: '金黃花瓣 · 每 5 秒定時產出陽光金幣',
+        tag: { text: '💰 經濟塔（不攻擊）', cls: 'tag-econ' },
+        levels: [
+          { goldPerSecond: 10 },
+          { goldPerSecond: 15, upgradeCost: 75 },
+          { goldPerSecond: 20, upgradeCost: 150 },
+        ],
+      },
+      lavender: {
+        name: '月影薰衣草法杖', cost: 220,
+        description: '幽紫薰衣草 · 月光電弧彈射（每彈射一次衰減 20% 傷害）',
+        tag: { text: '⚡ 連鎖閃電', cls: 'tag-chain' },
+        levels: [
+          { damage: 28, range: 135, fireRate: 1.0, chainCount: 3 },
+          { damage: 45, range: 150, fireRate: 1.2, chainCount: 4, upgradeCost: 160 },
+          { damage: 70, range: 165, fireRate: 1.4, chainCount: 5, upgradeCost: 320 },
+        ],
+      },
+      mushroom: {
+        name: '魔幻蘑菇孢子壇', cost: 180,
+        description: '紫斑毒蕈 · 綠霧孢子持續腐蝕（無視護甲）',
+        tag: { text: '🧪 劇毒 DOT', cls: 'tag-poison' },
+        levels: [
+          { damage: 15, range: 125, fireRate: 0.9, poisonDps: 18, poisonDuration: 4.0 },
+          { damage: 25, range: 140, fireRate: 1.1, poisonDps: 30, poisonDuration: 5.0, upgradeCost: 140 },
+          { damage: 38, range: 155, fireRate: 1.3, poisonDps: 48, poisonDuration: 6.0, upgradeCost: 280 },
+        ],
+      },
+      treant: {
+        name: '古木荊棘牢籠', cost: 260,
+        description: '蒼勁藤木 · 尖刺定身與範圍震裂',
+        tag: { text: '❄️ 減速 + 💥 範圍', cls: 'tag-slow' },
+        levels: [
+          { damage: 35, range: 110, fireRate: 0.8, slowFactor: 0.35, slowDuration: 2.5, splashRadius: 50 },
+          { damage: 55, range: 125, fireRate: 1.0, slowFactor: 0.3, slowDuration: 3.0, splashRadius: 60, upgradeCost: 180 },
+          { damage: 85, range: 140, fireRate: 1.2, slowFactor: 0.2, slowDuration: 3.5, splashRadius: 75, upgradeCost: 350 },
+        ],
+      },
+      cannon: {
+        name: '熔岩熾火巨砲', cost: 300,
+        description: '熾熱熔岩 · 遠程劇烈重砲轟炸',
+        tag: { text: '💥 範圍爆炸', cls: 'tag-aoe' },
+        levels: [
+          { damage: 60, range: 150, fireRate: 0.6, splashRadius: 70 },
+          { damage: 95, range: 170, fireRate: 0.75, splashRadius: 85, upgradeCost: 220 },
+          { damage: 150, range: 190, fireRate: 0.9, splashRadius: 105, upgradeCost: 400 },
+        ],
+      },
+      ice_crystal: {
+        name: '極光霜藍冰晶', cost: 150,
+        description: '極地冰晶 · 霜雪穿透與集體凍結（穿透每貫穿一體衰減 20% 傷害）',
+        tag: { text: '❄️ 減速 + ✨ 穿透', cls: 'tag-pierce' },
+        levels: [
+          { damage: 12, range: 130, fireRate: 1.2, slowFactor: 0.5, slowDuration: 3.0, piercing: 3 },
+          { damage: 22, range: 145, fireRate: 1.4, slowFactor: 0.4, slowDuration: 3.5, piercing: 4, upgradeCost: 120 },
+          { damage: 38, range: 160, fireRate: 1.7, slowFactor: 0.3, slowDuration: 4.0, piercing: 6, upgradeCost: 240 },
+        ],
+      },
+      laser: {
+        name: '星核日光雷射塔', cost: 350,
+        description: '高能光核 · 極速穿透高頻雷射（穿透每貫穿一體衰減 20% 傷害）',
+        tag: { text: '✨ 高頻穿透', cls: 'tag-pierce' },
+        levels: [
+          { damage: 40, range: 160, fireRate: 1.6, piercing: 2 },
+          { damage: 65, range: 175, fireRate: 1.9, piercing: 3, upgradeCost: 250 },
+          { damage: 105, range: 195, fireRate: 2.2, piercing: 4, upgradeCost: 450 },
+        ],
+      },
+    };
+
+    function fmtSpecial(lv) {
+      const parts = [];
+      if (lv.slowFactor) parts.push(`減速 ${Math.round((1 - lv.slowFactor) * 100)}% (${lv.slowDuration}s)`);
+      if (lv.poisonDps) parts.push(`毒 ${lv.poisonDps}/s (${lv.poisonDuration}s)`);
+      if (lv.chainCount) parts.push(`連鎖 ${lv.chainCount} 體`);
+      if (lv.splashRadius) parts.push(`爆炸範圍 ${lv.splashRadius}`);
+      if (lv.piercing) parts.push(`穿透 ${lv.piercing} 體`);
+      return parts.join(' ・ ') || '-';
+    }
+
+    function renderTower(key, data) {
+      const isEcon = key === 'sunflower';
+      const rows = data.levels.map((lv, i) => {
+        const label = i === 0 ? '建造 (Lv1)' : `升級 Lv${i + 1}`;
+        const cost = i === 0 ? `💰${data.cost}` : `<span class="upgrade-cost">💰${lv.upgradeCost}</span>`;
+        if (isEcon) {
+          return `<tr><td>${label}</td><td>${cost}</td><td colspan="3">產金 +${lv.goldPerSecond} / 5秒</td></tr>`;
+        }
+        return `<tr><td>${label}</td><td>${cost}</td><td>${lv.damage}</td><td>${lv.range}</td><td>${lv.fireRate}/s</td></tr>`;
+      }).join('');
+
+      const tag = data.tag ? `<span class="special-tag ${data.tag.cls}">${data.tag.text}</span>` : '';
+      const specialRows = !isEcon ? data.levels.map((lv, i) =>
+        `<div style="font-size:11.5px;color:#8d6e63;">Lv${i + 1}：${fmtSpecial(lv)}</div>`
+      ).join('') : '';
+
+      const headerCols = isEcon
+        ? `<th>階段</th><th>花費</th><th colspan="3">效果</th>`
+        : `<th>階段</th><th>花費</th><th>傷害</th><th>射程</th><th>攻速</th>`;
+
+      return `
+        <div class="tower-card">
+          <div class="tower-top">
+            <span class="tower-name">${data.name}</span>
+            <span class="tower-cost">初始花費 💰${data.cost}</span>
+          </div>
+          <div class="tower-desc">${data.description}</div>
+          ${tag}
+          <table>
+            <thead><tr>${headerCols}</tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          ${specialRows}
+        </div>
+      `;
+    }
+
+    document.getElementById('tower-list').innerHTML =
+      Object.entries(TOWER_DATA).map(([key, data]) => renderTower(key, data)).join('');
+  </script>
+</body>
+</html>
