@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.6.1',
+  VERSION: 'v1.6.2',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -230,16 +230,16 @@ const TOWER_DATA = {
     name: '粉櫻花靈之箭',
     cost: 100,
     range: 120,
-    damage: 16,
+    damage: 21,
     fireRate: 1.1,
     projectileSpeed: 320,
     projectileColor: '#ff80ab',
     description: '旋轉五瓣粉櫻 · 翡翠光箭速射',
     color: '#ff80ab',
     levels: [
-      { damage: 16, range: 120, fireRate: 1.1 },
-      { damage: 26, range: 135, fireRate: 1.3, upgradeCost: 80 },
-      { damage: 42, range: 150, fireRate: 1.5, upgradeCost: 160 },
+      { damage: 21, range: 120, fireRate: 1.1 },
+      { damage: 31, range: 135, fireRate: 1.3, upgradeCost: 80 },
+      { damage: 47, range: 150, fireRate: 1.5, upgradeCost: 160 },
     ],
   },
   sunflower: {
@@ -610,17 +610,17 @@ const WAVE_DATA_L12 = [
 // hpMultiplier：難度成長依關卡依序遞增 (1.0x ➔ 4.3x)
 const LEVEL_DATA = [
   { id: 'level_1', name: '第一關・晨光花園', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.0 },
-  { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2, hpMultiplier: 1.3 },
-  { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3, hpMultiplier: 1.6 },
-  { id: 'level_4', name: '第四關・深林迴廊', mapId: 'zigzag', waves: WAVE_DATA_L4, hpMultiplier: 1.9 },
-  { id: 'level_5', name: '第五關・炎陽廢墟', mapId: 'crossroad', waves: WAVE_DATA_L5, hpMultiplier: 2.2 },
-  { id: 'level_6', name: '第六關・冰封絕地', mapId: 'spiral_deep', waves: WAVE_DATA_L6, hpMultiplier: 2.5 },
-  { id: 'level_7', name: '第七關・龍王聖殿', mapId: 'dual_loop', waves: WAVE_DATA_L7, hpMultiplier: 2.8 },
-  { id: 'level_8', name: '第八關・時光沙漏', mapId: 'hourglass', waves: WAVE_DATA_L8, hpMultiplier: 3.1 },
-  { id: 'level_9', name: '第九關・大峽谷迴旋', mapId: 'canyon_switchback', waves: WAVE_DATA_L9, hpMultiplier: 3.4 },
-  { id: 'level_10', name: '第十關・四葉風車', mapId: 'pinwheel', waves: WAVE_DATA_L10, hpMultiplier: 3.7 },
-  { id: 'level_11', name: '第十一關・雙子虹橋', mapId: 'twin_bridges', waves: WAVE_DATA_L11, hpMultiplier: 4.0 },
-  { id: 'level_12', name: '第十二關・迷宮核心', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 4.3 },
+  { id: 'level_2', name: '第二關・迷霧小徑', mapId: 'serpentine', waves: WAVE_DATA_L2, hpMultiplier: 1.0 },
+  { id: 'level_3', name: '第三關・競技之環', mapId: 'ring', waves: WAVE_DATA_L3, hpMultiplier: 1.0 },
+  { id: 'level_4', name: '第四關・深林迴廊', mapId: 'zigzag', waves: WAVE_DATA_L4, hpMultiplier: 1.3 },
+  { id: 'level_5', name: '第五關・炎陽廢墟', mapId: 'crossroad', waves: WAVE_DATA_L5, hpMultiplier: 1.3 },
+  { id: 'level_6', name: '第六關・冰封絕地', mapId: 'spiral_deep', waves: WAVE_DATA_L6, hpMultiplier: 1.7 },
+  { id: 'level_7', name: '第七關・龍王聖殿', mapId: 'dual_loop', waves: WAVE_DATA_L7, hpMultiplier: 1.7 },
+  { id: 'level_8', name: '第八關・時光沙漏', mapId: 'hourglass', waves: WAVE_DATA_L8, hpMultiplier: 2.3 },
+  { id: 'level_9', name: '第九關・大峽谷迴旋', mapId: 'canyon_switchback', waves: WAVE_DATA_L9, hpMultiplier: 2.3 },
+  { id: 'level_10', name: '第十關・四葉風車', mapId: 'pinwheel', waves: WAVE_DATA_L10, hpMultiplier: 3.0 },
+  { id: 'level_11', name: '第十一關・雙子虹橋', mapId: 'twin_bridges', waves: WAVE_DATA_L11, hpMultiplier: 3.0 },
+  { id: 'level_12', name: '第十二關・迷宮核心', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 3.8 },
 ];
 let CURRENT_LEVEL_INDEX = 0;
 
@@ -776,7 +776,7 @@ const SHOP_METADATA = {
     icon: 'assets/towers/tower_petal.svg',
     badges: [{ text: '🎯 基礎速射', type: 'pierce' }, { text: '🏹 單體點殺', type: 'pierce' }],
     desc: '翡翠光箭高速射擊，適合前中期平穩過渡與快速擊落飛行蜜蜂。',
-    stats: { dmg: '16', range: '120', rate: '1.1/s' },
+    stats: { dmg: '21', range: '120', rate: '1.1/s' },
   },
   sunflower: {
     kind: 'tower',
@@ -2250,9 +2250,13 @@ class Enemy {
       }
     }
 
+    // 減速/定身效果不能被更弱的效果蓋掉：例如絕對零度把怪完全定身（slowFactor=0）之後，
+    // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動
     if (typeof slowFactor === 'number' && typeof slowDuration === 'number' && slowDuration > 0) {
-      this.slowFactor = slowFactor;
-      this.slowTimer = slowDuration;
+      if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
+        this.slowFactor = slowFactor;
+        this.slowTimer = slowDuration;
+      }
     }
     if (typeof poisonDps === 'number' && typeof poisonDuration === 'number' && poisonDps > 0 && poisonDuration > 0) {
       this.poisonDps = Math.max(this.poisonDps || 0, poisonDps);
@@ -3010,7 +3014,7 @@ class Game {
     // Base & Gate Dynamic Feedback
     this.baseHurtTimer = 0;
     this.gatePulseTimer = 0;
-    this.nextWaveCountdown = null; // 倒數計時秒數 (例如 5.0)，null 表示無倒數
+    this.nextWaveCountdown = null; // 倒數計時秒數（總共 15 秒，剩 10 秒才開始顯示 UI），null 表示無倒數
 
     // Interaction
     this.selectedTowerType = null;
@@ -4891,8 +4895,8 @@ class Game {
     // 檢查是否還有下一波（最後一波出完後不再倒數下一波）
     if (this.currentWave + 1 >= CONFIG.TOTAL_WAVES) return;
     if (this.nextWaveCountdown !== null) return;
-    this.nextWaveCountdown = 10.0;
-    dbgLog(`⏱️ 最後一隻怪已出！第 ${this.currentWave + 2} 波倒數 10 秒後自動降臨`);
+    this.nextWaveCountdown = 15.0;
+    dbgLog(`⏱️ 最後一隻怪已出！第 ${this.currentWave + 2} 波倒數 15 秒後自動降臨（前 5 秒不顯示倒數 UI，剩 10 秒才開始顯示）`);
   }
 
   checkWaveComplete() {
@@ -6271,8 +6275,9 @@ class Game {
         ctx.restore();
       }
 
-      // (B) wave 進行中且正在倒數下一波：在傳送門上方浮現 5 秒倒數發光光圈與數字
-      if (this.state === 'wave' && this.nextWaveCountdown !== null) {
+      // (B) wave 進行中且倒數下一波剩餘 ≤10 秒時：在傳送門上方浮現倒數發光光圈與數字
+      // （總共等待 15 秒，前 5 秒不顯示，剩 10 秒才開始顯示倒數，避免波次剛結束就一直閃倒數字）
+      if (this.state === 'wave' && this.nextWaveCountdown !== null && this.nextWaveCountdown <= 10) {
         const secs = Math.max(1, Math.ceil(this.nextWaveCountdown));
         const nextWaveNum = this.currentWave + 2;
         const countPulse = 1 + Math.sin(now * 8) * 0.12;
