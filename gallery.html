@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
@@ -338,9 +338,9 @@
       </div>
     </section>
 
-    <!-- 3. 怪物角色圖鑑 (6 大怪物) -->
+    <!-- 3. 怪物角色圖鑑 (8 大怪物) -->
     <section>
-      <div class="section-title">6 大入侵怪物角色 (Monsters)</div>
+      <div class="section-title">8 大入侵怪物角色 (Monsters)</div>
       <div class="grid-cards">
         <div class="card">
           <canvas id="cv-enemy-caterpillar" width="90" height="90"></canvas>
@@ -382,6 +382,20 @@
           <div class="card-title">小龍 (Boss)</div>
           <div class="card-subtitle">HP: 650 | 階段召喚蜜蜂</div>
           <div class="card-desc">赤紅龍鱗、金黃龍角與腹甲，血量低於 75%/50%/25% 召喚護衛。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-armored_ladybug" width="90" height="90"></canvas>
+          <div class="card-title">裝甲瓢蟲</div>
+          <div class="card-subtitle">HP: 420 | 60% 物理減傷</div>
+          <div class="card-desc">龜甲陣青銅圓盾與重裝甲殼，對物理直射有極高減傷，需法術/真傷克制。</div>
+        </div>
+
+        <div class="card">
+          <canvas id="cv-enemy-mist_moth" width="90" height="90"></canvas>
+          <div class="card-title">迷霧幽蛾</div>
+          <div class="card-subtitle">HP: 150 | 60% 魔法減傷</div>
+          <div class="card-desc">幽幻彩羽與呼吸式隱匿薄暮，對魔法能量高度抗性，需物理與毒素打擊。</div>
         </div>
       </div>
     </section>
@@ -610,7 +624,7 @@
       });
 
       // 3. 渲染怪物角色
-      const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'dragon'];
+      const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'dragon', 'armored_ladybug', 'mist_moth'];
       enemyTypes.forEach(e => {
         const cv = document.getElementById('cv-enemy-' + e);
         if (cv && Sprites['drawEnemy_' + e]) {
