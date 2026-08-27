@@ -708,27 +708,87 @@ function recordLevelResult(levelIndex, stars) {
 
 // 測試用：直接把關卡進度設成「通關到第 clearedThroughIndex 關、拿 starsOnLast 星」
 // clearedThroughIndex 傳 -1 代表重置成「尚未通關任何關卡」
+// 自動精確計算累計應得水晶與精華數量，並將商店與精靈樹重置為初始未購買狀態
 function debugApplyLevelProgress(clearedThroughIndex, starsOnLast) {
   const levels = {};
+  let totalCrystals = 0;
+  let totalEssence = 0;
+
+  // 計算每星等水晶累計值
+  const getTierCrystals = (stars) => {
+    let sum = 0;
+    for (let t = 1; t <= stars; t++) {
+      sum += CHEST_REWARDS[t - 1] || 0;
+    }
+    return sum;
+  };
+
   LEVEL_DATA.forEach((lvl, idx) => {
     if (clearedThroughIndex < 0) {
       levels[lvl.id] = { stars: 0, unlocked: idx === 0 };
     } else if (idx < clearedThroughIndex) {
+      // 之前所有關卡均為 3 星通關
       levels[lvl.id] = { stars: 3, unlocked: true };
+      totalCrystals += getTierCrystals(3);
+      totalEssence += 3 * 5 * (idx + 1);
     } else if (idx === clearedThroughIndex) {
+      // 當前選擇的關卡
       levels[lvl.id] = { stars: starsOnLast, unlocked: true };
-    } else if (idx === clearedThroughIndex + 1) {
+      totalCrystals += getTierCrystals(starsOnLast);
+      if (starsOnLast >= 1) {
+        totalEssence += starsOnLast * 5 * (idx + 1);
+      }
+    } else if (idx === clearedThroughIndex + 1 && starsOnLast >= 1) {
+      // 解鎖下一關（尚未通關）
       levels[lvl.id] = { stars: 0, unlocked: true };
     } else {
       levels[lvl.id] = { stars: 0, unlocked: false };
     }
   });
+
+  // 1. 存入關卡進度
   saveLevelProgress({ version: 1, levels });
-  CURRENT_LEVEL_INDEX = Math.max(0, clearedThroughIndex);
-  if (window.gameInstance && window.gameInstance.renderLevelCarousel) {
-    window.gameInstance.renderLevelCarousel();
+
+  // 2. 存入精確累計水晶與精華
+  saveCrystals(totalCrystals);
+  saveEssence(totalEssence);
+
+  // 3. 商店所有項目重置為「尚未購買 / 未締約」狀態（僅保留 starter petal 塔）
+  saveUnlocks({ towers: [...FREE_STARTER_TOWERS], skills: [] });
+
+  // 4. 精靈樹重置為「初始狀態（Level 1 幼苗初生）」
+  saveSpiritTreeLevel(1);
+
+  // 5. 焦點跳至選中的關卡（或已解鎖的下一關）
+  CURRENT_LEVEL_INDEX = Math.max(0, clearedThroughIndex < 0 ? 0 : (starsOnLast >= 1 && clearedThroughIndex + 1 < LEVEL_DATA.length ? clearedThroughIndex + 1 : clearedThroughIndex));
+
+  // 6. 即時更新所有 UI 面板
+  if (window.gameInstance) {
+    if (window.gameInstance.renderLevelCarousel) {
+      window.gameInstance.renderLevelCarousel();
+    }
+    if (window.gameInstance.updateCrystalBalanceUI) {
+      window.gameInstance.updateCrystalBalanceUI();
+    }
+    if (window.gameInstance.updateSpiritTreeUpBadge) {
+      window.gameInstance.updateSpiritTreeUpBadge();
+    }
+    if (window.gameInstance.renderShopItems) {
+      window.gameInstance.renderShopItems();
+    }
+    if (window.gameInstance.renderSpiritTreeModal) {
+      window.gameInstance.renderSpiritTreeModal();
+    }
+    if (window.gameInstance.showToast) {
+      if (clearedThroughIndex < 0) {
+        window.gameInstance.showToast(`🧪 已重置為初始進度 (0 關通關，💎0 水晶，商店與精靈樹已歸零)`);
+      } else {
+        window.gameInstance.showToast(`🧪 已套用通關至第 ${clearedThroughIndex + 1} 關 (${starsOnLast}★)！獲得 💎${totalCrystals} 水晶 · ✨${totalEssence} 精華 (商店與精靈樹已重置)`);
+      }
+    }
   }
-  dbgLog(`🧪 測試進度已套用：clearedThroughIndex=${clearedThroughIndex}, starsOnLast=${starsOnLast}`);
+
+  dbgLog(`🧪 關卡進度測試套用成功：clearedThroughIndex=${clearedThroughIndex}, stars=${starsOnLast}, crystals=${totalCrystals}, essence=${totalEssence}, 商店與精靈樹已重置`);
 }
 window.dbgApplyLevelProgress = debugApplyLevelProgress;
 
