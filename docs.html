@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏰 可愛塔防 - 文件與圖鑑導航中心</title>
+  <style>
+    :root {
+      --bg: #1a1b26;
+      --card-bg: #24283b;
+      --card-hover: #2f354f;
+      --text: #c0caf5;
+      --heading: #ff9e64;
+      --accent: #7aa2f7;
+      --border: #414868;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 30px 20px 60px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      max-width: 860px;
+      width: 100%;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: var(--heading);
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: #7a8299;
+      font-size: 14px;
+    }
+    .section-title {
+      font-size: 16px;
+      color: var(--accent);
+      margin: 24px 0 12px;
+      font-weight: 700;
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    a.doc-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    a.doc-card:hover {
+      background: var(--card-hover);
+      border-color: var(--heading);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #9aa5ce;
+      line-height: 1.4;
+    }
+    .card-file {
+      font-size: 11px;
+      color: #565f89;
+      font-family: monospace;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏰 可愛塔防 (DD Tower Defense)</h1>
+      <p class="subtitle">專案全文件、玩法手冊與美術圖鑑快速入口</p>
+    </header>
+
+    <div class="section-title">🎮 核心玩法與數值手冊</div>
+    <div class="grid">
+      <a class="doc-card" href="manual.html">
+        <div class="card-head">📖 完整遊戲玩法手冊</div>
+        <div class="card-desc">全玩法指引、各防禦塔攻擊特性、主動技能施放、屬性克制與獲勝機制。</div>
+        <div class="card-file">dd-tower-defense/manual.html</div>
+      </a>
+      <a class="doc-card" href="level-info.html">
+        <div class="card-head">🗺️ 12 關波次與怪物手冊</div>
+        <div class="card-desc">1~12 關每波次出怪種類、間隔時間、通關金幣獎勵與 Boss 出場時機。</div>
+        <div class="card-file">dd-tower-defense/level-info.html</div>
+      </a>
+      <a class="doc-card" href="tower-stats.html">
+        <div class="card-head">⚔️ 防禦塔三圍與抗性手冊</div>
+        <div class="card-desc">8 座防禦塔升星三圍（DPS/射程/攻速）、傷害類型歸屬與抗性怪物減傷公式。</div>
+        <div class="card-file">dd-tower-defense/tower-stats.html</div>
+      </a>
+      <a class="doc-card" href="PLAN.html">
+        <div class="card-head">📋 視覺升級執行計畫書</div>
+        <div class="card-desc">馬卡龍立體手繪化、石台 2.5D、流光粒子與打擊感升級進度追蹤。</div>
+        <div class="card-file">dd-tower-defense/PLAN.html</div>
+      </a>
+    </div>
+
+    <div class="section-title">🎨 美術展示與即時 Canvas 圖鑑</div>
+    <div class="grid">
+      <a class="doc-card" href="gallery.html">
+        <div class="card-head">🌟 完整美術圖鑑</div>
+        <div class="card-desc">8 隻怪物、7 大防禦塔、技能與 UI 圖標的即時 Canvas 動畫總覽。</div>
+        <div class="card-file">dd-tower-defense/gallery.html</div>
+      </a>
+      <a class="doc-card" href="monster-all-showcase.html">
+        <div class="card-head">👾 8 隻怪物小怪 vs 王展示</div>
+        <div class="card-desc">裝甲瓢蟲、迷霧幽蛾、毛毛蟲、蜜蜂等 8 大怪物的 Canvas 逐幀動態與黃金王形態。</div>
+        <div class="card-file">dd-tower-defense/monster-all-showcase.html</div>
+      </a>
+      <a class="doc-card" href="maps-preview.html">
+        <div class="card-head">🗺️ 12 張地圖路徑總覽</div>
+        <div class="card-desc">十字交織、深層渦旋、雙子無限之環等 12 種地圖路徑與造塔點預覽。</div>
+        <div class="card-file">dd-tower-defense/maps-preview.html</div>
+      </a>
+      <a class="doc-card" href="spirit-tree-rewards.html">
+        <div class="card-head">🌳 世界精靈樹升級手冊</div>
+        <div class="card-desc">精靈樹各等級所需的精華數、解鎖條件與全域被動屬性加成一覽。</div>
+        <div class="card-file">dd-tower-defense/spirit-tree-rewards.html</div>
+      </a>
+      <a class="doc-card" href="assets-manifest.html">
+        <div class="card-head">📦 SVG 素材總清單</div>
+        <div class="card-desc">專案內所有 SVG 靜態資源與 UI 圖示索引。</div>
+        <div class="card-file">dd-tower-defense/assets-manifest.html</div>
+      </a>
+    </div>
+
+    <div class="section-title">🕹️ 遊戲本體</div>
+    <div class="grid">
+      <a class="doc-card" href="index.html" style="border-color: #ffd700;">
+        <div class="card-head">🏰 啟動塔防遊戲 (index.html)</div>
+        <div class="card-desc">直接進入遊戲主畫面開始遊玩與測試。</div>
+        <div class="card-file">dd-tower-defense/index.html</div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
