@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🌳 精靈樹保衛戰 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.7.0">
+  <link rel="stylesheet" href="style.css?v=1.8.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -55,6 +55,9 @@
     <!-- 遊戲畫布視區 -->
     <div id="game-viewport">
       <canvas id="game-canvas"></canvas>
+
+      <!-- 幻境神力天賦徽章欄 (浮動在右上方垂直排列) -->
+      <div id="relic-bar" class="relic-bar-hud hidden" title="已獲取的自然神力"></div>
 
       <!-- 玩家主動技能快捷欄 (浮動在畫布右下方，專屬手繪 Canvas 魔法圖示) -->
       <div id="skill-bar">
@@ -175,11 +178,18 @@
           </div>
         </div>
 
+        <!-- 模式切換頁籤：主線戰役 vs 幻境秘境 -->
+        <div class="mode-select-tabs">
+          <button id="mode-tab-campaign" class="mode-tab-btn active">主線戰役</button>
+          <button id="mode-tab-roguelike" class="mode-tab-btn">幻境秘境</button>
+        </div>
+
         <!-- 關卡輪探 -->
         <div class="level-carousel">
           <button id="level-prev-btn" class="level-arrow-btn" aria-label="上一關">‹</button>
           <div class="level-carousel-card" id="level-carousel-card">
             <div class="level-card-lock hidden" id="level-lock-overlay">🔒</div>
+            <div class="level-card-badge hidden" id="level-card-mode-badge">幻境</div>
             <div class="level-card-name" id="level-card-name"></div>
             <div class="level-card-stars" id="level-card-stars"></div>
             <div class="level-star-tip hidden" id="level-star-tip"></div>
@@ -214,6 +224,18 @@
           <div id="modal-leaderboard-list" class="leaderboard-modal-records"></div>
         </div>
         <button id="close-leaderboard-btn" class="btn-primary" style="margin-top: 14px;">關閉英雄榜</button>
+      </div>
+    </div>
+
+    <!-- 🔮 Roguelike 肉鴿模式：三選一隨機神力賜福彈窗 -->
+    <div id="talent-pick-modal" class="screen hidden">
+      <div class="screen-content talent-modal-content">
+        <div class="talent-modal-header">
+          <span class="talent-header-icon">✨</span>
+          <h2>自然神力賜福</h2>
+          <p class="talent-modal-subtitle">請選擇一項被動神力，強化本局的所有植物塔！</p>
+        </div>
+        <div id="talent-card-container" class="talent-cards-container"></div>
       </div>
     </div>
 
@@ -392,9 +414,12 @@
         <option value="2">2 ★</option>
         <option value="3" selected>3 ★</option>
       </select>
-      <button style="width:100%;background:#00bcd4;color:#000;border:none;padding:5px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgApplyLevelProgress) window.dbgApplyLevelProgress(parseInt(document.getElementById('debug-level-select').value, 10), parseInt(document.getElementById('debug-stars-select').value, 10));">
-        套用
+      <button style="width:100%;background:#00bcd4;color:#000;border:none;padding:6px;border-radius:4px;font-weight:bold;cursor:pointer;" onclick="if(window.dbgApplyLevelProgress) window.dbgApplyLevelProgress(parseInt(document.getElementById('debug-level-select').value, 10), parseInt(document.getElementById('debug-stars-select').value, 10));">
+        ⚡ 套用並重置商店/樹
       </button>
+      <div style="font-size:9px;color:#aaa;margin-top:4px;line-height:1.3;">
+        * 自動發放精確水晶/精華，商店與精靈樹重置為未購買
+      </div>
       <div style="border-bottom:1px solid #444;border-top:1px solid #444;padding:6px 0 4px;margin:8px 0 6px;font-weight:bold;color:#00e5ff;">
         💎 貨幣測試
       </div>
@@ -421,6 +446,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.7.1"></script>
+  <script src="game.js?v=1.8.0"></script>
 </body>
 </html>
