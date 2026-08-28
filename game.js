@@ -1126,8 +1126,8 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【究極隱藏合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：對全場所有存活敵人造成 20% 當前最大生命值的神聖真實傷害（單隻傷害上限 500 點）',
-        requires: { gold_boost: 3, tower_growth: 3, gold_interest: 3 },
+        desc: '【跨流派究極合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：對全場所有存活敵人造成 20% 當前最大生命值的神聖真實傷害（單隻傷害上限 500 點）',
+        requires: { gold_boost: 3, laser_overcharge: 2, cannon_blast: 2 },
         onSunflowerPulse: (sunflowerTower, game) => {
           if (!game || !game.enemies) return;
           let hitCount = 0;
