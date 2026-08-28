@@ -739,6 +739,31 @@ const TALENT_SCHOOLS = {
           if (!cfg) return;
           triggerIceShatterExplosion(enemy, game, cfg, hasAbsoluteZero ? 5 : 0);
         }
+      },
+      ice_aura: {
+        name: '極地霜環',
+        icon: '🌨️',
+        levels: [
+          {
+            desc: '冰晶塔周圍 100px 散發霜寒光環，踏入光環的敵人跑速降低 15%',
+            onHitTarget: (proj, target, game) => {
+              // passive aura tick handled or on hit slow booster
+            }
+          },
+          {
+            desc: '霜寒光環範圍擴大至 125px，跑速降低 25%，且光環內敵人受到魔法傷害 +15%',
+          },
+          {
+            desc: '光環範圍擴大至 150px，跑速降低 35%，光環內敵人受到魔法傷害 +30%',
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (damageType === 'magic' && target && target.slowTimer > 0) {
+            const mults = [1, 1.15, 1.15, 1.30];
+            return rawDmg * (mults[level] || 1);
+          }
+          return rawDmg;
+        }
       }
     },
     hidden: [
@@ -749,7 +774,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】冰晶塔任何命中都會觸發冰爆（不再需要目標已被緩速），且被炸死的敵人會立即引爆下一輪冰爆，最多連鎖 5 次——一發子彈就能雪崩式清空整群怪',
-        requires: { ice_pierce: 3, ice_shatter: 3 },
+        requires: { ice_pierce: 3, ice_shatter: 2, ice_aura: 1 },
       }
     ]
   },
@@ -812,6 +837,28 @@ const TALENT_SCHOOLS = {
             text: isPlague ? '☠️ 瘟疫全場擴散！' : '☠️ 毒素擴散！', color: '#76ff03', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
           });
         }
+      },
+      toxin_corrosion: {
+        name: '腐蝕溶甲',
+        icon: '⚗️',
+        levels: [
+          {
+            desc: '中毒敵人護甲遭受腐蝕：受到的所有物理與魔法傷害 +15%',
+          },
+          {
+            desc: '受傷加深提升至 +25%，且毒傷跳傷害頻率加快 30%',
+          },
+          {
+            desc: '受傷加深提升至 +40%，且中毒期間敵人移動速度額外降低 20%',
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (target && target.poisonTimer > 0) {
+            const mults = [1, 1.15, 1.25, 1.40];
+            return rawDmg * (mults[level] || 1);
+          }
+          return rawDmg;
+        }
       }
     },
     hidden: [
@@ -822,7 +869,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結',
-        requires: { toxin_potency: 2, toxin_spread: 3 },
+        requires: { toxin_potency: 2, toxin_spread: 2, toxin_corrosion: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
             return target.hp + 1;
@@ -885,6 +932,28 @@ const TALENT_SCHOOLS = {
           }
           return rawDmg * cfg.mult;
         }
+      },
+      electromagnetic_field: {
+        name: '電磁感應',
+        icon: '🧲',
+        levels: [
+          {
+            desc: '電弧每次彈射命中敵人，使其陷入 1.5 秒感電（受到所有魔法傷害 +15%）',
+          },
+          {
+            desc: '感電傷害加深提升至 +25%，彈射衰減由 20% 減半為 10%',
+          },
+          {
+            desc: '感電傷害加深提升至 +40%，且彈射傷害不再衰減（每擊皆為 100% 全額傷害）',
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (damageType === 'magic' && attacker && attacker.towerType === 'lavender') {
+            const boosts = [1, 1.15, 1.25, 1.40];
+            return rawDmg * (boosts[level] || 1);
+          }
+          return rawDmg;
+        }
       }
     },
     hidden: [
@@ -895,7 +964,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】電弧連鎖的每一次彈射都會獨立判定暴擊（原本整發子彈只有第一擊能觸發暴擊，彈射到後面的目標完全吃不到），彈得越遠、暴擊次數越多',
-        requires: { chain_reach: 3, crit_strike: 1 },
+        requires: { chain_reach: 2, crit_strike: 1, electromagnetic_field: 2 },
       }
     ]
   },
@@ -979,6 +1048,53 @@ const TALENT_SCHOOLS = {
             }
           },
         ]
+      },
+      gold_interest: {
+        name: '利滾利息',
+        icon: '🪙',
+        levels: [
+          {
+            desc: '每波結束時，依現有金幣獲得 4% 利息獎勵（上限 +60 金幣）',
+            onWaveEnd: (wave, game) => {
+              if (!game) return;
+              const interest = Math.min(60, Math.floor(game.gold * 0.04));
+              if (interest > 0) {
+                game.addGold(interest);
+                game.showToast(`🪙 銀行利息：+${interest} 金幣！`);
+              }
+            }
+          },
+          {
+            desc: '利息比率提升至 7%（上限 +120 金幣）',
+            onWaveEnd: (wave, game) => {
+              if (!game) return;
+              const interest = Math.min(120, Math.floor(game.gold * 0.07));
+              if (interest > 0) {
+                game.addGold(interest);
+                game.showToast(`🪙 銀行利息：+${interest} 金幣！`);
+              }
+            }
+          },
+          {
+            desc: '利息比率提升至 10%（上限 +200 金幣），且全塔升級費用降低 15%',
+            apply: () => {
+              Object.values(TOWER_DATA).forEach(tower => {
+                if (!tower.levels) return;
+                tower.levels.forEach(lvl => {
+                  if (lvl.upgradeCost) lvl.upgradeCost = Math.round(lvl.upgradeCost * 0.85);
+                });
+              });
+            },
+            onWaveEnd: (wave, game) => {
+              if (!game) return;
+              const interest = Math.min(200, Math.floor(game.gold * 0.10));
+              if (interest > 0) {
+                game.addGold(interest);
+                game.showToast(`🪙 銀行利息：+${interest} 金幣！`);
+              }
+            }
+          },
+        ]
       }
     },
     hidden: [
@@ -989,7 +1105,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命',
-        requires: { gold_boost: 1, tower_growth: 3 },
+        requires: { gold_boost: 1, tower_growth: 2, gold_interest: 2 },
         onKill: (enemy, game) => {
           if (!game || !enemy.reward) return;
           const bonus = Math.ceil(enemy.reward * 0.5);
@@ -1081,6 +1197,38 @@ const TALENT_SCHOOLS = {
           }
           return rawDmg;
         }
+      },
+      petal_multishot: {
+        name: '多重齊射',
+        icon: '🪶',
+        levels: [
+          {
+            desc: '粉櫻塔每次攻擊有 25% 機率額外發射 1 枚散射花箭',
+          },
+          {
+            desc: '多重箭觸發機率提升至 45%，且散射箭傷害提升至 80%',
+          },
+          {
+            desc: '多重箭觸發機率提升至 70%，且每次必定額外散射 2 枚全額傷害花箭',
+          },
+        ],
+        onHitTarget: (proj, target, game, level) => {
+          if (proj.towerType !== 'petal' || !game || !game.enemies) return;
+          const cfgs = [null, { chance: 0.25, count: 1, ratio: 0.6 }, { chance: 0.45, count: 1, ratio: 0.8 }, { chance: 0.70, count: 2, ratio: 1.0 }][level];
+          if (!cfgs || Math.random() >= cfgs.chance) return;
+          let shot = 0;
+          for (const other of game.enemies) {
+            if (!other.alive || other === target) continue;
+            if (dist(target.x, target.y, other.x, other.y) <= 100) {
+              other.takeDamage(proj.damage * cfgs.ratio, null, 0, 0, 0, 'physical', game);
+              game.spawnParticle(other.x, other.y, {
+                color: '#ff4081', size: 3, vx: (Math.random() - 0.5) * 70, vy: (Math.random() - 0.5) * 70, life: 0.3, gravity: 0
+              });
+              shot++;
+              if (shot >= cfgs.count) break;
+            }
+          }
+        }
       }
     },
     hidden: [
@@ -1091,7 +1239,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】粉櫻箭擊中目標時，原地炸裂射出 3 枚追蹤粉櫻花瓣，自動追擊並打擊周遭敵人（造成 60% 傷害）',
-        requires: { petal_speed: 3, petal_pierce_armor: 2 },
+        requires: { petal_speed: 2, petal_pierce_armor: 2, petal_multishot: 1 },
         onHitTarget: (proj, target, game) => {
           if (proj.towerType !== 'petal' || !game || !game.enemies) return;
           let count = 0;
@@ -1176,6 +1324,40 @@ const TALENT_SCHOOLS = {
             text: '🔥 焦土燃燒！', color: '#ff3d00', fontSize: 12, vx: 0, vy: -30, life: 0.8, gravity: 0
           });
         }
+      },
+      cannon_cluster_shrapnel: {
+        name: '集束彈片',
+        icon: '💥',
+        levels: [
+          {
+            desc: '砲彈爆炸向周圍噴射 4 枚高溫彈片，對 70px 內隨機敵人造成 35 點物理傷害',
+          },
+          {
+            desc: '彈片數量提升至 6 枚，每枚傷害提升至 60 點',
+          },
+          {
+            desc: '彈片數量提升至 8 枚，每枚傷害提升至 95 點且附帶微震擊退效果',
+          },
+        ],
+        onHitTarget: (proj, target, game, level) => {
+          if (proj.towerType !== 'cannon' || !game || !game.enemies) return;
+          const cfgs = [null, { count: 4, dmg: 35 }, { count: 6, dmg: 60 }, { count: 8, dmg: 95 }][level];
+          if (!cfgs) return;
+          const px = target ? target.x : proj.x;
+          const py = target ? target.y : proj.y;
+          let hit = 0;
+          for (const other of game.enemies) {
+            if (!other.alive) continue;
+            if (dist(px, py, other.x, other.y) <= 85) {
+              other.takeDamage(cfgs.dmg, null, 0, 0, 0, 'physical', game);
+              game.spawnParticle(other.x, other.y, {
+                color: '#ffab00', size: 3, vx: (Math.random() - 0.5) * 120, vy: (Math.random() - 0.5) * 120, life: 0.35, gravity: 0
+              });
+              hit++;
+              if (hit >= cfgs.count) break;
+            }
+          }
+        }
       }
     },
     hidden: [
@@ -1186,7 +1368,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】熔岩巨砲每第 4 發砲彈升級為「天基天火」，爆炸範圍覆蓋全場 180px，造成 3 倍無視抗性的毀滅真實傷害',
-        requires: { cannon_blast: 3, cannon_scorched_earth: 2 },
+        requires: { cannon_blast: 2, cannon_scorched_earth: 2, cannon_cluster_shrapnel: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (attacker && attacker.towerType === 'cannon') {
             attacker._orbitalCounter = (attacker._orbitalCounter || 0) + 1;
@@ -1260,6 +1442,36 @@ const TALENT_SCHOOLS = {
           }
           return rawDmg;
         }
+      },
+      treant_earthquake: {
+        name: '大地震撼',
+        icon: '🪨',
+        levels: [
+          {
+            desc: '古木牢籠攻擊範圍 +15px，擊中時震飛半徑 60px 內敵人並打斷其狂暴衝刺',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.range = Math.round(lvl.range * 1.15);
+              });
+            }
+          },
+          {
+            desc: '攻擊範圍再 +20px，震裂波傷害提升至 100%，並附加 1 秒眩暈定身',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.range = Math.round(lvl.range * 1.15);
+              });
+            }
+          },
+          {
+            desc: '大地震波擴及全圖 100px，全場移動中怪物短暫停滯 1.2 秒',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.range = Math.round(lvl.range * 1.20);
+              });
+            }
+          },
+        ]
       }
     },
     hidden: [
@@ -1270,7 +1482,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】古木牢籠化身大地圖騰：其周圍 130px 範圍內的所有防禦塔獲得「遠古共鳴」，攻擊力永久提升 35% 且射速 +20%',
-        requires: { treant_entangle: 3, treant_thorns: 1 },
+        requires: { treant_entangle: 2, treant_thorns: 2, treant_earthquake: 1 },
         apply: (game) => {
           Object.values(TOWER_DATA).forEach(tower => {
             if (!tower.levels) return;
@@ -1343,6 +1555,30 @@ const TALENT_SCHOOLS = {
             }
           }
         }
+      },
+      laser_focus_beam: {
+        name: '烈陽聚焦',
+        icon: '🔬',
+        levels: [
+          {
+            desc: '雷射對同一敵人持續打擊時，傷害每次疊加 15%（最多疊加 3 層）',
+          },
+          {
+            desc: '聚焦傷害每層提升至 25%（最多 4 層），且打擊 Boss 額外增傷 20%',
+          },
+          {
+            desc: '聚焦傷害每層提升至 35%（最多 5 層，最高可達 2.75 倍極限高傷），且打擊 Boss 額外增傷 40%',
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (attacker && attacker.towerType === 'laser') {
+            const isBoss = target && target.isBoss;
+            const bossBonus = isBoss ? [1, 1, 1.2, 1.4][level] : 1;
+            const focusMult = [1, 1.15, 1.25, 1.35][level];
+            return rawDmg * focusMult * bossBonus;
+          }
+          return rawDmg;
+        }
       }
     },
     hidden: [
@@ -1353,7 +1589,7 @@ const TALENT_SCHOOLS = {
         rarity: 'legendary',
         weight: 25,
         desc: '【隱藏合成・質變】日光雷射消滅任何敵人時，引發超新星核爆，對全場直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害',
-        requires: { laser_overcharge: 2, laser_refract: 3 },
+        requires: { laser_overcharge: 2, laser_refract: 2, laser_focus_beam: 1 },
         onKill: (enemy, game) => {
           if (!game || !game.enemies) return;
           const boomDmg = Math.max(30, Math.floor(enemy.maxHp * 0.40));
