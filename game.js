@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.2-dev',
+  VERSION: 'v1.8.3-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -2634,7 +2634,10 @@ class Enemy {
 
     // 王的數值：若為 isBoss，血量大幅飆升（5x~8x），獎勵與扣心也顯著增加
     const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 3.2 : 5.5)) : 1.0;
-    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult);
+    // 幻境秘境無盡波次的小怪血量成長 (generateEndlessWave 算出的 hpScale)：
+    // 過去只套用在王身上，一般小怪完全沒吃到，導致波次越後面小怪血量卻沒變化
+    const waveHpMult = (!this.isBoss && customHpMult > 1.0) ? customHpMult : 1.0;
+    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult * waveHpMult);
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
