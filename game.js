@@ -1126,16 +1126,16 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【跨流派究極合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：對全場所有存活敵人造成 20% 當前最大生命值的神聖真實傷害（單隻傷害上限 500 點）',
+        desc: '【跨流派究極合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：以財富化為神聖審判，對全場所有存活敵人造成【現有金幣 × 0.1】的真實魔法傷害',
         requires: { gold_boost: 3, laser_overcharge: 2, cannon_blast: 2 },
         onSunflowerPulse: (sunflowerTower, game) => {
           if (!game || !game.enemies) return;
+          const currentGold = game.gold || 0;
+          const goldDmg = Math.max(25, Math.floor(currentGold * 0.10));
           let hitCount = 0;
           for (const enemy of game.enemies) {
             if (!enemy.alive) continue;
-            const pctDmg = Math.max(25, Math.floor(enemy.maxHp * 0.20));
-            const finalDmg = Math.min(500, pctDmg);
-            enemy.takeDamage(finalDmg, null, 0, 0, 0, 'magic', game);
+            enemy.takeDamage(goldDmg, null, 0, 0, 0, 'magic', game);
             game.spawnParticle(enemy.x, enemy.y, {
               color: '#ffd700', size: 3.5, vx: (Math.random() - 0.5) * 100, vy: (Math.random() - 0.5) * 100, life: 0.4, gravity: 0
             });
@@ -1144,7 +1144,7 @@ const TALENT_SCHOOLS = {
           if (hitCount > 0) {
             game.sfx.play('explosion');
             game.spawnParticle(CANVAS_W / 2, 80, {
-              text: `☀️ 日輪天罰！全屏 20% HP 轟炸`, color: '#ffd600', fontSize: 14, vx: 0, vy: -30, life: 1.2, gravity: 0
+              text: `☀️ 日輪天罰！全屏造成 ${goldDmg} 傷害 (金幣×10%)`, color: '#ffd600', fontSize: 14, vx: 0, vy: -30, life: 1.2, gravity: 0
             });
           }
         },
