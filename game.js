@@ -905,12 +905,12 @@ class RelicManager {
 
 const relicManager = new RelicManager();
 
-function drawRandomTalents(count = 3, towers = []) {
-  // 綁定特定塔的天賦（requiresTower）只有在場上真的擁有那座塔時才會出現，
-  // 賣掉該塔後之後的抽卡也不會再出現，避免抽到用不到的天賦
+function drawRandomTalents(count = 3) {
+  // 綁定特定塔的天賦（requiresTower）只有在已經締約（商店解鎖）該塔時才會出現，
+  // 不要求場上當下有蓋出來；賣掉/解除契約後之後的抽卡就不會再出現
   const available = TALENT_POOL.filter(t =>
     !relicManager.hasRelic(t.id) &&
-    (!t.requiresTower || towers.some(tw => tw.typeKey === t.requiresTower))
+    (!t.requiresTower || isTowerUnlocked(t.requiresTower))
   );
   const picked = [];
   const pool = [...available];
@@ -5905,7 +5905,7 @@ class Game {
     const container = document.getElementById('talent-card-container');
     if (!modal || !container) return;
 
-    const cards = drawRandomTalents(3, this.towers);
+    const cards = drawRandomTalents(3);
     if (cards.length === 0) {
       // 牌庫被抽乾，直接開始出怪
       this.state = 'wave';
