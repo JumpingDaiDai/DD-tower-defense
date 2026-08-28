@@ -115,6 +115,10 @@
     .school-card.poison .school-icon { background: #e8f5e9; }
     .school-card.chain .school-icon { background: #f3e5f5; }
     .school-card.economy .school-icon { background: #fffde7; }
+    .school-card.petal .school-icon { background: #fce4ec; }
+    .school-card.cannon .school-icon { background: #fbe9e7; }
+    .school-card.treant .school-icon { background: #efebe9; }
+    .school-card.laser .school-icon { background: #fff8e1; }
 
     .branch-row {
       display: grid;
@@ -131,6 +135,10 @@
     .school-card.poison .branch-name { color: #2e7d32; }
     .school-card.chain .branch-name { color: #8e24aa; }
     .school-card.economy .branch-name { color: #f9a825; }
+    .school-card.petal .branch-name { color: #c2185b; }
+    .school-card.cannon .branch-name { color: #d84315; }
+    .school-card.treant .branch-name { color: #4e342e; }
+    .school-card.laser .branch-name { color: #f57f17; }
 
     .level-list { list-style: none; }
     .level-list li {
@@ -368,6 +376,166 @@
             <span class="hidden-tag">質變</span>
           </div>
           <p class="hidden-desc">經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命</p>
+        </div>
+      </div>
+
+      <!-- 🌸 PETAL -->
+      <div class="school-card petal">
+        <div class="school-top">
+          <div class="school-icon">🌸</div>
+          <div>
+            <div class="school-name">物理連擊流</div>
+            <div class="school-sub">粉櫻箭塔 petal</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">風馳箭雨</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>粉櫻箭射速 +20%，射程 +10%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>射速再 +25%，射程再 +10%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>射速再 +30%，射程再 +15%</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">穿甲重矢</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>傷害 +25%，無視敵人 30% 物理抗性</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>傷害再 +25%，無視敵人 60% 物理抗性</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>傷害再 +35%，完全無視敵人 100% 物理抗性（全額真傷）</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">🌺</span>
+            <div>
+              <div class="hidden-name">萬花齊放</div>
+              <div class="hidden-req">需要 <b>風馳箭雨 Lv.3</b> + <b>穿甲重矢 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">質變</span>
+          </div>
+          <p class="hidden-desc">粉櫻箭擊中目標時，原地炸裂射出 3 枚追蹤粉櫻花瓣，自動追擊並打擊周遭敵人（造成 60% 傷害）</p>
+        </div>
+      </div>
+
+      <!-- 💣 CANNON -->
+      <div class="school-card cannon">
+        <div class="school-top">
+          <div class="school-icon">💣</div>
+          <div>
+            <div class="school-name">熔岩爆轟流</div>
+            <div class="school-sub">熔岩熾火巨砲 cannon</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">核能彈頭</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>爆炸半徑 +20px，基礎傷害 +20%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>爆炸半徑再 +20px，基礎傷害再 +25%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>爆炸半徑再 +25px，基礎傷害再 +30%，中心敵人雙倍傷害</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">焦土餘燼</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>解鎖焦土：砲擊地面留下 2.5 秒焦土，每秒 30 點燃燒傷害</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>焦土持續提升至 4.0 秒，燃燒傷害提升至 55/秒</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>持續提升至 5.5 秒，燃燒傷害 85/秒，並降低 25% 跑速</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">🌋</span>
+            <div>
+              <div class="hidden-name">天基毀滅砲</div>
+              <div class="hidden-req">需要 <b>核能彈頭 Lv.3</b> + <b>焦土餘燼 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">質變</span>
+          </div>
+          <p class="hidden-desc">熔岩巨砲每第 4 發砲彈升級為「天基天火」，爆炸範圍覆蓋全場 180px，造成 3 倍無視抗性的毀滅真實傷害</p>
+        </div>
+      </div>
+
+      <!-- 🌲 TREANT -->
+      <div class="school-card treant">
+        <div class="school-top">
+          <div class="school-icon">🌲</div>
+          <div>
+            <div class="school-name">荊棘大地流</div>
+            <div class="school-sub">古木荊棘牢籠 treant</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">森之纏繞</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>定身減速強度提升至 75%，持續時間 +1.0 秒</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>定身減速強度提升至 85%，持續時間再 +1.0 秒</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>定身強度提升至 95%（近乎完全定身），持續時間再 +1.5 秒</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">荊棘倒刺</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>處於定身/緩速狀態下的敵人，受到所有防禦塔傷害 +20%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>受傷加深提升至 +35%，攻擊時 50px 範圍附帶劇烈震裂波</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>受傷加深提升至 +50%，定身期間承受 100% 攻擊力流血真傷</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">🌲</span>
+            <div>
+              <div class="hidden-name">遠古守護者</div>
+              <div class="hidden-req">需要 <b>森之纏繞 Lv.3</b> + <b>荊棘倒刺 Lv.1</b></div>
+            </div>
+            <span class="hidden-tag">質變</span>
+          </div>
+          <p class="hidden-desc">古木牢籠化身大地圖騰：其周圍 130px 範圍內的所有防禦塔獲得「遠古共鳴」，攻擊力永久提升 35% 且射速 +20%</p>
+        </div>
+      </div>
+
+      <!-- ✨ LASER -->
+      <div class="school-card laser">
+        <div class="school-top">
+          <div class="school-icon">✨</div>
+          <div>
+            <div class="school-name">星核日珥流</div>
+            <div class="school-sub">星核日光雷射塔 laser</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">超導聚能</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>射速 +15%，貫穿敵人數量 +1 體</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>射速再 +20%，貫穿數量再 +1 體</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>射速再 +25%，貫穿數量再 +2 體，且穿透傷害不再遞減</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">光束折射</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>穿透敵人後，30% 機率折射副光束（50% 傷害）</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>折射機率提升至 50%，副光束傷害提升至 75%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>折射機率提升至 75%，傷害 100%，並額外折射至 2 名敵人</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">☀️</span>
+            <div>
+              <div class="hidden-name">超新星爆發</div>
+              <div class="hidden-req">需要 <b>超導聚能 Lv.2</b> + <b>光束折射 Lv.3</b></div>
+            </div>
+            <span class="hidden-tag">質變</span>
+          </div>
+          <p class="hidden-desc">日光雷射消滅任何敵人時，引發超新星核爆，對直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害</p>
         </div>
       </div>
 

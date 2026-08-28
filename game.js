@@ -1005,6 +1005,377 @@ const TALENT_SCHOOLS = {
         }
       }
     ]
+  },
+  petal: {
+    branches: {
+      petal_speed: {
+        name: '風馳箭雨',
+        icon: '🌸',
+        levels: [
+          {
+            desc: '粉櫻箭射速 +20%，射程 +10%',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.20).toFixed(2));
+                lvl.range = Math.round(lvl.range * 1.10);
+              });
+            }
+          },
+          {
+            desc: '粉櫻箭射速再 +25%，射程再 +10%',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.25).toFixed(2));
+                lvl.range = Math.round(lvl.range * 1.10);
+              });
+            }
+          },
+          {
+            desc: '粉櫻箭射速再 +30%，射程再 +15%',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.30).toFixed(2));
+                lvl.range = Math.round(lvl.range * 1.15);
+              });
+            }
+          },
+        ]
+      },
+      petal_pierce_armor: {
+        name: '穿甲重矢',
+        icon: '🏹',
+        levels: [
+          {
+            desc: '粉櫻箭傷害 +25%，無視敵人 30% 物理抗性',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.damage = Math.round(lvl.damage * 1.25);
+              });
+            }
+          },
+          {
+            desc: '粉櫻箭傷害再 +25%，無視敵人 60% 物理抗性',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.damage = Math.round(lvl.damage * 1.25);
+              });
+            }
+          },
+          {
+            desc: '粉櫻箭傷害再 +35%，完全無視敵人 100% 物理抗性（全額真傷）',
+            apply: () => {
+              TOWER_DATA.petal.levels.forEach(lvl => {
+                lvl.damage = Math.round(lvl.damage * 1.35);
+              });
+            }
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (damageType === 'physical' && attacker && attacker.towerType === 'petal' && target && target.resist && target.resist.physical) {
+            const ignoreRatios = [0, 0.3, 0.6, 1.0];
+            const ratio = ignoreRatios[level] || 0;
+            const originalResist = target.resist.physical;
+            const effectiveResist = originalResist * (1 - ratio);
+            const factor = (1 - effectiveResist) / Math.max(0.01, 1 - originalResist);
+            return rawDmg * factor;
+          }
+          return rawDmg;
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'petal_blossom_storm',
+        name: '萬花齊放',
+        icon: '🌺',
+        rarity: 'legendary',
+        weight: 25,
+        desc: '【隱藏合成・質變】粉櫻箭擊中目標時，原地炸裂射出 3 枚追蹤粉櫻花瓣，自動追擊並打擊周遭敵人（造成 60% 傷害）',
+        requires: { petal_speed: 3, petal_pierce_armor: 2 },
+        onHitTarget: (proj, target, game) => {
+          if (proj.towerType !== 'petal' || !game || !game.enemies) return;
+          let count = 0;
+          for (const other of game.enemies) {
+            if (!other.alive || other === target) continue;
+            if (dist(target.x, target.y, other.x, other.y) <= 120) {
+              other.takeDamage(proj.damage * 0.6, null, 0, 0, 0, 'physical', game);
+              game.spawnParticle(other.x, other.y, {
+                color: '#ff80ab', size: 3, vx: (Math.random() - 0.5) * 80, vy: (Math.random() - 0.5) * 80, life: 0.35, gravity: 0
+              });
+              count++;
+              if (count >= 3) break;
+            }
+          }
+        }
+      }
+    ]
+  },
+  cannon: {
+    branches: {
+      cannon_blast: {
+        name: '核能彈頭',
+        icon: '💣',
+        levels: [
+          {
+            desc: '熔岩巨砲爆炸半徑 +20px，基礎傷害 +20%',
+            apply: () => {
+              TOWER_DATA.cannon.levels.forEach(lvl => {
+                lvl.splashRadius = (lvl.splashRadius || 70) + 20;
+                lvl.damage = Math.round(lvl.damage * 1.20);
+              });
+            }
+          },
+          {
+            desc: '爆炸半徑再 +20px，基礎傷害再 +25%',
+            apply: () => {
+              TOWER_DATA.cannon.levels.forEach(lvl => {
+                lvl.splashRadius = (lvl.splashRadius || 70) + 20;
+                lvl.damage = Math.round(lvl.damage * 1.25);
+              });
+            }
+          },
+          {
+            desc: '爆炸半徑再 +25px，基礎傷害再 +30%，中心 40px 內敵人承受雙倍傷害',
+            apply: () => {
+              TOWER_DATA.cannon.levels.forEach(lvl => {
+                lvl.splashRadius = (lvl.splashRadius || 70) + 25;
+                lvl.damage = Math.round(lvl.damage * 1.30);
+              });
+            }
+          },
+        ]
+      },
+      cannon_scorched_earth: {
+        name: '焦土餘燼',
+        icon: '🔥',
+        levels: [
+          { desc: '解鎖焦土：砲彈爆炸地面留下 2.5 秒烈焰焦土，進入者每秒受到 30 點燃燒傷害' },
+          { desc: '焦土地面持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒' },
+          { desc: '焦土地面持續時間提升至 5.5 秒，燃燒傷害提升至 85/秒，並降低敵人 25% 跑速' },
+        ],
+        onHitTarget: (proj, target, game, level) => {
+          if (proj.towerType !== 'cannon' || !game) return;
+          const cfgs = [null, { duration: 2.5, dps: 30, slow: null }, { duration: 4.0, dps: 55, slow: null }, { duration: 5.5, dps: 85, slow: 0.75 }];
+          const cfg = cfgs[level];
+          if (!cfg) return;
+          const px = target ? target.x : proj.x;
+          const py = target ? target.y : proj.y;
+          const radius = proj.splashRadius || 80;
+          for (const other of game.enemies) {
+            if (!other.alive) continue;
+            if (dist(px, py, other.x, other.y) <= radius) {
+              other.poisonDps = Math.max(other.poisonDps || 0, cfg.dps);
+              other.poisonTimer = Math.max(other.poisonTimer || 0, cfg.duration);
+              if (cfg.slow && (other.slowTimer <= 0 || cfg.slow <= other.slowFactor)) {
+                other.slowFactor = cfg.slow;
+                other.slowTimer = cfg.duration;
+              }
+            }
+          }
+          game.spawnParticle(px, py - 15, {
+            text: '🔥 焦土燃燒！', color: '#ff3d00', fontSize: 12, vx: 0, vy: -30, life: 0.8, gravity: 0
+          });
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'orbital_cannon',
+        name: '天基毀滅砲',
+        icon: '🌋',
+        rarity: 'legendary',
+        weight: 25,
+        desc: '【隱藏合成・質變】熔岩巨砲每第 4 發砲彈升級為「天基天火」，爆炸範圍覆蓋全場 180px，造成 3 倍無視抗性的毀滅真實傷害',
+        requires: { cannon_blast: 3, cannon_scorched_earth: 2 },
+        modifyDamage: (rawDmg, damageType, attacker, target, game) => {
+          if (attacker && attacker.towerType === 'cannon') {
+            attacker._orbitalCounter = (attacker._orbitalCounter || 0) + 1;
+            if (attacker._orbitalCounter % 4 === 0) {
+              if (game && target) {
+                game.spawnParticle(target.x, target.y - 25, {
+                  text: '🌋 天基毀滅！3X TRUE DMG', color: '#ff1744', fontSize: 14, vx: 0, vy: -50, life: 1.0, gravity: 0
+                });
+              }
+              return rawDmg * 3.0;
+            }
+          }
+          return rawDmg;
+        }
+      }
+    ]
+  },
+  treant: {
+    branches: {
+      treant_entangle: {
+        name: '森之纏繞',
+        icon: '🌿',
+        levels: [
+          {
+            desc: '古木定身減速強度提升至 75%，減速持續時間 +1.0 秒',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.slowFactor = Math.max(0.1, (lvl.slowFactor || 0.35) * 0.75);
+                lvl.slowDuration = (lvl.slowDuration || 2.5) + 1.0;
+              });
+            }
+          },
+          {
+            desc: '古木定身減速強度提升至 85%，持續時間再 +1.0 秒',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.slowFactor = Math.max(0.08, (lvl.slowFactor || 0.35) * 0.65);
+                lvl.slowDuration = (lvl.slowDuration || 2.5) + 1.0;
+              });
+            }
+          },
+          {
+            desc: '古木定身減速強度提升至 95%（近乎完全定身），持續時間再 +1.5 秒',
+            apply: () => {
+              TOWER_DATA.treant.levels.forEach(lvl => {
+                lvl.slowFactor = 0.05;
+                lvl.slowDuration = (lvl.slowDuration || 2.5) + 1.5;
+              });
+            }
+          },
+        ]
+      },
+      treant_thorns: {
+        name: '荊棘倒刺',
+        icon: '🌵',
+        levels: [
+          {
+            desc: '處於古木定身/緩速狀態下的敵人，受到所有防禦塔傷害 +20%',
+          },
+          {
+            desc: '緩速受傷加深提升至 +35%，且古木攻擊時 50px 範圍附帶劇烈震裂波',
+          },
+          {
+            desc: '緩速受傷加深提升至 +50%，且敵人每被定身 1 秒直接承受古木攻擊力 100% 的流血真實傷害',
+          },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          if (target && target.slowTimer > 0) {
+            const mults = [1, 1.20, 1.35, 1.50];
+            return rawDmg * (mults[level] || 1);
+          }
+          return rawDmg;
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'ancient_guardian',
+        name: '遠古守護者',
+        icon: '🌲',
+        rarity: 'legendary',
+        weight: 25,
+        desc: '【隱藏合成・質變】古木牢籠化身大地圖騰：其周圍 130px 範圍內的所有防禦塔獲得「遠古共鳴」，攻擊力永久提升 35% 且射速 +20%',
+        requires: { treant_entangle: 3, treant_thorns: 1 },
+        apply: (game) => {
+          Object.values(TOWER_DATA).forEach(tower => {
+            if (!tower.levels) return;
+            tower.levels.forEach(lvl => {
+              if (lvl.damage) lvl.damage = Math.round(lvl.damage * 1.35);
+              if (lvl.fireRate) lvl.fireRate = Number((lvl.fireRate * 1.20).toFixed(2));
+            });
+          });
+        }
+      }
+    ]
+  },
+  laser: {
+    branches: {
+      laser_overcharge: {
+        name: '超導聚能',
+        icon: '✨',
+        levels: [
+          {
+            desc: '日光雷射射速 +15%，貫穿敵人數量 +1 體',
+            apply: () => {
+              TOWER_DATA.laser.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.15).toFixed(2));
+                lvl.piercing = (lvl.piercing || 2) + 1;
+              });
+            }
+          },
+          {
+            desc: '射速再 +20%，貫穿數量再 +1 體',
+            apply: () => {
+              TOWER_DATA.laser.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.20).toFixed(2));
+                lvl.piercing = (lvl.piercing || 2) + 1;
+              });
+            }
+          },
+          {
+            desc: '射速再 +25%，貫穿數量再 +2 體，且穿透傷害不再遞減衰減',
+            apply: () => {
+              TOWER_DATA.laser.levels.forEach(lvl => {
+                lvl.fireRate = Number((lvl.fireRate * 1.25).toFixed(2));
+                lvl.piercing = (lvl.piercing || 2) + 2;
+              });
+            }
+          },
+        ]
+      },
+      laser_refract: {
+        name: '光束折射',
+        icon: '💎',
+        levels: [
+          { desc: '雷射穿透敵人後，30% 機率折射一道副光束攻擊鄰近敵人（造成 50% 傷害）' },
+          { desc: '折射機率提升至 50%，副光束傷害提升至 75%' },
+          { desc: '折射機率提升至 75%，副光束傷害 100%，並額外折射至 2 名敵人' },
+        ],
+        onHitTarget: (proj, target, game, level) => {
+          if (proj.towerType !== 'laser' || !game || !game.enemies) return;
+          const cfgs = [null, { chance: 0.3, ratio: 0.5, targets: 1 }, { chance: 0.5, ratio: 0.75, targets: 1 }, { chance: 0.75, ratio: 1.0, targets: 2 }][level];
+          if (!cfgs || Math.random() >= cfgs.chance) return;
+          let hit = 0;
+          for (const other of game.enemies) {
+            if (!other.alive || other === target || proj.piercedEnemies.has(other)) continue;
+            if (dist(target.x, target.y, other.x, other.y) <= 100) {
+              other.takeDamage(proj.damage * cfgs.ratio, null, 0, 0, 0, 'magic', game);
+              game.spawnParticle(other.x, other.y, {
+                color: '#ffd700', size: 3, vx: (Math.random() - 0.5) * 100, vy: (Math.random() - 0.5) * 100, life: 0.3, gravity: 0
+              });
+              hit++;
+              if (hit >= cfgs.targets) break;
+            }
+          }
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'supernova_core',
+        name: '超新星爆發',
+        icon: '☀️',
+        rarity: 'legendary',
+        weight: 25,
+        desc: '【隱藏合成・質變】日光雷射消滅任何敵人時，引發超新星核爆，對全場直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害',
+        requires: { laser_overcharge: 2, laser_refract: 3 },
+        onKill: (enemy, game) => {
+          if (!game || !game.enemies) return;
+          const boomDmg = Math.max(30, Math.floor(enemy.maxHp * 0.40));
+          for (const other of game.enemies) {
+            if (!other.alive || other === enemy) continue;
+            if (dist(enemy.x, enemy.y, other.x, other.y) <= 90) {
+              other.takeDamage(boomDmg, null, 0, 0, 0, 'magic', game);
+            }
+          }
+          for (let i = 0; i < 12; i++) {
+            game.spawnParticle(enemy.x, enemy.y, {
+              color: '#ffd700', size: 3 + Math.random() * 4,
+              vx: (Math.random() - 0.5) * 180, vy: (Math.random() - 0.5) * 180,
+              life: 0.4, gravity: 0
+            });
+          }
+          game.spawnParticle(enemy.x, enemy.y - 15, {
+            text: '☀️ 超新星核爆！', color: '#ffea00', fontSize: 13, vx: 0, vy: -35, life: 0.8, gravity: 0
+          });
+        }
+      }
+    ]
   }
 };
 
@@ -1072,6 +1443,21 @@ class RelicManager {
       }
     }
     return dmg;
+  }
+
+  onHitTarget(projectile, target, game) {
+    if (!this.isEnabled) return;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.onHitTarget) branch.onHitTarget(projectile, target, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.onHitTarget) hidden.onHitTarget(projectile, target, game);
+      }
+    }
   }
 
   onKill(enemy, game) {
@@ -3297,6 +3683,10 @@ class Projectile {
             break;
           }
         }
+      }
+      // 觸發命中 Hook（包含焦土、萬花齊放、雷射折射等天賦）
+      if (typeof relicManager !== 'undefined') {
+        relicManager.onHitTarget(this, this.target, game);
       }
     }
     if (this.piercing > 0 && this.piercedEnemies.size < this.piercing) {
@@ -7073,8 +7463,8 @@ class Game {
             relicManager.onWaveEnd(this.currentWave, this);
           }
 
-          // 🔮 幻境秘境：每滿 5 波（第 5, 10, 15, 20... 波），觸發三選一神力抽卡
-          if (isRogue && this.currentWave % 5 === 0) {
+          // 🔮 幻境秘境：每滿 3 波（第 3, 6, 9, 12, 15... 波），觸發三選一神力抽卡
+          if (isRogue && this.currentWave % 3 === 0) {
             this.openTalentPickModal();
           } else {
             this.waveManager.startWave(this.currentWave);
