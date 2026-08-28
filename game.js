@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.4-dev',
+  VERSION: 'v1.8.3-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -666,7 +666,6 @@ const TALENT_POOL = [
     rarity: 'rare',
     icon: '❄️',
     weight: 35,
-    requiresTower: 'ice_crystal',
     onAcquire: (game) => {
       TOWER_DATA.ice_crystal.levels.forEach(lvl => {
         lvl.slowFactor = Math.max(0.1, (lvl.slowFactor || 0.5) * 0.75);
@@ -681,7 +680,6 @@ const TALENT_POOL = [
     rarity: 'epic',
     icon: '💠',
     weight: 20,
-    requiresTower: 'ice_crystal',
     onKill: (enemy, game) => {
       if (enemy.slowTimer > 0 && game) {
         const boomDmg = Math.max(20, Math.floor(enemy.maxHp * 0.25));
@@ -722,7 +720,6 @@ const TALENT_POOL = [
     rarity: 'common',
     icon: '🧪',
     weight: 45,
-    requiresTower: 'mushroom',
     onAcquire: (game) => {
       TOWER_DATA.mushroom.levels.forEach(lvl => {
         lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.35);
@@ -737,7 +734,6 @@ const TALENT_POOL = [
     rarity: 'epic',
     icon: '☠️',
     weight: 18,
-    requiresTower: 'mushroom',
     onKill: (enemy, game) => {
       if (enemy.poisonTimer > 0 && game) {
         for (const other of game.enemies) {
@@ -768,7 +764,6 @@ const TALENT_POOL = [
     rarity: 'rare',
     icon: '⚡',
     weight: 35,
-    requiresTower: 'lavender',
     onAcquire: (game) => {
       TOWER_DATA.lavender.levels.forEach(lvl => {
         lvl.chainCount = (lvl.chainCount || 3) + 2;
@@ -810,7 +805,6 @@ const TALENT_POOL = [
     rarity: 'common',
     icon: '🌻',
     weight: 45,
-    requiresTower: 'sunflower',
     onAcquire: (game) => {
       TOWER_DATA.sunflower.levels.forEach(lvl => {
         lvl.goldPerSecond = Math.round((lvl.goldPerSecond || 10) * 1.5);
@@ -905,13 +899,8 @@ class RelicManager {
 
 const relicManager = new RelicManager();
 
-function drawRandomTalents(count = 3, towers = []) {
-  // 綁定特定塔的天賦（requiresTower）只有在場上真的擁有那座塔時才會出現，
-  // 賣掉該塔後之後的抽卡也不會再出現，避免抽到用不到的天賦
-  const available = TALENT_POOL.filter(t =>
-    !relicManager.hasRelic(t.id) &&
-    (!t.requiresTower || towers.some(tw => tw.typeKey === t.requiresTower))
-  );
+function drawRandomTalents(count = 3) {
+  const available = TALENT_POOL.filter(t => !relicManager.hasRelic(t.id));
   const picked = [];
   const pool = [...available];
 
@@ -5905,7 +5894,7 @@ class Game {
     const container = document.getElementById('talent-card-container');
     if (!modal || !container) return;
 
-    const cards = drawRandomTalents(3, this.towers);
+    const cards = drawRandomTalents(3);
     if (cards.length === 0) {
       // 牌庫被抽乾，直接開始出怪
       this.state = 'wave';
