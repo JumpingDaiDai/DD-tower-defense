@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔮 幻境秘境天賦技能樹 - DD Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fffdf5;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --primary: #2d1e0f;
+      --gold: #ff9800;
+      --gold-dark: #e65100;
+      --border: #f0e6d6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #fffdf5 0%, #fdf6e7 100%);
+      color: #3e2723;
+      padding: 24px 16px 48px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .container { width: 100%; max-width: 960px; }
+    .header {
+      text-align: center;
+      background: var(--card-bg);
+      border: 2px solid rgba(255, 215, 0, 0.4);
+      border-radius: 24px;
+      padding: 24px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(62, 39, 35, 0.07);
+    }
+    h1 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+    .subtitle { font-size: 13px; color: #8d6e63; line-height: 1.6; }
+
+    .rule-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .rule-chip {
+      background: #fff3e0;
+      border: 1px solid #ffe0b2;
+      color: #e65100;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+
+    .legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: 11.5px;
+    }
+    .legend-label { font-weight: 900; color: #8d6e63; margin-right: 4px; }
+    .rarity-chip {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      border: 1.5px solid currentColor;
+    }
+    .rarity-chip .w { opacity: 0.7; font-weight: 900; }
+    .rarity-common { color: #616161; }
+    .rarity-rare { color: #0277bd; }
+    .rarity-epic { color: #8e24aa; }
+    .rarity-legendary { color: #e65100; }
+
+    #school-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+    .school-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 16px 18px 18px;
+      box-shadow: 0 4px 14px rgba(62, 39, 35, 0.05);
+    }
+    .school-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .school-icon {
+      width: 36px; height: 36px;
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .school-name { font-size: 16px; font-weight: 900; color: var(--primary); }
+    .school-sub { font-size: 11px; color: #a1887f; font-weight: 700; }
+
+    .school-card.ice .school-icon { background: #e1f5fe; }
+    .school-card.poison .school-icon { background: #e8f5e9; }
+    .school-card.chain .school-icon { background: #f3e5f5; }
+    .school-card.economy .school-icon { background: #fffde7; }
+
+    .branch-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .branch-name {
+      font-size: 13px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+    .school-card.ice .branch-name { color: #0277bd; }
+    .school-card.poison .branch-name { color: #2e7d32; }
+    .school-card.chain .branch-name { color: #8e24aa; }
+    .school-card.economy .branch-name { color: #f9a825; }
+
+    .level-list { list-style: none; }
+    .level-list li {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 12px;
+      color: #5d4037;
+      line-height: 1.5;
+      border-bottom: 1px dashed var(--border);
+    }
+    .level-list li:last-child { border-bottom: none; }
+    .lv-tag {
+      font-weight: 900;
+      font-size: 11px;
+      color: #a1887f;
+    }
+
+    .hidden-box {
+      background: linear-gradient(135deg, #fff8e1 0%, #fffde7 100%);
+      border: 1.5px solid #ffd54f;
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .hidden-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .hidden-icon { font-size: 18px; }
+    .hidden-name { font-size: 13.5px; font-weight: 900; color: #e65100; }
+    .hidden-req { font-size: 10.5px; color: #a1887f; font-weight: 800; margin-top: 1px; }
+    .hidden-req b { color: #e65100; }
+    .hidden-tag {
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: #ffe0b2;
+      color: #e65100;
+      white-space: nowrap;
+    }
+    .hidden-desc { font-size: 12px; color: #6d4c41; line-height: 1.5; }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #8d6e63;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔮 幻境秘境天賦技能樹</h1>
+      <p class="subtitle">Roguelike「幻境秘境」模式的三選一天賦系統。四大流派，每個流派 2 條分支，各自可獨立升到 Lv.3；兩條指定分支都到達門檻等級時，會解鎖只出現一次的隱藏合成天賦。</p>
+      <div class="rule-bar">
+        <span class="rule-chip">🔁 分支最多抽 3 次，滿 Lv.3 不再出現</span>
+        <span class="rule-chip">🔒 隱藏天賦門檻達成前不會出現，抽走即永久消失</span>
+        <span class="rule-chip">🎲 等級越高越稀有，隱藏合成固定傳說權重</span>
+      </div>
+    </div>
+
+    <div class="legend-bar">
+      <span class="legend-label">抽卡權重</span>
+      <span class="rarity-chip rarity-common">普通 Lv.1 <span class="w">45</span></span>
+      <span class="rarity-chip rarity-rare">稀有 Lv.2 <span class="w">30</span></span>
+      <span class="rarity-chip rarity-epic">史詩 Lv.3 <span class="w">18</span></span>
+      <span class="rarity-chip rarity-legendary">傳說 隱藏合成 <span class="w">10</span></span>
+    </div>
+
+    <div id="school-list">
+
+      <!-- ❄️ ICE -->
+      <div class="school-card ice">
+        <div class="school-top">
+          <div class="school-icon">❄️</div>
+          <div>
+            <div class="school-name">冰霜碎裂流</div>
+            <div class="school-sub">冰晶塔 ice_crystal</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">強化貫穿</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>冰晶塔穿透數量 +1 體，減速強度再提升 8%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>穿透數量再 +1 體，減速強度再提升 8%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>穿透數量 +2 體，減速強度再提升 10%</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">強化冰爆</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>解鎖冰爆：擊殺緩速中的敵人，55px 範圍造成 20% 最大血量爆炸傷害</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>範圍擴大至 70px，傷害提升至 27% 最大血量</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>範圍擴大至 85px，傷害提升至 34%，並附加 1.5 秒緩速</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">🧊</span>
+            <div>
+              <div class="hidden-name">絕對凍土</div>
+              <div class="hidden-req">需要 <b>強化貫穿 Lv.3</b> + <b>強化冰爆 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">legendary</span>
+          </div>
+          <p class="hidden-desc">冰晶塔穿透再 +2 體，減速強度再大幅提升 20%，傷害 +30%</p>
+        </div>
+      </div>
+
+      <!-- ☠️ POISON -->
+      <div class="school-card poison">
+        <div class="school-top">
+          <div class="school-icon">☠️</div>
+          <div>
+            <div class="school-name">劇毒腐蝕流</div>
+            <div class="school-sub">蘑菇塔 mushroom</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">強化猛毒</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>毒傷 +15%，持續時間 +1 秒</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>毒傷再 +15%，持續時間再 +1 秒</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>毒傷再 +20%，持續時間再 +1 秒</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">強化擴散</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>解鎖疫病擴散：中毒敵人死亡時，60px 內敵人感染 70% 強度毒素</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>擴散範圍提升至 75px，感染強度提升至 100%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>範圍提升至 95px，感染 100%，且擴散不限連鎖次數</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">💀</span>
+            <div>
+              <div class="hidden-name">絕命疫爆</div>
+              <div class="hidden-req">需要 <b>強化猛毒 Lv.3</b> + <b>強化擴散 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">legendary</span>
+          </div>
+          <p class="hidden-desc">蘑菇塔毒傷再 +25%、持續再 +2 秒；中毒且血量低於 12% 的敵人會被毒素直接了結</p>
+        </div>
+      </div>
+
+      <!-- ⚡ CHAIN -->
+      <div class="school-card chain">
+        <div class="school-top">
+          <div class="school-icon">⚡</div>
+          <div>
+            <div class="school-name">彈射超導流</div>
+            <div class="school-sub">薰衣草塔 lavender</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">強化連鎖</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>彈射次數 +1 次，彈射範圍 +12%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>彈射次數再 +1 次，彈射範圍再 +12%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>彈射次數再 +1 次，彈射範圍再 +13%</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">強化暴擊</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>解鎖暴擊：所有植物塔 10% 機率造成 1.8 倍傷害</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>機率提升至 15%，倍率提升至 2.0 倍</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>機率提升至 20%，倍率提升至 2.4 倍</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">🌩️</span>
+            <div>
+              <div class="hidden-name">雷霆過載</div>
+              <div class="hidden-req">需要 <b>強化連鎖 Lv.3</b> + <b>強化暴擊 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">legendary</span>
+          </div>
+          <p class="hidden-desc">薰衣草塔彈射次數再 +2 次、彈射範圍再 +20%，傷害 +25%</p>
+        </div>
+      </div>
+
+      <!-- 💰 ECONOMY -->
+      <div class="school-card economy">
+        <div class="school-top">
+          <div class="school-icon">💰</div>
+          <div>
+            <div class="school-name">經濟與輔助流</div>
+            <div class="school-sub">向日葵 sunflower ／全塔</div>
+          </div>
+        </div>
+        <div class="branch-row">
+          <div>
+            <div class="branch-name">強化產金</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>向日葵產金 +20%，每波結束額外 +40 金幣</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>產金再 +20%，每波結束額外再 +40 金幣</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>產金再 +25%，每波結束額外再 +40 金幣</span></li>
+            </ul>
+          </div>
+          <div>
+            <div class="branch-name">強化生長</div>
+            <ul class="level-list">
+              <li><span class="lv-tag">Lv.1</span><span>所有植物塔射速 +7%，射程 +5%</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>射速再 +7%，射程再 +5%</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>射速再 +8%，射程再 +5%</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="hidden-box">
+          <div class="hidden-top">
+            <span class="hidden-icon">💖</span>
+            <div>
+              <div class="hidden-name">豐饒祝福</div>
+              <div class="hidden-req">需要 <b>強化產金 Lv.3</b> + <b>強化生長 Lv.2</b></div>
+            </div>
+            <span class="hidden-tag">legendary</span>
+          </div>
+          <p class="hidden-desc">每波結束自動回復 1 點基地生命，並額外獲得「目前波數 × 10」金幣</p>
+        </div>
+      </div>
+
+    </div>
+
+    <a class="back-link" href="manual.html">← 回開發手冊總覽</a>
+  </div>
+</body>
+</html>
