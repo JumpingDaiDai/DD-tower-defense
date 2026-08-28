@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.5-dev',
+  VERSION: 'v1.8.6-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -659,6 +659,34 @@ const ROGUELIKE_LEVEL_DATA = [
 // ─── 5.1.6 Roguelike 天賦技能樹 (Branch + Level + Hidden Combo) ─────────
 // 每個流派有 2 條分支，各自可獨立升到 Lv.3；兩條分支都到達門檻等級後，
 // 會解鎖只出現一次的隱藏合成天賦（不佔用分支升級名額，取得後永久生效）
+// 冰爆殉爆連鎖：被炸死的敵人會在原地引爆下一輪冰爆，chainsLeft 用來防止無限遞迴
+function triggerIceShatterExplosion(origin, game, cfg, chainsLeft) {
+  const boomDmg = Math.max(20, Math.floor(origin.maxHp * cfg.pct));
+  const justKilled = [];
+  for (const other of game.enemies) {
+    if (!other.alive || other === origin) continue;
+    if (dist(origin.x, origin.y, other.x, other.y) <= cfg.radius) {
+      other.takeDamage(boomDmg, cfg.extraSlow ? 0.4 : null, cfg.extraSlow ? 1.5 : 0, 0, 0, 'magic', game);
+      if (!other.alive) justKilled.push(other);
+    }
+  }
+  for (let i = 0; i < 10; i++) {
+    game.spawnParticle(origin.x, origin.y, {
+      color: '#80d8ff', size: 3 + Math.random() * 4,
+      vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160,
+      life: 0.4, gravity: 0
+    });
+  }
+  game.spawnParticle(origin.x, origin.y - 15, {
+    text: '❄️ 冰爆！', color: '#00e5ff', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
+  });
+  if (chainsLeft > 0) {
+    for (const dead of justKilled) {
+      triggerIceShatterExplosion(dead, game, cfg, chainsLeft - 1);
+    }
+  }
+}
+
 const TALENT_SCHOOLS = {
   ice: {
     branches: {
@@ -704,26 +732,12 @@ const TALENT_SCHOOLS = {
           { desc: '冰爆範圍擴大至 85px，爆炸傷害提升至 34% 最大血量，且被炸到的敵人附加 1.5 秒緩速' },
         ],
         onKill: (enemy, game, level) => {
-          if (!(enemy.slowTimer > 0) || !game) return;
+          if (!game) return;
+          const hasAbsoluteZero = typeof relicManager !== 'undefined' && relicManager.hasHidden('absolute_zero');
+          if (!(enemy.slowTimer > 0) && !hasAbsoluteZero) return;
           const cfg = [null, { radius: 55, pct: 0.20 }, { radius: 70, pct: 0.27 }, { radius: 85, pct: 0.34, extraSlow: true }][level];
           if (!cfg) return;
-          const boomDmg = Math.max(20, Math.floor(enemy.maxHp * cfg.pct));
-          for (const other of game.enemies) {
-            if (!other.alive || other === enemy) continue;
-            if (dist(enemy.x, enemy.y, other.x, other.y) <= cfg.radius) {
-              other.takeDamage(boomDmg, cfg.extraSlow ? 0.4 : null, cfg.extraSlow ? 1.5 : 0, 0, 0, 'magic', game);
-            }
-          }
-          for (let i = 0; i < 10; i++) {
-            game.spawnParticle(enemy.x, enemy.y, {
-              color: '#80d8ff', size: 3 + Math.random() * 4,
-              vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160,
-              life: 0.4, gravity: 0
-            });
-          }
-          game.spawnParticle(enemy.x, enemy.y - 15, {
-            text: '❄️ 冰爆！', color: '#00e5ff', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
-          });
+          triggerIceShatterExplosion(enemy, game, cfg, hasAbsoluteZero ? 5 : 0);
         }
       }
     },
@@ -734,15 +748,8 @@ const TALENT_SCHOOLS = {
         icon: '🧊',
         rarity: 'legendary',
         weight: 10,
-        desc: '【隱藏合成】冰晶塔穿透再 +2 體，減速強度再大幅提升 20%，傷害 +30%',
-        requires: { ice_pierce: 3, ice_shatter: 2 },
-        apply: () => {
-          TOWER_DATA.ice_crystal.levels.forEach(lvl => {
-            lvl.piercing = (lvl.piercing || 3) + 2;
-            lvl.slowFactor = Math.max(0.03, (lvl.slowFactor || 0.5) * 0.8);
-            lvl.damage = Math.round((lvl.damage || 12) * 1.3);
-          });
-        }
+        desc: '【隱藏合成・質變】冰晶塔任何命中都會觸發冰爆（不再需要目標已被緩速），且被炸死的敵人會立即引爆下一輪冰爆，最多連鎖 5 次——一發子彈就能雪崩式清空整群怪',
+        requires: { ice_pierce: 3, ice_shatter: 3 },
       }
     ]
   },
@@ -793,15 +800,16 @@ const TALENT_SCHOOLS = {
           if (!(enemy.poisonTimer > 0) || !game) return;
           const cfg = [null, { radius: 60, ratio: 0.7 }, { radius: 75, ratio: 1.0 }, { radius: 95, ratio: 1.0 }][level];
           if (!cfg) return;
+          const isPlague = typeof relicManager !== 'undefined' && relicManager.hasHidden('lethal_plague');
           for (const other of game.enemies) {
             if (!other.alive || other === enemy) continue;
-            if (dist(enemy.x, enemy.y, other.x, other.y) <= cfg.radius) {
+            if (isPlague || dist(enemy.x, enemy.y, other.x, other.y) <= cfg.radius) {
               other.poisonDps = Math.max(other.poisonDps || 0, (enemy.poisonDps || 20) * cfg.ratio);
               other.poisonTimer = Math.max(other.poisonTimer || 0, 4.0);
             }
           }
           game.spawnParticle(enemy.x, enemy.y - 15, {
-            text: '☠️ 毒素擴散！', color: '#76ff03', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
+            text: isPlague ? '☠️ 瘟疫全場擴散！' : '☠️ 毒素擴散！', color: '#76ff03', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
           });
         }
       }
@@ -813,14 +821,8 @@ const TALENT_SCHOOLS = {
         icon: '💀',
         rarity: 'legendary',
         weight: 10,
-        desc: '【隱藏合成】蘑菇塔毒傷再 +25%、持續再 +2 秒；中毒且血量低於 12% 的敵人會被毒素直接了結',
-        requires: { toxin_potency: 3, toxin_spread: 2 },
-        apply: () => {
-          TOWER_DATA.mushroom.levels.forEach(lvl => {
-            lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.25);
-            lvl.poisonDuration = (lvl.poisonDuration || 4) + 2;
-          });
-        },
+        desc: '【隱藏合成・質變】疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結',
+        requires: { toxin_potency: 2, toxin_spread: 3 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
             return target.hp + 1;
@@ -892,15 +894,8 @@ const TALENT_SCHOOLS = {
         icon: '🌩️',
         rarity: 'legendary',
         weight: 10,
-        desc: '【隱藏合成】薰衣草塔彈射次數再 +2 次、彈射範圍再 +20%，傷害 +25%',
-        requires: { chain_reach: 3, crit_strike: 2 },
-        apply: () => {
-          TOWER_DATA.lavender.levels.forEach(lvl => {
-            lvl.chainCount = (lvl.chainCount || 3) + 2;
-            lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.2);
-            lvl.damage = Math.round((lvl.damage || 28) * 1.25);
-          });
-        }
+        desc: '【隱藏合成・質變】電弧連鎖的每一次彈射都會獨立判定暴擊（原本整發子彈只有第一擊能觸發暴擊，彈射到後面的目標完全吃不到），彈得越遠、暴擊次數越多',
+        requires: { chain_reach: 3, crit_strike: 1 },
       }
     ]
   },
@@ -993,17 +988,20 @@ const TALENT_SCHOOLS = {
         icon: '💖',
         rarity: 'legendary',
         weight: 10,
-        desc: '【隱藏合成】每波結束自動回復 1 點基地生命，並額外獲得「目前波數 x 10」金幣',
-        requires: { gold_boost: 3, tower_growth: 2 },
+        desc: '【隱藏合成・質變】經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命',
+        requires: { gold_boost: 1, tower_growth: 3 },
+        onKill: (enemy, game) => {
+          if (!game || !enemy.reward) return;
+          const bonus = Math.ceil(enemy.reward * 0.5);
+          game.addGold(bonus);
+        },
         onWaveEnd: (wave, game) => {
           if (!game) return;
           if (game.lives < getStartingLives()) {
             game.lives = Math.min(getStartingLives(), game.lives + 1);
             game.updateUI();
+            game.showToast('💖 豐饒祝福：回復 1 ❤️');
           }
-          const bonus = (wave + 1) * 10;
-          game.addGold(bonus);
-          game.showToast(`💖 豐饒祝福：回復 1 ❤️，+${bonus} 金幣！`);
         }
       }
     ]
@@ -3264,7 +3262,11 @@ class Projectile {
           }
           if (nextTarget) {
             this.chainedEnemies.add(nextTarget);
-            const chainDmg = this.damage * Math.pow(0.8, c); // 每次彈射衰減 20% 傷害
+            let chainDmg = this.damage * Math.pow(0.8, c); // 每次彈射衰減 20% 傷害
+            // 雷霆過載：每一次彈射獨立判定暴擊，而不是只有初擊能觸發
+            if (typeof relicManager !== 'undefined' && relicManager.hasHidden('thunder_overload')) {
+              chainDmg = relicManager.modifyDamage(chainDmg, 'magic', this, nextTarget, game);
+            }
             nextTarget.takeDamage(chainDmg, null, 0, 0, 0, 'magic', game); // 閃電為魔法傷害
 
             // 閃電折射火花粒子
