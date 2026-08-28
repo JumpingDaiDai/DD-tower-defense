@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.0-dev',
+  VERSION: 'v1.8.1-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -373,6 +373,15 @@ const TOWER_DATA = {
     ],
   },
 };
+
+// 幻境秘境天賦會直接修改 TOWER_DATA[x].levels（累加穿透/減速等數值），
+// 若不還原會跨局永久疊加、甚至污染戰役模式，故載入時先存一份原始快照供每局重置還原
+const TOWER_DATA_DEFAULTS = JSON.parse(JSON.stringify(TOWER_DATA));
+function restoreTowerDataDefaults() {
+  for (const key in TOWER_DATA_DEFAULTS) {
+    TOWER_DATA[key].levels = TOWER_DATA_DEFAULTS[key].levels.map(lvl => ({ ...lvl }));
+  }
+}
 
 // ─── 4. 敵人數據 ─────────────────────────────
 const ENEMY_DATA = {
@@ -850,6 +859,7 @@ class RelicManager {
   }
 
   reset(mode) {
+    restoreTowerDataDefaults();
     this.relics = [];
     this.isEnabled = (mode === GAME_MODES.ROGUELIKE);
   }
