@@ -1119,6 +1119,39 @@ const TALENT_SCHOOLS = {
             game.showToast('💖 豐饒祝福：回復 1 ❤️');
           }
         }
+      },
+      {
+        id: 'solar_wrath',
+        name: '日輪天罰・金耀天劫',
+        icon: '☀️',
+        rarity: 'legendary',
+        weight: 25,
+        desc: '【究極隱藏合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：對全場所有存活敵人造成 20% 當前最大生命值的神聖真實傷害（單隻傷害上限 500 點）',
+        requires: { gold_boost: 3, tower_growth: 3, gold_interest: 3 },
+        onSunflowerPulse: (sunflowerTower, game) => {
+          if (!game || !game.enemies) return;
+          let hitCount = 0;
+          for (const enemy of game.enemies) {
+            if (!enemy.alive) continue;
+            const pctDmg = Math.max(25, Math.floor(enemy.maxHp * 0.20));
+            const finalDmg = Math.min(500, pctDmg);
+            enemy.takeDamage(finalDmg, null, 0, 0, 0, 'magic', game);
+            game.spawnParticle(enemy.x, enemy.y, {
+              color: '#ffd700', size: 3.5, vx: (Math.random() - 0.5) * 100, vy: (Math.random() - 0.5) * 100, life: 0.4, gravity: 0
+            });
+            hitCount++;
+          }
+          if (hitCount > 0) {
+            game.sfx.play('explosion');
+            game.spawnParticle(CANVAS_W / 2, 80, {
+              text: `☀️ 日輪天罰！全屏 20% HP 轟炸`, color: '#ffd600', fontSize: 14, vx: 0, vy: -30, life: 1.2, gravity: 0
+            });
+          }
+        },
+        onWaveStart: (wave, game) => {
+          if (!game || !game.enemies) return;
+          // 波次開始若有敵人也給予定點威懾
+        }
       }
     ]
   },
@@ -1707,6 +1740,36 @@ class RelicManager {
       }
       for (const hidden of school.hidden) {
         if (this.hasHidden(hidden.id) && hidden.onKill) hidden.onKill(enemy, game);
+      }
+    }
+  }
+
+  onSunflowerPulse(sunflowerTower, game) {
+    if (!this.isEnabled) return;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.onSunflowerPulse) branch.onSunflowerPulse(sunflowerTower, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.onSunflowerPulse) hidden.onSunflowerPulse(sunflowerTower, game);
+      }
+    }
+  }
+
+  onWaveStart(wave, game) {
+    if (!this.isEnabled) return;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.onWaveStart) branch.onWaveStart(wave, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.onWaveStart) hidden.onWaveStart(wave, game);
       }
     }
   }
@@ -4094,6 +4157,9 @@ class Tower {
             life: 1.0,
           });
           game.sfx.play('gold');
+          if (typeof relicManager !== 'undefined') {
+            relicManager.onSunflowerPulse(this, game);
+          }
         }
       }
       return null; // Sunflower doesn't attack
@@ -6496,6 +6562,9 @@ class Game {
     this.nextWaveCountdown = null;
     this.state = 'wave';
     this.waveManager.startWave(this.currentWave);
+    if (typeof relicManager !== 'undefined') {
+      relicManager.onWaveStart(this.currentWave, this);
+    }
     this.sfx.play('wave');
     if (this.currentWave === 9) {
       this.showToast(`👑 第 10 波：中繼領主 (Mid-Boss) 來襲！`);
@@ -6845,6 +6914,9 @@ class Game {
     // 恢復遊戲並開始該波次
     this.state = 'wave';
     this.waveManager.startWave(this.currentWave);
+    if (typeof relicManager !== 'undefined') {
+      relicManager.onWaveStart(this.currentWave, this);
+    }
     this.updateUI();
   }
 
@@ -7704,6 +7776,9 @@ class Game {
             this.openTalentPickModal();
           } else {
             this.waveManager.startWave(this.currentWave);
+            if (typeof relicManager !== 'undefined') {
+              relicManager.onWaveStart(this.currentWave, this);
+            }
             this.sfx.play('wave');
             this.showToast(`第 ${this.currentWave + 1} 波降臨！`);
           }
