@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.7-dev',
+  VERSION: 'v1.8.8-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -1482,6 +1482,16 @@ const SHOP_METADATA = {
     stats: { dmg: '50', range: '全場敵人', rate: 'CD 45s' },
   }
 };
+
+// 傷害類型標示：物理/魔法/毒素，讓玩家看得到抗性剋制關係（裝甲瓢蟲抗物理、迷霧幽蛾抗魔法）
+function getDamageTypeBadge(damageType) {
+  switch (damageType) {
+    case 'physical': return { text: '⚔️ 物理', cls: 'badge-physical' };
+    case 'magic': return { text: '✨ 魔法', cls: 'badge-magic' };
+    case 'poison': return { text: '☠️ 毒素', cls: 'badge-poison' };
+    default: return null;
+  }
+}
 
 function getShopBadgeClass(type) {
   switch (type) {
@@ -5772,6 +5782,8 @@ class Game {
     if (tower.typeKey === 'sunflower') {
       statsHtml += `💰 產金：+${stats.goldPerSecond}/5秒（僅出怪時生效）`;
     } else {
+      const dmgTypeBadge = getDamageTypeBadge(tower.data.damageType);
+      if (dmgTypeBadge) statsHtml += `<span class="role-badge ${dmgTypeBadge.cls}" style="margin-bottom:4px;">${dmgTypeBadge.text}</span><br>`;
       statsHtml += `傷害：${stats.damage}<br>`;
       statsHtml += `範圍：${stats.range}<br>`;
       statsHtml += `攻速：${stats.fireRate.toFixed(1)}/秒`;
@@ -5809,6 +5821,8 @@ class Game {
     if (typeKey === 'sunflower') {
       statsHtml += `💰 產金：+${data.goldPerSecond}/5秒 (波次進行中自動獲得)`;
     } else {
+      const dmgTypeBadge = getDamageTypeBadge(data.damageType);
+      if (dmgTypeBadge) statsHtml += `<span class="role-badge ${dmgTypeBadge.cls}" style="margin-bottom:4px;">${dmgTypeBadge.text}</span><br>`;
       statsHtml += `⚔️ 基礎傷害：${data.damage}<br>`;
       statsHtml += `📏 攻擊範圍：${data.range}<br>`;
       statsHtml += `💫 攻擊速度：${data.fireRate.toFixed(1)}/秒`;
@@ -6489,7 +6503,9 @@ class Game {
     };
     const canAfford = balance >= item.cost;
     const towerGoldCost = item.kind === 'tower' && TOWER_DATA[item.key] ? TOWER_DATA[item.key].cost : null;
-    const badgeHtml = meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
+    const dmgTypeBadge = item.kind === 'tower' ? getDamageTypeBadge(TOWER_DATA[item.key]?.damageType) : null;
+    const dmgTypeBadgeHtml = dmgTypeBadge ? `<span class="role-badge ${dmgTypeBadge.cls}">${dmgTypeBadge.text}</span>` : '';
+    const badgeHtml = dmgTypeBadgeHtml + meta.badges.map(b => `<span class="role-badge ${getShopBadgeClass(b.type)}">${b.text}</span>`).join('');
     // 技能用跟遊戲內技能按鈕一致的手繪 Canvas 圖示（drawSkillIcon），不是 assets/skills/*.svg 那張舊圖
     const iconHtml = item.kind === 'skill'
       ? `<canvas class="shop-skill-icon-canvas" data-skill-key="${item.key}" width="36" height="36"></canvas>`

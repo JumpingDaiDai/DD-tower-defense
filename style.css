@@ -1521,6 +1521,8 @@ html, body {
 .badge-econ { background: rgba(255, 234, 0, 0.2); color: #ffff8d; border: 1px solid rgba(255, 234, 0, 0.5); }
 .badge-gold-cost { background: rgba(255, 167, 38, 0.25); color: #ffe082; border: 1px solid rgba(255, 167, 38, 0.65); font-weight: 900; }
 .badge-skill { background: rgba(255, 64, 129, 0.2); color: #ff80ab; border: 1px solid rgba(255, 64, 129, 0.5); }
+.badge-physical { background: rgba(158, 158, 158, 0.22); color: #eceff1; border: 1px solid rgba(158, 158, 158, 0.55); }
+.badge-magic { background: rgba(171, 71, 188, 0.2); color: #ea80fc; border: 1px solid rgba(171, 71, 188, 0.5); }
 
 .shop-card-t1-desc {
   font-size: 10px;
