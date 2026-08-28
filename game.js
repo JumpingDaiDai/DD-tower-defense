@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.3-dev',
+  VERSION: 'v1.8.5-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -656,253 +656,507 @@ const ROGUELIKE_LEVEL_DATA = [
   { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
 ];
 
-// ─── 5.1.6 Roguelike 隨機天賦 / 遺物庫 (Synergy Deck) ─────────
-const TALENT_POOL = [
-  // ❄️ 冰霜碎裂流
-  {
-    id: 'frost_pierce',
-    name: '極地寒霜',
-    desc: '冰晶塔減速效果提升 25%，且穿透數量 +1 體',
-    rarity: 'rare',
-    icon: '❄️',
-    weight: 35,
-    onAcquire: (game) => {
-      TOWER_DATA.ice_crystal.levels.forEach(lvl => {
-        lvl.slowFactor = Math.max(0.1, (lvl.slowFactor || 0.5) * 0.75);
-        lvl.piercing = (lvl.piercing || 3) + 1;
-      });
-    }
-  },
-  {
-    id: 'ice_shatter',
-    name: '冰爆引信',
-    desc: '處於減速/冰凍狀態的敵人死亡時引發霜凍殉爆，對周圍造成範圍傷害',
-    rarity: 'epic',
-    icon: '💠',
-    weight: 20,
-    onKill: (enemy, game) => {
-      if (enemy.slowTimer > 0 && game) {
-        const boomDmg = Math.max(20, Math.floor(enemy.maxHp * 0.25));
-        for (const other of game.enemies) {
-          if (!other.alive || other === enemy) continue;
-          if (dist(enemy.x, enemy.y, other.x, other.y) <= 75) {
-            other.takeDamage(boomDmg, 0.4, 2.0, 0, 0, 'magic', game);
+// ─── 5.1.6 Roguelike 天賦技能樹 (Branch + Level + Hidden Combo) ─────────
+// 每個流派有 2 條分支，各自可獨立升到 Lv.3；兩條分支都到達門檻等級後，
+// 會解鎖只出現一次的隱藏合成天賦（不佔用分支升級名額，取得後永久生效）
+const TALENT_SCHOOLS = {
+  ice: {
+    branches: {
+      ice_pierce: {
+        name: '強化貫穿',
+        icon: '❄️',
+        levels: [
+          {
+            desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%',
+            apply: () => {
+              TOWER_DATA.ice_crystal.levels.forEach(lvl => {
+                lvl.piercing = (lvl.piercing || 3) + 1;
+                lvl.slowFactor = Math.max(0.08, (lvl.slowFactor || 0.5) * 0.92);
+              });
+            }
+          },
+          {
+            desc: '穿透數量再 +1 體，減速強度再提升 8%',
+            apply: () => {
+              TOWER_DATA.ice_crystal.levels.forEach(lvl => {
+                lvl.piercing = (lvl.piercing || 3) + 1;
+                lvl.slowFactor = Math.max(0.08, (lvl.slowFactor || 0.5) * 0.92);
+              });
+            }
+          },
+          {
+            desc: '穿透數量 +2 體，減速強度再提升 10%',
+            apply: () => {
+              TOWER_DATA.ice_crystal.levels.forEach(lvl => {
+                lvl.piercing = (lvl.piercing || 3) + 2;
+                lvl.slowFactor = Math.max(0.05, (lvl.slowFactor || 0.5) * 0.9);
+              });
+            }
+          },
+        ]
+      },
+      ice_shatter: {
+        name: '強化冰爆',
+        icon: '💠',
+        levels: [
+          { desc: '解鎖冰爆：擊殺處於緩速狀態的敵人時，55px 範圍造成 20% 最大血量的爆炸傷害' },
+          { desc: '冰爆範圍擴大至 70px，爆炸傷害提升至 27% 最大血量' },
+          { desc: '冰爆範圍擴大至 85px，爆炸傷害提升至 34% 最大血量，且被炸到的敵人附加 1.5 秒緩速' },
+        ],
+        onKill: (enemy, game, level) => {
+          if (!(enemy.slowTimer > 0) || !game) return;
+          const cfg = [null, { radius: 55, pct: 0.20 }, { radius: 70, pct: 0.27 }, { radius: 85, pct: 0.34, extraSlow: true }][level];
+          if (!cfg) return;
+          const boomDmg = Math.max(20, Math.floor(enemy.maxHp * cfg.pct));
+          for (const other of game.enemies) {
+            if (!other.alive || other === enemy) continue;
+            if (dist(enemy.x, enemy.y, other.x, other.y) <= cfg.radius) {
+              other.takeDamage(boomDmg, cfg.extraSlow ? 0.4 : null, cfg.extraSlow ? 1.5 : 0, 0, 0, 'magic', game);
+            }
           }
-        }
-        for (let i = 0; i < 10; i++) {
-          game.spawnParticle(enemy.x, enemy.y, {
-            color: '#80d8ff',
-            size: 3 + Math.random() * 4,
-            vx: (Math.random() - 0.5) * 160,
-            vy: (Math.random() - 0.5) * 160,
-            life: 0.4,
-            gravity: 0
+          for (let i = 0; i < 10; i++) {
+            game.spawnParticle(enemy.x, enemy.y, {
+              color: '#80d8ff', size: 3 + Math.random() * 4,
+              vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160,
+              life: 0.4, gravity: 0
+            });
+          }
+          game.spawnParticle(enemy.x, enemy.y - 15, {
+            text: '❄️ 冰爆！', color: '#00e5ff', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
           });
         }
-        game.spawnParticle(enemy.x, enemy.y - 15, {
-          text: '❄️ 冰爆！',
-          color: '#00e5ff',
-          fontSize: 12,
-          vx: 0,
-          vy: -35,
-          life: 0.8,
-          gravity: 0
-        });
       }
-    }
-  },
-
-  // ☠️ 劇毒腐蝕流
-  {
-    id: 'toxic_bloom',
-    name: '劇毒花粉',
-    desc: '魔幻蘑菇毒素傷害頻率翻倍，毒傷持續時間 +2 秒',
-    rarity: 'common',
-    icon: '🧪',
-    weight: 45,
-    onAcquire: (game) => {
-      TOWER_DATA.mushroom.levels.forEach(lvl => {
-        lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.35);
-        lvl.poisonDuration = (lvl.poisonDuration || 4) + 2;
-      });
-    }
-  },
-  {
-    id: 'epidemic_spore',
-    name: '疫病擴散',
-    desc: '中毒敵人死亡時，毒素 100% 傳染給周圍 80px 內的所有敵人',
-    rarity: 'epic',
-    icon: '☠️',
-    weight: 18,
-    onKill: (enemy, game) => {
-      if (enemy.poisonTimer > 0 && game) {
-        for (const other of game.enemies) {
-          if (!other.alive || other === enemy) continue;
-          if (dist(enemy.x, enemy.y, other.x, other.y) <= 80) {
-            other.poisonDps = Math.max(other.poisonDps || 0, enemy.poisonDps || 20);
-            other.poisonTimer = Math.max(other.poisonTimer || 0, 4.0);
-          }
-        }
-        game.spawnParticle(enemy.x, enemy.y - 15, {
-          text: '☠️ 毒素擴散！',
-          color: '#76ff03',
-          fontSize: 12,
-          vx: 0,
-          vy: -35,
-          life: 0.8,
-          gravity: 0
-        });
-      }
-    }
-  },
-
-  // ⚡ 彈射超導流
-  {
-    id: 'chain_overload',
-    name: '月影連鎖擴散',
-    desc: '月影薰衣草彈射次數 +2 次，彈射範圍擴大 30%',
-    rarity: 'rare',
-    icon: '⚡',
-    weight: 35,
-    onAcquire: (game) => {
-      TOWER_DATA.lavender.levels.forEach(lvl => {
-        lvl.chainCount = (lvl.chainCount || 3) + 2;
-        lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.3);
-      });
-    }
-  },
-  {
-    id: 'crit_burst',
-    name: '暴擊種子',
-    desc: '所有植物塔攻擊有 20% 機率造成 2.2 倍暴擊傷害',
-    rarity: 'legendary',
-    icon: '💥',
-    weight: 10,
-    modifyDamage: (rawDmg, damageType, attacker, target, game) => {
-      if (Math.random() < 0.2) {
-        if (game && target) {
-          game.spawnParticle(target.x, target.y - 12, {
-            text: '💥 CRIT!',
-            color: '#ffd700',
-            fontSize: 13,
-            vx: 0,
-            vy: -40,
-            life: 0.6,
-            gravity: 0
-          });
-        }
-        return rawDmg * 2.2;
-      }
-      return rawDmg;
-    }
-  },
-
-  // 💰 經濟與輔助流
-  {
-    id: 'sun_bounty',
-    name: '金黃陽光賜福',
-    desc: '向日葵金幣產量 +50%，且每波結束後額外獲得 80 金幣',
-    rarity: 'common',
-    icon: '🌻',
-    weight: 45,
-    onAcquire: (game) => {
-      TOWER_DATA.sunflower.levels.forEach(lvl => {
-        lvl.goldPerSecond = Math.round((lvl.goldPerSecond || 10) * 1.5);
-      });
     },
-    onWaveEnd: (wave, game) => {
-      if (game) {
-        game.addGold(80);
-        game.showToast('🌻 陽光賜福：+80 金幣！');
-      }
-    }
-  },
-  {
-    id: 'life_dew',
-    name: '生命甘霖之露',
-    desc: '每波結束後自動回復 1 點基地生命 ❤️',
-    rarity: 'rare',
-    icon: '💖',
-    weight: 30,
-    onWaveEnd: (wave, game) => {
-      if (game && game.lives < getStartingLives()) {
-        game.lives = Math.min(getStartingLives(), game.lives + 1);
-        game.updateUI();
-        game.showToast('💖 生命甘霖：回復 1 ❤️');
-      }
-    }
-  },
-  {
-    id: 'rapid_growth',
-    name: '神速生長律動',
-    desc: '所有植物塔攻擊速度 +20%，射程 +15%',
-    rarity: 'epic',
-    icon: '🍃',
-    weight: 20,
-    onAcquire: (game) => {
-      Object.values(TOWER_DATA).forEach(tower => {
-        if (tower.levels) {
-          tower.levels.forEach(lvl => {
-            if (lvl.fireRate) lvl.fireRate = Number((lvl.fireRate * 1.2).toFixed(2));
-            if (lvl.range) lvl.range = Math.round(lvl.range * 1.15);
+    hidden: [
+      {
+        id: 'absolute_zero',
+        name: '絕對凍土',
+        icon: '🧊',
+        rarity: 'legendary',
+        weight: 10,
+        desc: '【隱藏合成】冰晶塔穿透再 +2 體，減速強度再大幅提升 20%，傷害 +30%',
+        requires: { ice_pierce: 3, ice_shatter: 2 },
+        apply: () => {
+          TOWER_DATA.ice_crystal.levels.forEach(lvl => {
+            lvl.piercing = (lvl.piercing || 3) + 2;
+            lvl.slowFactor = Math.max(0.03, (lvl.slowFactor || 0.5) * 0.8);
+            lvl.damage = Math.round((lvl.damage || 12) * 1.3);
           });
         }
-      });
-    }
+      }
+    ]
+  },
+  poison: {
+    branches: {
+      toxin_potency: {
+        name: '強化猛毒',
+        icon: '🧪',
+        levels: [
+          {
+            desc: '毒傷 +15%，持續時間 +1 秒',
+            apply: () => {
+              TOWER_DATA.mushroom.levels.forEach(lvl => {
+                lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.15);
+                lvl.poisonDuration = (lvl.poisonDuration || 4) + 1;
+              });
+            }
+          },
+          {
+            desc: '毒傷再 +15%，持續時間再 +1 秒',
+            apply: () => {
+              TOWER_DATA.mushroom.levels.forEach(lvl => {
+                lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.15);
+                lvl.poisonDuration = (lvl.poisonDuration || 4) + 1;
+              });
+            }
+          },
+          {
+            desc: '毒傷再 +20%，持續時間再 +1 秒',
+            apply: () => {
+              TOWER_DATA.mushroom.levels.forEach(lvl => {
+                lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.20);
+                lvl.poisonDuration = (lvl.poisonDuration || 4) + 1;
+              });
+            }
+          },
+        ]
+      },
+      toxin_spread: {
+        name: '強化擴散',
+        icon: '☠️',
+        levels: [
+          { desc: '解鎖疫病擴散：中毒敵人死亡時，60px 內敵人感染 70% 強度的毒素' },
+          { desc: '擴散範圍提升至 75px，感染強度提升至 100%' },
+          { desc: '擴散範圍提升至 95px，感染強度 100%，且擴散不限連鎖次數（被感染的敵人死亡會繼續擴散）' },
+        ],
+        onKill: (enemy, game, level) => {
+          if (!(enemy.poisonTimer > 0) || !game) return;
+          const cfg = [null, { radius: 60, ratio: 0.7 }, { radius: 75, ratio: 1.0 }, { radius: 95, ratio: 1.0 }][level];
+          if (!cfg) return;
+          for (const other of game.enemies) {
+            if (!other.alive || other === enemy) continue;
+            if (dist(enemy.x, enemy.y, other.x, other.y) <= cfg.radius) {
+              other.poisonDps = Math.max(other.poisonDps || 0, (enemy.poisonDps || 20) * cfg.ratio);
+              other.poisonTimer = Math.max(other.poisonTimer || 0, 4.0);
+            }
+          }
+          game.spawnParticle(enemy.x, enemy.y - 15, {
+            text: '☠️ 毒素擴散！', color: '#76ff03', fontSize: 12, vx: 0, vy: -35, life: 0.8, gravity: 0
+          });
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'lethal_plague',
+        name: '絕命疫爆',
+        icon: '💀',
+        rarity: 'legendary',
+        weight: 10,
+        desc: '【隱藏合成】蘑菇塔毒傷再 +25%、持續再 +2 秒；中毒且血量低於 12% 的敵人會被毒素直接了結',
+        requires: { toxin_potency: 3, toxin_spread: 2 },
+        apply: () => {
+          TOWER_DATA.mushroom.levels.forEach(lvl => {
+            lvl.poisonDps = Math.round((lvl.poisonDps || 18) * 1.25);
+            lvl.poisonDuration = (lvl.poisonDuration || 4) + 2;
+          });
+        },
+        modifyDamage: (rawDmg, damageType, attacker, target, game) => {
+          if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
+            return target.hp + 1;
+          }
+          return rawDmg;
+        }
+      }
+    ]
+  },
+  chain: {
+    branches: {
+      chain_reach: {
+        name: '強化連鎖',
+        icon: '⚡',
+        levels: [
+          {
+            desc: '彈射次數 +1 次，彈射範圍 +12%',
+            apply: () => {
+              TOWER_DATA.lavender.levels.forEach(lvl => {
+                lvl.chainCount = (lvl.chainCount || 3) + 1;
+                lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.12);
+              });
+            }
+          },
+          {
+            desc: '彈射次數再 +1 次，彈射範圍再 +12%',
+            apply: () => {
+              TOWER_DATA.lavender.levels.forEach(lvl => {
+                lvl.chainCount = (lvl.chainCount || 3) + 1;
+                lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.12);
+              });
+            }
+          },
+          {
+            desc: '彈射次數再 +1 次，彈射範圍再 +13%',
+            apply: () => {
+              TOWER_DATA.lavender.levels.forEach(lvl => {
+                lvl.chainCount = (lvl.chainCount || 3) + 1;
+                lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.13);
+              });
+            }
+          },
+        ]
+      },
+      crit_strike: {
+        name: '強化暴擊',
+        icon: '💥',
+        levels: [
+          { desc: '解鎖暴擊：所有植物塔 10% 機率造成 1.8 倍暴擊傷害' },
+          { desc: '暴擊機率提升至 15%，倍率提升至 2.0 倍' },
+          { desc: '暴擊機率提升至 20%，倍率提升至 2.4 倍' },
+        ],
+        modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
+          const cfg = [null, { chance: 0.10, mult: 1.8 }, { chance: 0.15, mult: 2.0 }, { chance: 0.20, mult: 2.4 }][level];
+          if (!cfg || Math.random() >= cfg.chance) return rawDmg;
+          if (game && target) {
+            game.spawnParticle(target.x, target.y - 12, {
+              text: '💥 CRIT!', color: '#ffd700', fontSize: 13, vx: 0, vy: -40, life: 0.6, gravity: 0
+            });
+          }
+          return rawDmg * cfg.mult;
+        }
+      }
+    },
+    hidden: [
+      {
+        id: 'thunder_overload',
+        name: '雷霆過載',
+        icon: '🌩️',
+        rarity: 'legendary',
+        weight: 10,
+        desc: '【隱藏合成】薰衣草塔彈射次數再 +2 次、彈射範圍再 +20%，傷害 +25%',
+        requires: { chain_reach: 3, crit_strike: 2 },
+        apply: () => {
+          TOWER_DATA.lavender.levels.forEach(lvl => {
+            lvl.chainCount = (lvl.chainCount || 3) + 2;
+            lvl.chainRange = Math.round((lvl.chainRange || 90) * 1.2);
+            lvl.damage = Math.round((lvl.damage || 28) * 1.25);
+          });
+        }
+      }
+    ]
+  },
+  economy: {
+    branches: {
+      gold_boost: {
+        name: '強化產金',
+        icon: '🌻',
+        levels: [
+          {
+            desc: '向日葵產金 +20%，每波結束額外 +40 金幣',
+            apply: () => {
+              TOWER_DATA.sunflower.levels.forEach(lvl => {
+                lvl.goldPerSecond = Math.round((lvl.goldPerSecond || 10) * 1.2);
+              });
+            }
+          },
+          {
+            desc: '向日葵產金再 +20%，每波結束額外再 +40 金幣',
+            apply: () => {
+              TOWER_DATA.sunflower.levels.forEach(lvl => {
+                lvl.goldPerSecond = Math.round((lvl.goldPerSecond || 10) * 1.2);
+              });
+            }
+          },
+          {
+            desc: '向日葵產金再 +25%，每波結束額外再 +40 金幣',
+            apply: () => {
+              TOWER_DATA.sunflower.levels.forEach(lvl => {
+                lvl.goldPerSecond = Math.round((lvl.goldPerSecond || 10) * 1.25);
+              });
+            }
+          },
+        ],
+        onWaveEnd: (wave, game, level) => {
+          const bonus = [0, 40, 80, 120][level];
+          if (game && bonus) {
+            game.addGold(bonus);
+            game.showToast(`🌻 陽光賜福：+${bonus} 金幣！`);
+          }
+        }
+      },
+      tower_growth: {
+        name: '強化生長',
+        icon: '🍃',
+        levels: [
+          {
+            desc: '所有植物塔射速 +7%，射程 +5%',
+            apply: () => {
+              Object.values(TOWER_DATA).forEach(tower => {
+                if (!tower.levels) return;
+                tower.levels.forEach(lvl => {
+                  if (lvl.fireRate) lvl.fireRate = Number((lvl.fireRate * 1.07).toFixed(2));
+                  if (lvl.range) lvl.range = Math.round(lvl.range * 1.05);
+                });
+              });
+            }
+          },
+          {
+            desc: '射速再 +7%，射程再 +5%',
+            apply: () => {
+              Object.values(TOWER_DATA).forEach(tower => {
+                if (!tower.levels) return;
+                tower.levels.forEach(lvl => {
+                  if (lvl.fireRate) lvl.fireRate = Number((lvl.fireRate * 1.07).toFixed(2));
+                  if (lvl.range) lvl.range = Math.round(lvl.range * 1.05);
+                });
+              });
+            }
+          },
+          {
+            desc: '射速再 +8%，射程再 +5%',
+            apply: () => {
+              Object.values(TOWER_DATA).forEach(tower => {
+                if (!tower.levels) return;
+                tower.levels.forEach(lvl => {
+                  if (lvl.fireRate) lvl.fireRate = Number((lvl.fireRate * 1.08).toFixed(2));
+                  if (lvl.range) lvl.range = Math.round(lvl.range * 1.05);
+                });
+              });
+            }
+          },
+        ]
+      }
+    },
+    hidden: [
+      {
+        id: 'bountiful_blessing',
+        name: '豐饒祝福',
+        icon: '💖',
+        rarity: 'legendary',
+        weight: 10,
+        desc: '【隱藏合成】每波結束自動回復 1 點基地生命，並額外獲得「目前波數 x 10」金幣',
+        requires: { gold_boost: 3, tower_growth: 2 },
+        onWaveEnd: (wave, game) => {
+          if (!game) return;
+          if (game.lives < getStartingLives()) {
+            game.lives = Math.min(getStartingLives(), game.lives + 1);
+            game.updateUI();
+          }
+          const bonus = (wave + 1) * 10;
+          game.addGold(bonus);
+          game.showToast(`💖 豐饒祝福：回復 1 ❤️，+${bonus} 金幣！`);
+        }
+      }
+    ]
   }
+};
+
+const BRANCH_LEVEL_META = [
+  null,
+  { rarity: 'common', weight: 45 },
+  { rarity: 'rare', weight: 30 },
+  { rarity: 'epic', weight: 18 },
 ];
 
 class RelicManager {
   constructor() {
-    this.relics = [];
+    this.branchLevels = {};
+    this.hiddenAcquired = new Set();
     this.isEnabled = false;
   }
 
   reset(mode) {
     restoreTowerDataDefaults();
-    this.relics = [];
+    this.branchLevels = {};
+    this.hiddenAcquired = new Set();
     this.isEnabled = (mode === GAME_MODES.ROGUELIKE);
   }
 
-  addRelic(relic, game) {
-    this.relics.push(relic);
-    if (relic.onAcquire) relic.onAcquire(game);
+  getBranchLevel(branchId) {
+    return this.branchLevels[branchId] || 0;
   }
 
-  hasRelic(id) {
-    return this.relics.some(r => r.id === id);
+  hasHidden(id) {
+    return this.hiddenAcquired.has(id);
+  }
+
+  hasAnyProgress() {
+    return Object.keys(this.branchLevels).length > 0 || this.hiddenAcquired.size > 0;
+  }
+
+  acquireBranchLevel(schoolKey, branchId, game) {
+    const branch = TALENT_SCHOOLS[schoolKey].branches[branchId];
+    const nextLevel = this.getBranchLevel(branchId) + 1;
+    const levelDef = branch.levels[nextLevel - 1];
+    if (levelDef && levelDef.apply) levelDef.apply(game);
+    this.branchLevels[branchId] = nextLevel;
+  }
+
+  acquireHidden(schoolKey, hiddenId, game) {
+    const hidden = TALENT_SCHOOLS[schoolKey].hidden.find(h => h.id === hiddenId);
+    if (hidden && hidden.apply) hidden.apply(game);
+    this.hiddenAcquired.add(hiddenId);
   }
 
   modifyDamage(rawDmg, damageType, attacker, target, game) {
-    if (!this.isEnabled || this.relics.length === 0) return rawDmg;
+    if (!this.isEnabled) return rawDmg;
     let dmg = rawDmg;
-    for (const r of this.relics) {
-      if (r.modifyDamage) dmg = r.modifyDamage(dmg, damageType, attacker, target, game);
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.modifyDamage) dmg = branch.modifyDamage(dmg, damageType, attacker, target, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.modifyDamage) dmg = hidden.modifyDamage(dmg, damageType, attacker, target, game);
+      }
     }
     return dmg;
   }
 
   onKill(enemy, game) {
-    if (!this.isEnabled || this.relics.length === 0) return;
-    for (const r of this.relics) {
-      if (r.onKill) r.onKill(enemy, game);
+    if (!this.isEnabled) return;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.onKill) branch.onKill(enemy, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.onKill) hidden.onKill(enemy, game);
+      }
     }
   }
 
   onWaveEnd(wave, game) {
-    if (!this.isEnabled || this.relics.length === 0) return;
-    for (const r of this.relics) {
-      if (r.onWaveEnd) r.onWaveEnd(wave, game);
+    if (!this.isEnabled) return;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = this.getBranchLevel(branchId);
+        if (level > 0 && branch.onWaveEnd) branch.onWaveEnd(wave, game, level);
+      }
+      for (const hidden of school.hidden) {
+        if (this.hasHidden(hidden.id) && hidden.onWaveEnd) hidden.onWaveEnd(wave, game);
+      }
     }
   }
 }
 
 const relicManager = new RelicManager();
 
+// 把 TALENT_SCHOOLS 展開成當下可抽的候選清單：每條分支只會出現「下一等級」那一張，
+// 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現
+function buildTalentCandidates() {
+  const candidates = [];
+  for (const schoolKey in TALENT_SCHOOLS) {
+    const school = TALENT_SCHOOLS[schoolKey];
+    for (const branchId in school.branches) {
+      const branch = school.branches[branchId];
+      const currentLevel = relicManager.getBranchLevel(branchId);
+      if (currentLevel >= branch.levels.length) continue;
+      const nextLevel = currentLevel + 1;
+      const meta = BRANCH_LEVEL_META[nextLevel];
+      candidates.push({
+        id: `${branchId}_lv${nextLevel}`,
+        kind: 'branch',
+        schoolKey,
+        branchId,
+        targetLevel: nextLevel,
+        name: `${branch.name} Lv.${nextLevel}`,
+        desc: branch.levels[nextLevel - 1].desc,
+        icon: branch.icon,
+        rarity: meta.rarity,
+        weight: meta.weight,
+      });
+    }
+    for (const hidden of school.hidden) {
+      if (relicManager.hasHidden(hidden.id)) continue;
+      const meetsRequirement = Object.entries(hidden.requires).every(
+        ([branchId, minLevel]) => relicManager.getBranchLevel(branchId) >= minLevel
+      );
+      if (!meetsRequirement) continue;
+      candidates.push({
+        id: hidden.id,
+        kind: 'hidden',
+        schoolKey,
+        hiddenId: hidden.id,
+        name: hidden.name,
+        desc: hidden.desc,
+        icon: hidden.icon,
+        rarity: hidden.rarity,
+        weight: hidden.weight,
+      });
+    }
+  }
+  return candidates;
+}
+
 function drawRandomTalents(count = 3) {
-  const available = TALENT_POOL.filter(t => !relicManager.hasRelic(t.id));
+  const pool = buildTalentCandidates();
   const picked = [];
-  const pool = [...available];
 
   for (let i = 0; i < Math.min(count, pool.length); i++) {
     const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
@@ -5919,7 +6173,7 @@ class Game {
     container.querySelectorAll('.talent-card').forEach(cardEl => {
       cardEl.addEventListener('click', () => {
         const talentId = cardEl.dataset.id;
-        const chosen = TALENT_POOL.find(t => t.id === talentId);
+        const chosen = cards.find(t => t.id === talentId);
         if (chosen) {
           this.pickTalent(chosen);
         }
@@ -5933,7 +6187,11 @@ class Game {
 
   pickTalent(talent) {
     if (typeof relicManager !== 'undefined') {
-      relicManager.addRelic(talent, this);
+      if (talent.kind === 'hidden') {
+        relicManager.acquireHidden(talent.schoolKey, talent.hiddenId, this);
+      } else {
+        relicManager.acquireBranchLevel(talent.schoolKey, talent.branchId, this);
+      }
     }
     this.sfx.play('upgrade');
     this.showToast(`✨ 獲得神力：【${talent.name}】！`);
@@ -5949,17 +6207,30 @@ class Game {
   updateRelicBarUI() {
     const relicBar = document.getElementById('relic-bar');
     if (!relicBar) return;
-    if (CURRENT_GAME_MODE !== GAME_MODES.ROGUELIKE || !relicManager.relics.length) {
+    if (CURRENT_GAME_MODE !== GAME_MODES.ROGUELIKE || !relicManager.hasAnyProgress()) {
       relicBar.classList.add('hidden');
       relicBar.innerHTML = '';
       return;
     }
+    const badges = [];
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const level = relicManager.getBranchLevel(branchId);
+        if (level > 0) {
+          const meta = BRANCH_LEVEL_META[level];
+          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${branch.icon || '✨'}</div>`);
+        }
+      }
+      for (const hidden of school.hidden) {
+        if (relicManager.hasHidden(hidden.id)) {
+          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${hidden.icon || '✨'}</div>`);
+        }
+      }
+    }
     relicBar.classList.remove('hidden');
-    relicBar.innerHTML = relicManager.relics.map(r => `
-      <div class="relic-badge rarity-${r.rarity}" title="${r.name}：${r.desc}">
-        ${r.icon || '✨'}
-      </div>
-    `).join('');
+    relicBar.innerHTML = badges.join('');
   }
 
   saveGameRecord() {
