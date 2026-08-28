@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.6-dev',
+  VERSION: 'v1.8.7-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -747,7 +747,7 @@ const TALENT_SCHOOLS = {
         name: '絕對凍土',
         icon: '🧊',
         rarity: 'legendary',
-        weight: 10,
+        weight: 25,
         desc: '【隱藏合成・質變】冰晶塔任何命中都會觸發冰爆（不再需要目標已被緩速），且被炸死的敵人會立即引爆下一輪冰爆，最多連鎖 5 次——一發子彈就能雪崩式清空整群怪',
         requires: { ice_pierce: 3, ice_shatter: 3 },
       }
@@ -820,7 +820,7 @@ const TALENT_SCHOOLS = {
         name: '絕命疫爆',
         icon: '💀',
         rarity: 'legendary',
-        weight: 10,
+        weight: 25,
         desc: '【隱藏合成・質變】疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結',
         requires: { toxin_potency: 2, toxin_spread: 3 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
@@ -893,7 +893,7 @@ const TALENT_SCHOOLS = {
         name: '雷霆過載',
         icon: '🌩️',
         rarity: 'legendary',
-        weight: 10,
+        weight: 25,
         desc: '【隱藏合成・質變】電弧連鎖的每一次彈射都會獨立判定暴擊（原本整發子彈只有第一擊能觸發暴擊，彈射到後面的目標完全吃不到），彈得越遠、暴擊次數越多',
         requires: { chain_reach: 3, crit_strike: 1 },
       }
@@ -987,7 +987,7 @@ const TALENT_SCHOOLS = {
         name: '豐饒祝福',
         icon: '💖',
         rarity: 'legendary',
-        weight: 10,
+        weight: 25,
         desc: '【隱藏合成・質變】經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命',
         requires: { gold_boost: 1, tower_growth: 3 },
         onKill: (enemy, game) => {
@@ -1008,11 +1008,13 @@ const TALENT_SCHOOLS = {
   }
 };
 
+// 不分稀有度：Lv.1~3 跟隱藏合成天賦出現機率一律相同（權重都是 25），
+// rarity 只留著給卡片視覺樣式用，不再影響抽卡機率
 const BRANCH_LEVEL_META = [
   null,
-  { rarity: 'common', weight: 45 },
-  { rarity: 'rare', weight: 30 },
-  { rarity: 'epic', weight: 18 },
+  { rarity: 'common', weight: 25 },
+  { rarity: 'rare', weight: 25 },
+  { rarity: 'epic', weight: 25 },
 ];
 
 class RelicManager {
