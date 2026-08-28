@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.8.1-dev',
+  VERSION: 'v1.8.2-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -340,7 +340,7 @@ const TOWER_DATA = {
     damageType: 'magic',
     range: 130,
     damage: 12,
-    fireRate: 1.2,
+    fireRate: 0.8,
     slowFactor: 0.5,
     slowDuration: 3.0,
     piercing: 3,
@@ -349,9 +349,9 @@ const TOWER_DATA = {
     description: '極地冰晶 · 霜雪穿透與集體凍結',
     color: '#00b0ff',
     levels: [
-      { damage: 12, range: 130, fireRate: 1.2, slowFactor: 0.5, slowDuration: 3.0, piercing: 3 },
-      { damage: 22, range: 145, fireRate: 1.4, slowFactor: 0.4, slowDuration: 3.5, piercing: 4, upgradeCost: 120 },
-      { damage: 38, range: 160, fireRate: 1.7, slowFactor: 0.3, slowDuration: 4.0, piercing: 6, upgradeCost: 240 },
+      { damage: 12, range: 130, fireRate: 0.8, slowFactor: 0.5, slowDuration: 3.0, piercing: 3 },
+      { damage: 22, range: 145, fireRate: 0.9, slowFactor: 0.4, slowDuration: 3.5, piercing: 4, upgradeCost: 120 },
+      { damage: 38, range: 160, fireRate: 1.0, slowFactor: 0.3, slowDuration: 4.0, piercing: 6, upgradeCost: 240 },
     ],
   },
   laser: {
@@ -1176,7 +1176,7 @@ const SHOP_METADATA = {
     icon: 'assets/towers/tower_ice_crystal.svg',
     badges: [{ text: '🧊 霜凍減速 50%', type: 'slow' }, { text: '✨ 貫穿 3 體', type: 'pierce' }],
     desc: '發射極寒冰晶貫穿前排 3 隻敵人，命中附加 50% 緩速持續 3 秒，聚怪控場核心。',
-    stats: { dmg: '12', range: '130', rate: '1.2/s' },
+    stats: { dmg: '12', range: '130', rate: '0.8/s' },
   },
   mushroom: {
     kind: 'tower',
@@ -2989,6 +2989,7 @@ class Projectile {
       this.target.takeDamage(finalDamage, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, this.damageType, game);
       this.piercedEnemies.add(this.target);
       this.chainedEnemies.add(this.target);
+      this.lastHitDistance = this.target.distance;
 
       // 連鎖閃電折射演算法 (Chain Lightning Jump)
       if (this.chainCount > 1 && game && game.enemies) {
@@ -6694,11 +6695,14 @@ class Game {
       }
 
       // Handle piercing projectile - find next target
+      // 只往「路徑佇列中排在後面」(distance 更小) 的敵人繼續貫穿，避免子彈在轉角/平行走道
+      // 誤跳到路徑順序不相鄰、只是物理座標剛好近的怪，變成像 AOE 一樣波及一整群怪
       if (proj.alive && proj.piercing > 0 && !proj.target) {
         let nearestDist = Infinity;
         let nearest = null;
         for (const enemy of this.enemies) {
           if (!enemy.alive || proj.piercedEnemies.has(enemy)) continue;
+          if (typeof proj.lastHitDistance === 'number' && enemy.distance >= proj.lastHitDistance) continue;
           const d = dist(proj.x, proj.y, enemy.x, enemy.y);
           if (d < nearestDist && d < 100) {
             nearestDist = d;
