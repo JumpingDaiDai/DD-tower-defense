@@ -3715,9 +3715,7 @@ class Enemy {
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
-    // 幻境怪物數量大幅精簡，擊殺單隻金幣獎勵提升 2.2 倍維持經濟流轉平衡
-    const rewardMult = isRogue ? 2.2 : 1.0;
-    this.reward = Math.round((this.isBoss ? Math.round(data.reward * 4) : data.reward) * rewardMult);
+    this.reward = this.isBoss ? Math.round(data.reward * 4) : data.reward;
     this.damage = this.isBoss ? Math.max(5, data.damage * 2) : data.damage;
     this.map = gameMap;
 
@@ -4630,7 +4628,7 @@ class WaveManager {
 
     return {
       enemies: enemies,
-      bonus: Math.floor(120 + waveNum * 50)
+      bonus: Math.floor(100 + waveNum * 30)
     };
   }
 
