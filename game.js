@@ -1800,21 +1800,8 @@ function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
 
 // 把 TALENT_SCHOOLS 展開成當下可抽的候選清單：每條分支只會出現「下一等級」那一張，
 // 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現。
-// 【核心規則】若為某個防禦塔專屬天賦，只會出現玩家當前場上已建造/擁有的塔之天賦！
-function buildTalentCandidates(game = null) {
-  const g = game || (typeof window !== 'undefined' ? window.gameInstance : null);
-  let ownedTowers = null;
-  if (g && Array.isArray(g.towers) && g.towers.length > 0) {
-    ownedTowers = new Set();
-    g.towers.forEach(t => {
-      if (t.typeKey) {
-        ownedTowers.add(t.typeKey);
-        if (t.typeKey === 'ice_crystal') ownedTowers.add('ice');
-        if (t.typeKey === 'ice') ownedTowers.add('ice_crystal');
-      }
-    });
-  }
-
+// 【核心規則】若為某個防禦塔專屬天賦，只會出現玩家「建造清單中已解鎖/擁有」的防禦塔天賦！
+function buildTalentCandidates() {
   const candidates = [];
   for (const schoolKey in TALENT_SCHOOLS) {
     const school = TALENT_SCHOOLS[schoolKey];
@@ -1826,11 +1813,13 @@ function buildTalentCandidates(game = null) {
       const meta = BRANCH_LEVEL_META[nextLevel];
       const visual = getTalentVisualInfo(schoolKey, branchId, null);
 
-      // 【核心過濾】若為某座防禦塔專屬天賦，且玩家場上沒有建造該座塔，則絕對不出現！
-      if (visual.towerKey && ownedTowers) {
-        const normKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-        if (!ownedTowers.has(visual.towerKey) && !ownedTowers.has(normKey)) {
-          continue;
+      // 【建造清單擁有過濾】若為某座防禦塔專屬天賦，但玩家建造清單中尚未解鎖該塔，則絕對不出現！
+      if (visual.towerKey) {
+        const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (typeof isTowerUnlocked === 'function') {
+          if (!isTowerUnlocked(towerKey) && !isTowerUnlocked(visual.towerKey)) {
+            continue; // 建造清單沒有這個塔，跳過
+          }
         }
       }
 
@@ -1857,11 +1846,13 @@ function buildTalentCandidates(game = null) {
       if (!meetsRequirement) continue;
       const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
 
-      // 隱藏質變天賦也遵循防禦塔擁有過濾
-      if (visual.towerKey && ownedTowers) {
-        const normKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-        if (!ownedTowers.has(visual.towerKey) && !ownedTowers.has(normKey)) {
-          continue;
+      // 隱藏質變天賦同樣檢查建造清單解鎖
+      if (visual.towerKey) {
+        const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (typeof isTowerUnlocked === 'function') {
+          if (!isTowerUnlocked(towerKey) && !isTowerUnlocked(visual.towerKey)) {
+            continue;
+          }
         }
       }
 
@@ -1883,11 +1874,37 @@ function buildTalentCandidates(game = null) {
   return candidates;
 }
 
-function drawRandomTalents(count = 3, game = null) {
-  let pool = buildTalentCandidates(game);
+function drawRandomTalents(count = 3) {
+  let pool = buildTalentCandidates();
   // 若因擁有的塔太少且分支全滿導致候選池不足 count 張，則放寬通用/經濟天賦補充
   if (pool.length < count) {
-    const allPool = buildTalentCandidates(null);
+    // 取得所有可用天賦（含通用天賦）
+    const allPool = [];
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const nextLevel = relicManager.getBranchLevel(branchId) + 1;
+        if (nextLevel <= branch.levels.length) {
+          const meta = BRANCH_LEVEL_META[nextLevel];
+          const visual = getTalentVisualInfo(schoolKey, branchId, null);
+          allPool.push({
+            id: `${branchId}_lv${nextLevel}`,
+            kind: 'branch',
+            schoolKey,
+            branchId,
+            targetLevel: nextLevel,
+            name: `${branch.name} Lv.${nextLevel}`,
+            desc: branch.levels[nextLevel - 1].desc,
+            icon: branch.icon,
+            rarity: meta.rarity,
+            weight: meta.weight,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
+        }
+      }
+    }
     for (const item of allPool) {
       if (!pool.some(t => t.id === item.id)) {
         pool.push(item);
