@@ -7,18 +7,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* 展示頁面整體風格 */
-    body {
-      background: radial-gradient(circle at 50% 15%, #1f273d 0%, #0b0e17 100%);
-      color: #e0e0e0;
-      padding: 30px 16px 80px;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
+    /* 強制覆蓋全域防止捲動的規則，確保展示手冊可在所有裝置自由滑動 */
+    html, body {
+      width: 100% !important;
+      height: auto !important;
+      min-height: 100vh !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      touch-action: pan-y !important;
+      user-select: auto !important;
+      -webkit-user-select: auto !important;
+      background: radial-gradient(circle at 50% 15%, #1f273d 0%, #0b0e17 100%) !important;
+      display: block !important;
+      margin: 0 !important;
+      padding: 30px 16px 80px !important;
     }
+
     .showcase-container {
       width: 100%;
       max-width: 980px;
+      margin: 0 auto;
     }
     
     .showcase-header {
@@ -46,7 +55,7 @@
       font-size: 18px;
       font-weight: 900;
       color: #ffd700;
-      margin: 32px 0 16px;
+      margin: 36px 0 16px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -57,12 +66,13 @@
     /* 模擬手機遊戲畫面外框 */
     .game-phone-frame {
       width: 380px;
-      min-height: 520px;
+      max-width: 100%;
+      min-height: 480px;
       margin: 0 auto 36px;
       background: linear-gradient(180deg, #18281b 0%, #101c13 100%);
       border: 4px solid #3e2723;
       border-radius: 28px;
-      padding: 20px 14px;
+      padding: 24px 14px 20px;
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 215, 0, 0.3);
       position: relative;
       display: flex;
@@ -90,7 +100,7 @@
 
     .reroll-btn-wrap {
       text-align: center;
-      margin-top: 14px;
+      margin-top: 16px;
       width: 100%;
     }
     .reroll-btn {
@@ -218,8 +228,6 @@
     </div>
   </div>
 
-  <!-- 引用遊戲核心 Sprite 與天賦定義 -->
-  <script src="game.js"></script>
   <script>
     // 天賦展示數據庫
     const TALENTS_DATABASE = [
@@ -271,20 +279,126 @@
       { id: 'gold_interest', name: '利滾利息 Lv.2', desc: '每波次結束時，依現有金幣餘額提供 10% 銀行利息（上限 80 💰）', rarity: 'rare', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息客製圖標' }
     ];
 
-    // 獨立乾淨的 Canvas 圖案繪製器（不依賴 Game 實例）
+    // 純淨 Vector Sprite 手繪器 (完全獨立，無需任何外部依賴)
+    function drawVectorTowerSprite(ctx, towerKey) {
+      if (towerKey === 'petal') {
+        // 粉櫻箭塔 (粉嫩櫻花瓣 + 弓箭核心)
+        const g = ctx.createLinearGradient(0, -18, 0, 18);
+        g.addColorStop(0, '#f48fb1'); g.addColorStop(1, '#ad1457');
+        ctx.fillStyle = g;
+        for (let i = 0; i < 5; i++) {
+          ctx.save();
+          ctx.rotate((Math.PI * 2 / 5) * i);
+          ctx.beginPath();
+          ctx.ellipse(0, -12, 6.5, 11, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        ctx.fillStyle = '#fff9c4';
+        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f57f17';
+        ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
+      } else if (towerKey === 'ice') {
+        // 極光冰晶塔 (六芒晶透冰錐)
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.25)';
+        ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+        const icg = ctx.createLinearGradient(0, -18, 0, 18);
+        icg.addColorStop(0, '#e0f7fa'); icg.addColorStop(0.5, '#00e5ff'); icg.addColorStop(1, '#0097a7');
+        ctx.fillStyle = icg; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
+        for (let i = 0; i < 6; i++) {
+          ctx.save();
+          ctx.rotate((Math.PI / 3) * i);
+          ctx.beginPath();
+          ctx.moveTo(0, -19); ctx.lineTo(4.5, -4); ctx.lineTo(-4.5, -4); ctx.closePath();
+          ctx.fill(); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+      } else if (towerKey === 'lavender') {
+        // 紫晶雷電法杖 (紫晶多層晶球 + 閃電環)
+        const lg = ctx.createLinearGradient(0, -18, 0, 18);
+        lg.addColorStop(0, '#e1bee7'); lg.addColorStop(0.5, '#ab47bc'); lg.addColorStop(1, '#4a148c');
+        ctx.fillStyle = lg;
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath(); ctx.arc(0, 12 - i * 8, 7 - i * 1.2, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-5, -6); ctx.lineTo(2, -2); ctx.lineTo(-2, 3); ctx.lineTo(5, 7);
+        ctx.stroke();
+      } else if (towerKey === 'mushroom') {
+        // 魔幻蘑菇 (波點紫紅傘蓋)
+        ctx.fillStyle = '#7cb342';
+        ctx.beginPath(); ctx.rect(-5, 0, 10, 16); ctx.fill();
+        const mg = ctx.createRadialGradient(-3, -8, 2, 0, -4, 16);
+        mg.addColorStop(0, '#ba68c8'); mg.addColorStop(1, '#4a148c');
+        ctx.fillStyle = mg;
+        ctx.beginPath(); ctx.arc(0, 0, 17, Math.PI, 0); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#ffd54f';
+        [[-8, -8, 3], [4, -10, 2.5], [8, -4, 2], [-2, -4, 2.2]].forEach(([x, y, r]) => {
+          ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+        });
+      } else if (towerKey === 'treant') {
+        // 古木牢籠 (厚重樹幹與藤蔓)
+        ctx.fillStyle = '#5d4037';
+        ctx.beginPath(); ctx.ellipse(0, 4, 12, 14, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#2e7d32';
+        ctx.beginPath(); ctx.arc(-7, -10, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(7, -10, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -14, 10, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd600';
+        ctx.beginPath(); ctx.arc(-4, 3, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(4, 3, 2, 0, Math.PI * 2); ctx.fill();
+      } else if (towerKey === 'cannon') {
+        // 熔岩巨砲 (鋼鐵砲身 + 熾熱砲口)
+        ctx.fillStyle = '#37474f';
+        ctx.beginPath(); ctx.arc(0, 6, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.save(); ctx.rotate(-0.5);
+        ctx.fillStyle = '#455a64'; ctx.fillRect(-6, -18, 12, 18);
+        ctx.fillStyle = '#ff3d00';
+        ctx.beginPath(); ctx.ellipse(0, -18, 6, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      } else if (towerKey === 'laser') {
+        // 超弦日光雷射 (八角水晶稜鏡)
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#263238';
+        ctx.beginPath(); ctx.moveTo(-9, 14); ctx.lineTo(9, 14); ctx.lineTo(4, -6); ctx.lineTo(-4, -6); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#00e5ff';
+        ctx.beginPath(); ctx.arc(0, -9, 7.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.arc(0, -9, 3.5, 0, Math.PI * 2); ctx.fill();
+      } else if (towerKey === 'sunflower') {
+        // 陽光向日葵 (金黃花瓣 + 圓潤笑臉)
+        ctx.fillStyle = '#ffb300';
+        for (let i = 0; i < 10; i++) {
+          ctx.save();
+          ctx.rotate((Math.PI * 2 / 10) * i);
+          ctx.beginPath(); ctx.ellipse(0, -12, 3.5, 7, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        ctx.fillStyle = '#6d4c41';
+        ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath(); ctx.arc(-2.5, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(2.5, -2, 1.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(0, 1, 3.5, 0, Math.PI); ctx.stroke();
+      }
+    }
+
+    // 獨立乾淨的 Canvas 圖案繪製器
     function renderTalentCanvas(ctx, talent, width = 40, height = 40) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      // 1. 若為防禦塔專屬天賦，繪製該塔的 Vector Sprite
-      if (talent.towerKey && typeof Sprites !== 'undefined') {
+      // 1. 若為防禦塔專屬天賦，繪製該塔專屬圖示
+      if (talent.towerKey) {
         ctx.save();
-        ctx.translate(width / 2, height / 2 + 1);
-        ctx.scale(width / 52, height / 52);
-        const drawFn = Sprites['drawTower_' + talent.towerKey];
-        if (drawFn) {
-          drawFn.call(Sprites, ctx, 0, 1);
-        }
+        ctx.translate(width / 2, height / 2);
+        ctx.scale(width / 46, height / 46);
+        drawVectorTowerSprite(ctx, talent.towerKey);
         ctx.restore();
         return;
       }
@@ -406,7 +520,6 @@
     // 隨機抽卡功能 (Reroll 3 Cards)
     function drawDemoCards() {
       const allTalents = [...TALENTS_DATABASE, ...SPECIAL_TALENTS];
-      // 隨機打亂並取 3 張
       const shuffled = [...allTalents].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 3);
 
