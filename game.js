@@ -5996,6 +5996,8 @@ class Game {
     bindTap('gameover-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
+    bindTap('relic-btn', () => this.openAcquiredTalentsModal());
+    bindTap('close-acquired-talents-btn', () => this.closeAcquiredTalentsModal());
     bindTap('open-shop-btn', () => this.openShopModal());
     bindTap('reset-data-btn', () => {
       const ok = window.confirm('確定要重置所有資料嗎？已解鎖的塔/技能、水晶、通關進度、排行榜都會清空，且無法復原。');
@@ -7365,6 +7367,7 @@ class Game {
     document.getElementById('settings-screen').classList.add('hidden');
     document.getElementById('tower-info').classList.add('hidden');
     document.getElementById('talent-pick-modal')?.classList.add('hidden');
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
 
     // 重置遊戲進行中的單位與狀態
     this.towers = [];
@@ -7479,15 +7482,41 @@ class Game {
   }
 
   updateRelicBarUI() {
-    const relicBar = document.getElementById('relic-bar');
-    if (!relicBar) return;
+    const relicBtn = document.getElementById('relic-btn');
+    const relicBtnCount = document.getElementById('relic-btn-count');
+    if (!relicBtn) return;
+
     if (CURRENT_GAME_MODE !== GAME_MODES.ROGUELIKE || !relicManager.hasAnyProgress()) {
-      relicBar.classList.add('hidden');
-      relicBar.innerHTML = '';
+      relicBtn.classList.add('hidden');
       return;
     }
-    const badges = [];
-    const badgeTalents = [];
+
+    let count = 0;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        if (relicManager.getBranchLevel(branchId) > 0) count++;
+      }
+      for (const hidden of school.hidden) {
+        if (relicManager.hasHidden(hidden.id)) count++;
+      }
+    }
+
+    relicBtn.classList.remove('hidden');
+    if (relicBtnCount) relicBtnCount.textContent = count;
+  }
+
+  openAcquiredTalentsModal() {
+    if (this.state === 'menu' || this.state === 'gameover' || this.state === 'victory') return;
+    this.previousState = this.state;
+    this.state = 'paused';
+
+    const modal = document.getElementById('acquired-talents-modal');
+    const container = document.getElementById('acquired-talents-list');
+    const subtitle = document.getElementById('acquired-talents-subtitle');
+    if (!modal || !container) return;
+
+    const acquiredList = [];
     for (const schoolKey in TALENT_SCHOOLS) {
       const school = TALENT_SCHOOLS[schoolKey];
       for (const branchId in school.branches) {
@@ -7496,41 +7525,88 @@ class Game {
         if (level > 0) {
           const meta = BRANCH_LEVEL_META[level];
           const visual = getTalentVisualInfo(schoolKey, branchId, null);
-          let badgeHtml = '';
-          if (visual.towerKey) {
-            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${branch.name}" />`;
-          } else {
-            const tObj = { ...visual, icon: branch.icon, id: branchId };
-            badgeTalents.push(tObj);
-            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
-          }
-          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${badgeHtml}</div>`);
+          acquiredList.push({
+            id: `${branchId}_lv${level}`,
+            schoolKey,
+            branchId,
+            level,
+            name: `${branch.name} Lv.${level}`,
+            desc: branch.levels[level - 1].desc,
+            icon: branch.icon,
+            rarity: meta.rarity,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
         }
       }
       for (const hidden of school.hidden) {
         if (relicManager.hasHidden(hidden.id)) {
           const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
-          let badgeHtml = '';
-          if (visual.towerKey) {
-            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${hidden.name}" />`;
-          } else {
-            const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
-            badgeTalents.push(tObj);
-            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
-          }
-          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${badgeHtml}</div>`);
+          acquiredList.push({
+            id: hidden.id,
+            schoolKey,
+            hiddenId: hidden.id,
+            name: hidden.name,
+            desc: hidden.desc,
+            icon: hidden.icon,
+            rarity: hidden.rarity,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
         }
       }
     }
-    relicBar.classList.remove('hidden');
-    relicBar.innerHTML = badges.join('');
-    relicBar.querySelectorAll('.relic-mini-canvas').forEach(cv => {
-      const idx = parseInt(cv.dataset.idx);
-      const t = badgeTalents[idx];
-      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 28, 28);
-    });
+
+    if (subtitle) {
+      subtitle.textContent = `本局累計已啟動 ${acquiredList.length} 項神力天賦`;
+    }
+
+    if (acquiredList.length === 0) {
+      container.innerHTML = `<div class="acquired-talents-empty">本局尚未獲取任何神力天賦</div>`;
+    } else {
+      container.innerHTML = acquiredList.map(talent => {
+        let iconHtml = '';
+        if (talent.towerKey) {
+          const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+          iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
+        } else {
+          iconHtml = `<canvas class="talent-card-canvas acquired-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
+        }
+        return `
+          <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}" style="cursor: default;">
+            <div class="talent-card-icon">${iconHtml}</div>
+            <div class="talent-card-info">
+              <div class="talent-card-title">
+                <span>${talent.name}</span>
+                <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+              </div>
+              <div class="talent-card-desc">${talent.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 繪製非塔專屬的特殊天賦圖標
+      container.querySelectorAll('.acquired-canvas').forEach(cv => {
+        const talentId = cv.dataset.id;
+        const t = acquiredList.find(item => item.id === talentId);
+        if (t) this.drawTalentIcon(cv.getContext('2d'), t, 40, 40);
+      });
+    }
+
+    modal.classList.remove('hidden');
+    this.sfx.play('tap');
+    dbgLog('🔮 開啟已獲取神力天賦詳情面板');
+  }
+
+  closeAcquiredTalentsModal() {
+    if (this.state === 'paused') {
+      this.state = this.previousState || 'planning';
+      this.previousState = null;
+    }
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
+    dbgLog('▶️ 關閉已獲取神力天賦詳情面板');
   }
 
   saveGameRecord() {

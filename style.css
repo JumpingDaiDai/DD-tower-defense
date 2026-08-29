@@ -1803,46 +1803,61 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-/* --- HUD Relic Bar (浮動在畫面右上方垂直排列) --- */
-.relic-bar-hud {
+/* --- HUD Relic Button (右上方精美神力展開按鈕) --- */
+.relic-hud-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 10px;
+  right: 10px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  max-height: 240px;
-  overflow-y: auto;
-  scrollbar-width: none;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(45, 30, 15, 0.88);
+  border: 1.5px solid rgba(255, 215, 0, 0.7);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
   z-index: 15;
   pointer-events: auto;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
-.relic-bar-hud::-webkit-scrollbar { display: none; }
-
-.relic-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  display: flex;
+.relic-hud-btn:active {
+  transform: scale(0.92);
+}
+.relic-btn-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 4px #ffd700);
+}
+.relic-btn-text {
+  color: #ffe082;
+  letter-spacing: 0.5px;
+  font-family: inherit;
+}
+.relic-btn-count {
+  background: linear-gradient(135deg, #ffd700, #ff9800);
+  color: #3e2723;
+  font-size: 11px;
+  font-weight: 900;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  flex-shrink: 0;
-  cursor: pointer;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
-  transition: transform 0.15s, filter 0.2s;
+  padding: 0 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
-.relic-badge:active { transform: scale(0.9); }
-.relic-badge.rarity-rare { filter: drop-shadow(0 0 6px #29b6f6); }
-.relic-badge.rarity-epic { filter: drop-shadow(0 0 8px #ab47bc); }
-.relic-badge.rarity-legendary { filter: drop-shadow(0 0 10px #ffd700); animation: relic-pulse 2s infinite ease-in-out; }
 
-@keyframes relic-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+.acquired-talents-empty {
+  text-align: center;
+  color: #b0bec5;
+  font-size: 13px;
+  padding: 24px 0;
 }
 
 /* --- Roguelike Talent Selection Modal (三選一神力賜福 - 浮動半透明疊層) --- */
