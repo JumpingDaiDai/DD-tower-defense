@@ -388,11 +388,11 @@ const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
   bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
   snail: { name: '蝸牛', emoji: '🐌', hp: 170, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 260, speed: 38, reward: 35, damage: 2, resist: { physical: 0.20 } },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 260, speed: 38, reward: 35, damage: 2, resist: { physical: 0.30 } },
   butterfly: { name: '蝴蝶', emoji: '🦋', hp: 90, speed: 65, reward: 18, damage: 1, canEnrage: true },
   dragon: { name: '小龍', emoji: '🐉', hp: 300, speed: 32, reward: 100, damage: 4, isBoss: true },
-  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 200, speed: 34, reward: 45, damage: 3, resist: { physical: 0.35 } },
-  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 140, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.35 } },
+  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 200, speed: 34, reward: 45, damage: 3, resist: { physical: 0.50 } },
+  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 140, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.50 } },
   mantis: { name: '疾風螳螂', emoji: '🦗', hp: 190, speed: 76, reward: 38, damage: 2, immuneSlow: true },
 };
 
@@ -3825,12 +3825,18 @@ class Enemy {
     this.isEnraged = false;
     this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
 
-    // 抗性機制：設定合理上限（最高 40% 減傷），避免怪打不動
+    // 抗性機制：取消全怪物無差別增加雙抗！
+    // 只有原本即具備該抗性特性的怪物（如裝甲瓢蟲物抗、迷霧幽蛾魔抗），才隨波次提升其專屬抗性
+    // 其餘怪物（毛毛蟲、蜜蜂、蝴蝶、蝸牛、小龍、螳螂等）物抗與魔抗永遠為 0%
     this.resist = Object.assign({}, data.resist || {});
     if (isRogue) {
-      const rogueWaveResist = Math.min(0.12, 0.03 + Math.floor(waveIndex / 5) * 0.03);
-      this.resist.physical = Math.min(0.40, (this.resist.physical || 0) + rogueWaveResist);
-      this.resist.magic = Math.min(0.40, (this.resist.magic || 0) + rogueWaveResist);
+      const rogueResistBonus = Math.min(0.15, 0.04 + Math.floor(waveIndex / 5) * 0.03);
+      if (this.resist.physical) {
+        this.resist.physical = Math.min(0.65, this.resist.physical + rogueResistBonus);
+      }
+      if (this.resist.magic) {
+        this.resist.magic = Math.min(0.65, this.resist.magic + rogueResistBonus);
+      }
     }
 
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
