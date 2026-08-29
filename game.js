@@ -774,7 +774,7 @@ const TALENT_SCHOOLS = {
         icon: '🧊',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】冰晶塔任何命中都會觸發冰爆（不再需要目標已被緩速），且被炸死的敵人會立即引爆下一輪冰爆，最多連鎖 5 次——一發子彈就能雪崩式清空整群怪',
+        desc: '【質變】冰晶塔任何命中皆觸發冰爆，被炸死敵人連鎖引爆，最多連鎖 5 次。',
         requires: { ice_pierce: 3, ice_shatter: 2, ice_aura: 1 },
       }
     ]
@@ -869,7 +869,7 @@ const TALENT_SCHOOLS = {
         icon: '💀',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結',
+        desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺。',
         requires: { toxin_potency: 2, toxin_spread: 2, toxin_corrosion: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
@@ -964,7 +964,7 @@ const TALENT_SCHOOLS = {
         icon: '🌩️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】電弧連鎖的每一次彈射都會獨立判定暴擊（原本整發子彈只有第一擊能觸發暴擊，彈射到後面的目標完全吃不到），彈得越遠、暴擊次數越多',
+        desc: '【質變】電弧每次彈射獨立判定暴擊，且全額無衰減，連鎖越多暴擊越強。',
         requires: { chain_reach: 2, crit_strike: 1, electromagnetic_field: 2 },
       }
     ]
@@ -1105,7 +1105,7 @@ const TALENT_SCHOOLS = {
         icon: '💖',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命',
+        desc: '【質變】全場擊殺額外獲得 50% 金幣，每波結束基地自動回復 1 點生命。',
         requires: { gold_boost: 1, tower_growth: 2, gold_interest: 2 },
         onKill: (enemy, game) => {
           if (!game || !enemy.reward) return;
@@ -1127,7 +1127,7 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【跨流派究極合成・主動技能】覺醒主動技能【日輪天罰】：於戰鬥中消耗 10% 現有金幣，對全場所有存活敵人造成等額金幣數量的毀滅真實傷害！',
+        desc: '【專屬技能】戰鬥中消耗 10% 現有金幣，召喚全屏日冕金光造成等額真實傷害！',
         requires: { gold_boost: 3, laser_overcharge: 2, cannon_blast: 2 },
         apply: (game) => {
           if (game && game.updateSkillBarLockState) {
@@ -1254,7 +1254,7 @@ const TALENT_SCHOOLS = {
         icon: '🌺',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】粉櫻箭擊中目標時，原地炸裂射出 3 枚追蹤粉櫻花瓣，自動追擊並打擊周遭敵人（造成 60% 傷害）',
+        desc: '【質變】粉櫻箭擊中目標原地炸裂 3 枚追蹤花瓣，自動追擊周遭敵人造成 60% 傷害。',
         requires: { petal_speed: 2, petal_pierce_armor: 2, petal_multishot: 1 },
         onHitTarget: (proj, target, game) => {
           if (proj.towerType !== 'petal' || !game || !game.enemies) return;
@@ -1383,7 +1383,7 @@ const TALENT_SCHOOLS = {
         icon: '🌋',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】熔岩巨砲每第 4 發砲彈升級為「天基天火」，爆炸範圍覆蓋全場 180px，造成 3 倍無視抗性的毀滅真實傷害',
+        desc: '【質變】熔岩巨砲每第 4 發升級為天基天火，覆蓋全場 180px 造成 3 倍真傷。',
         requires: { cannon_blast: 2, cannon_scorched_earth: 2, cannon_cluster_shrapnel: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (attacker && attacker.towerType === 'cannon') {
@@ -1497,7 +1497,7 @@ const TALENT_SCHOOLS = {
         icon: '🌲',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】古木牢籠化身大地圖騰：其周圍 130px 範圍內的所有防禦塔獲得「遠古共鳴」，攻擊力永久提升 35% 且射速 +20%',
+        desc: '【質變】古木牢籠化身大地圖騰：周圍 130px 所有塔攻擊力 +35%、射速 +20%。',
         requires: { treant_entangle: 2, treant_thorns: 2, treant_earthquake: 1 },
         apply: (game) => {
           Object.values(TOWER_DATA).forEach(tower => {
@@ -1604,7 +1604,7 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】日光雷射消滅任何敵人時，引發超新星核爆，對全場直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害',
+        desc: '【質變】雷射消滅敵人時引發超新星核爆，對 90px 敵人造成最大血量 40% 傷害。',
         requires: { laser_overcharge: 2, laser_refract: 2, laser_focus_beam: 1 },
         onKill: (enemy, game) => {
           if (!game || !game.enemies) return;
