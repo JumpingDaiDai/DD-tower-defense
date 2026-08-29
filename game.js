@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.11.1',
+  VERSION: 'v1.11.2',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -387,13 +387,13 @@ function restoreTowerDataDefaults() {
 const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
   bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
-  snail: { name: '蝸牛', emoji: '🐌', hp: 190, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, resist: { physical: 0.25 } },
-  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 95, speed: 65, reward: 18, damage: 1, canEnrage: true },
-  dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
-  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 420, speed: 34, reward: 45, damage: 3, resist: { physical: 0.6 } },
-  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 150, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.6 } },
-  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 220, speed: 76, reward: 38, damage: 2, immuneSlow: true },
+  snail: { name: '蝸牛', emoji: '🐌', hp: 170, speed: 28, reward: 25, damage: 2 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 260, speed: 38, reward: 35, damage: 2, resist: { physical: 0.30 } },
+  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 90, speed: 65, reward: 18, damage: 1, canEnrage: true },
+  dragon: { name: '小龍', emoji: '🐉', hp: 300, speed: 32, reward: 100, damage: 4, isBoss: true },
+  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 200, speed: 34, reward: 45, damage: 3, resist: { physical: 0.50 } },
+  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 140, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.50 } },
+  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 190, speed: 76, reward: 38, damage: 2, immuneSlow: true },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -1778,8 +1778,8 @@ const relicManager = new RelicManager();
 function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
   // 1. 單塔專用天賦（顯示該防禦塔圖示）
   if (schoolKey === 'ice') return { towerKey: 'ice_crystal' };
-  if (schoolKey === 'mushroom') return { towerKey: 'mushroom' };
-  if (schoolKey === 'thunder') return { towerKey: 'lavender' };
+  if (schoolKey === 'mushroom' || schoolKey === 'poison') return { towerKey: 'mushroom' };
+  if (schoolKey === 'thunder' || schoolKey === 'chain') return { towerKey: 'lavender' };
   if (schoolKey === 'petal') return { towerKey: 'petal' };
   if (schoolKey === 'cannon') return { towerKey: 'cannon' };
   if (schoolKey === 'treant') return { towerKey: 'treant' };
@@ -3778,9 +3778,9 @@ class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0, isBossOverride = null, customHpMult = 1.0) {
     const data = ENEMY_DATA[typeKey];
     const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
-    // 難度成長依關卡倍率與 Boss 倍率 (幻境基礎難度提升)
+    // 難度成長依關卡倍率與 Boss 倍率
     const levelHpMult = (isRogue
-      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.6)
+      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0)
       : (LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0));
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
@@ -3788,24 +3788,26 @@ class Enemy {
     this.emoji = data.emoji;
     this.isBoss = isBossOverride !== null ? isBossOverride : !!data.isBoss;
 
-    // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
-    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 4.0 : 6.0)) : 1.0;
-    // 幻境秘境怪物強度曲線：
-    // 初始波次 (波 1~3) 平滑起步 (1.0x ~ 1.33x)，確保只有初始單塔時也能輕鬆過渡；
-    // 第 3 波起隨神力加成穩健增長
+    // 波次血量倍率計算（修正倍率重複疊乘平方問題）：
     let waveHpMult = 1.0;
-    if (isRogue) {
-      const rogueWaveScale = Number((1.0 + waveIndex * 0.10 + Math.pow(waveIndex, 1.35) * 0.05).toFixed(2));
-      waveHpMult = customHpMult > 1.0 ? customHpMult : rogueWaveScale;
-    } else if (!this.isBoss && customHpMult > 1.0) {
+    if (customHpMult > 1.0) {
       waveHpMult = customHpMult;
+    } else if (isRogue) {
+      waveHpMult = Number((1.0 + waveIndex * 0.10 + Math.pow(waveIndex, 1.35) * 0.05).toFixed(2));
     }
-    this.maxHp = Math.round(data.hp * levelHpMult * (this.isBoss ? bossHpMult : 1.0) * waveHpMult);
+
+    // 若波次數據中未特別指定 customHpMult，且此怪物為 Boss，則套用標準 Boss 加成 (2.5x ~ 3.5x)
+    let bossHpMult = 1.0;
+    if (this.isBoss && !(customHpMult > 1.0)) {
+      bossHpMult = data.isBoss ? 2.5 : 3.5;
+    }
+
+    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult * waveHpMult);
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
-    this.reward = this.isBoss ? Math.round(data.reward * 4) : data.reward;
-    this.damage = this.isBoss ? Math.max(5, data.damage * 2) : data.damage;
+    this.reward = this.isBoss ? Math.round(data.reward * 3) : data.reward;
+    this.damage = this.isBoss ? Math.max(3, data.damage * 2) : data.damage;
     this.map = gameMap;
 
     this.distance = 0;
@@ -3823,13 +3825,18 @@ class Enemy {
     this.isEnraged = false;
     this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
 
-    // 幻境關卡強化抗性機制：所有怪物獲取隨波數攀升的雙重抗性
+    // 抗性機制：取消全怪物無差別增加雙抗！
+    // 只有原本即具備該抗性特性的怪物（如裝甲瓢蟲物抗、迷霧幽蛾魔抗），才隨波次提升其專屬抗性
+    // 其餘怪物（毛毛蟲、蜜蜂、蝴蝶、蝸牛、小龍、螳螂等）物抗與魔抗永遠為 0%
     this.resist = Object.assign({}, data.resist || {});
     if (isRogue) {
-      // 幻境波次基礎雙抗加成：前幾波 +15% 抗性，每 4 波 +5%，最高可達 40% 雙減傷
-      const rogueWaveResist = Math.min(0.40, 0.15 + Math.floor(waveIndex / 4) * 0.05);
-      this.resist.physical = Math.min(0.85, (this.resist.physical || 0) + rogueWaveResist);
-      this.resist.magic = Math.min(0.85, (this.resist.magic || 0) + rogueWaveResist);
+      const rogueResistBonus = Math.min(0.15, 0.04 + Math.floor(waveIndex / 5) * 0.03);
+      if (this.resist.physical) {
+        this.resist.physical = Math.min(0.65, this.resist.physical + rogueResistBonus);
+      }
+      if (this.resist.magic) {
+        this.resist.magic = Math.min(0.65, this.resist.magic + rogueResistBonus);
+      }
     }
 
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
@@ -5996,6 +6003,8 @@ class Game {
     bindTap('gameover-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('victory-open-lb-btn', () => this.openLeaderboardModal());
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
+    bindTap('relic-btn', () => this.openAcquiredTalentsModal());
+    bindTap('close-acquired-talents-btn', () => this.closeAcquiredTalentsModal());
     bindTap('open-shop-btn', () => this.openShopModal());
     bindTap('reset-data-btn', () => {
       const ok = window.confirm('確定要重置所有資料嗎？已解鎖的塔/技能、水晶、通關進度、排行榜都會清空，且無法復原。');
@@ -7365,6 +7374,7 @@ class Game {
     document.getElementById('settings-screen').classList.add('hidden');
     document.getElementById('tower-info').classList.add('hidden');
     document.getElementById('talent-pick-modal')?.classList.add('hidden');
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
 
     // 重置遊戲進行中的單位與狀態
     this.towers = [];
@@ -7479,15 +7489,41 @@ class Game {
   }
 
   updateRelicBarUI() {
-    const relicBar = document.getElementById('relic-bar');
-    if (!relicBar) return;
+    const relicBtn = document.getElementById('relic-btn');
+    const relicBtnCount = document.getElementById('relic-btn-count');
+    if (!relicBtn) return;
+
     if (CURRENT_GAME_MODE !== GAME_MODES.ROGUELIKE || !relicManager.hasAnyProgress()) {
-      relicBar.classList.add('hidden');
-      relicBar.innerHTML = '';
+      relicBtn.classList.add('hidden');
       return;
     }
-    const badges = [];
-    const badgeTalents = [];
+
+    let count = 0;
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        if (relicManager.getBranchLevel(branchId) > 0) count++;
+      }
+      for (const hidden of school.hidden) {
+        if (relicManager.hasHidden(hidden.id)) count++;
+      }
+    }
+
+    relicBtn.classList.remove('hidden');
+    if (relicBtnCount) relicBtnCount.textContent = count;
+  }
+
+  openAcquiredTalentsModal() {
+    if (this.state === 'menu' || this.state === 'gameover' || this.state === 'victory') return;
+    this.previousState = this.state;
+    this.state = 'paused';
+
+    const modal = document.getElementById('acquired-talents-modal');
+    const container = document.getElementById('acquired-talents-list');
+    const subtitle = document.getElementById('acquired-talents-subtitle');
+    if (!modal || !container) return;
+
+    const acquiredList = [];
     for (const schoolKey in TALENT_SCHOOLS) {
       const school = TALENT_SCHOOLS[schoolKey];
       for (const branchId in school.branches) {
@@ -7496,41 +7532,88 @@ class Game {
         if (level > 0) {
           const meta = BRANCH_LEVEL_META[level];
           const visual = getTalentVisualInfo(schoolKey, branchId, null);
-          let badgeHtml = '';
-          if (visual.towerKey) {
-            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${branch.name}" />`;
-          } else {
-            const tObj = { ...visual, icon: branch.icon, id: branchId };
-            badgeTalents.push(tObj);
-            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
-          }
-          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${badgeHtml}</div>`);
+          acquiredList.push({
+            id: `${branchId}_lv${level}`,
+            schoolKey,
+            branchId,
+            level,
+            name: `${branch.name} Lv.${level}`,
+            desc: branch.levels[level - 1].desc,
+            icon: branch.icon,
+            rarity: meta.rarity,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
         }
       }
       for (const hidden of school.hidden) {
         if (relicManager.hasHidden(hidden.id)) {
           const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
-          let badgeHtml = '';
-          if (visual.towerKey) {
-            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
-            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${hidden.name}" />`;
-          } else {
-            const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
-            badgeTalents.push(tObj);
-            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
-          }
-          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${badgeHtml}</div>`);
+          acquiredList.push({
+            id: hidden.id,
+            schoolKey,
+            hiddenId: hidden.id,
+            name: hidden.name,
+            desc: hidden.desc,
+            icon: hidden.icon,
+            rarity: hidden.rarity,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
         }
       }
     }
-    relicBar.classList.remove('hidden');
-    relicBar.innerHTML = badges.join('');
-    relicBar.querySelectorAll('.relic-mini-canvas').forEach(cv => {
-      const idx = parseInt(cv.dataset.idx);
-      const t = badgeTalents[idx];
-      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 28, 28);
-    });
+
+    if (subtitle) {
+      subtitle.textContent = `本局累計已啟動 ${acquiredList.length} 項神力天賦`;
+    }
+
+    if (acquiredList.length === 0) {
+      container.innerHTML = `<div class="acquired-talents-empty">本局尚未獲取任何神力天賦</div>`;
+    } else {
+      container.innerHTML = acquiredList.map(talent => {
+        let iconHtml = '';
+        if (talent.towerKey) {
+          const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+          iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
+        } else {
+          iconHtml = `<canvas class="talent-card-canvas acquired-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
+        }
+        return `
+          <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}" style="cursor: default;">
+            <div class="talent-card-icon">${iconHtml}</div>
+            <div class="talent-card-info">
+              <div class="talent-card-title">
+                <span>${talent.name}</span>
+                <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+              </div>
+              <div class="talent-card-desc">${talent.desc}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 繪製非塔專屬的特殊天賦圖標
+      container.querySelectorAll('.acquired-canvas').forEach(cv => {
+        const talentId = cv.dataset.id;
+        const t = acquiredList.find(item => item.id === talentId);
+        if (t) this.drawTalentIcon(cv.getContext('2d'), t, 40, 40);
+      });
+    }
+
+    modal.classList.remove('hidden');
+    this.sfx.play('tap');
+    dbgLog('🔮 開啟已獲取神力天賦詳情面板');
+  }
+
+  closeAcquiredTalentsModal() {
+    if (this.state === 'paused') {
+      this.state = this.previousState || 'planning';
+      this.previousState = null;
+    }
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
+    dbgLog('▶️ 關閉已獲取神力天賦詳情面板');
   }
 
   saveGameRecord() {

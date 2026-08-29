@@ -248,10 +248,28 @@
       <!-- JS rendered -->
     </div>
 
-    <!-- 4. 局內右上角 HUD 徽章效果展示 -->
-    <div class="section-title">🛡️ 4. 局內右上角神力徽章欄 (Relic Badges HUD) 實機渲染</div>
-    <div class="hud-preview-wrap" id="hud-badge-container">
-      <!-- JS rendered -->
+    <!-- 4. 局內右上角 HUD 按鈕與展開詳情展示 -->
+    <div class="section-title">🛡️ 4. 局內右上角「神力按鈕」與點開展開詳情面板</div>
+    <div style="background: rgba(0, 0, 0, 0.5); border: 1.5px solid rgba(255, 215, 0, 0.3); border-radius: 16px; padding: 20px; text-align: center;">
+      <p style="font-size: 13px; color: #b0bec5; margin-bottom: 14px;">
+        💡 點擊下方右上角 HUD 神力按鈕，即可展開查看本局所有已獲得神力天賦的完整資訊清單：
+      </p>
+      <button id="showcase-relic-btn" class="relic-hud-btn" style="position: static; margin: 0 auto; display: inline-flex;" onclick="toggleAcquiredModal()">
+        <span class="relic-btn-icon">🔮</span>
+        <span class="relic-btn-text">神力</span>
+        <span class="relic-btn-count">11</span>
+      </button>
+
+      <!-- 展開詳情預覽清單 -->
+      <div id="showcase-acquired-panel" style="margin-top: 18px; max-width: 480px; margin-left: auto; margin-right: auto; background: rgba(30, 20, 10, 0.95); border: 1.5px solid rgba(255,215,0,0.5); border-radius: 16px; padding: 16px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 8px; margin-bottom: 12px;">
+          <span style="font-size: 14px; font-weight: 800; color: #ffd54f;">🔮 已獲取神力天賦詳情 (11 項)</span>
+          <span style="font-size: 11px; color: #80cbc4;">點擊上方按鈕可收合/展開</span>
+        </div>
+        <div class="hud-preview-wrap" id="hud-badge-container" style="background: transparent; border: none; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
+          <!-- JS rendered -->
+        </div>
+      </div>
     </div>
 
     <div style="text-align: center; margin-top: 36px;">
@@ -648,7 +666,7 @@
         });
       }
 
-      // 4. 渲染 HUD 徽章欄
+      // 4. 渲染已獲取神力清單 (完整卡牌排版)
       const hudContainer = document.getElementById('hud-badge-container');
       if (hudContainer) {
         const sampleList = [
@@ -656,22 +674,20 @@
           TALENTS_DATABASE[9], TALENTS_DATABASE[12], TALENTS_DATABASE[15],
           TALENTS_DATABASE[18], SPECIAL_TALENTS[0], SPECIAL_TALENTS[1], SPECIAL_TALENTS[2], SPECIAL_TALENTS[3]
         ];
-        hudContainer.innerHTML = sampleList.map((t, idx) => {
-          let badgeIconHtml = '';
-          if (t.towerKey) {
-            const towerKey = (t.towerKey === 'ice') ? 'ice_crystal' : t.towerKey;
-            badgeIconHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${t.name}" />`;
-          } else {
-            badgeIconHtml = `<canvas class="hud-canvas" width="28" height="28" data-idx="${idx}"></canvas>`;
-          }
-          return `<div class="relic-badge rarity-${t.rarity}" title="${t.name}">${badgeIconHtml}</div>`;
-        }).join('');
+        hudContainer.innerHTML = sampleList.map((t, idx) => createCardHTML(t, 'hud-canvas')).join('');
 
         hudContainer.querySelectorAll('.hud-canvas').forEach(cv => {
-          const idx = parseInt(cv.dataset.idx);
-          const t = sampleList[idx];
-          if (t) renderTalentCanvas(cv.getContext('2d'), t, 28, 28);
+          const id = cv.dataset.id;
+          const t = sampleList.find(item => item.id === id);
+          if (t) renderTalentCanvas(cv.getContext('2d'), t, 40, 40);
         });
+      }
+    }
+
+    function toggleAcquiredModal() {
+      const panel = document.getElementById('showcase-acquired-panel');
+      if (panel) {
+        panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
       }
     }
 

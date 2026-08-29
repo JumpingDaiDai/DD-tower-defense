@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🌳 精靈樹保衛戰 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.11.1">
+  <link rel="stylesheet" href="style.css?v=1.11.2">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -56,8 +56,12 @@
     <div id="game-viewport">
       <canvas id="game-canvas"></canvas>
 
-      <!-- 幻境神力天賦徽章欄 (浮動在右上方垂直排列) -->
-      <div id="relic-bar" class="relic-bar-hud hidden" title="已獲取的自然神力"></div>
+      <!-- 幻境神力天賦按鈕 (浮動在右上方，點開展開詳情面板) -->
+      <button id="relic-btn" class="relic-hud-btn hidden" title="查看本局已獲取神力天賦">
+        <span class="relic-btn-icon">🔮</span>
+        <span class="relic-btn-text">神力</span>
+        <span id="relic-btn-count" class="relic-btn-count">0</span>
+      </button>
 
       <!-- 玩家主動技能快捷欄 (浮動在畫布右下方，專屬手繪 Canvas 魔法圖示) -->
       <div id="skill-bar">
@@ -241,6 +245,19 @@
           <p class="talent-modal-subtitle">請選擇一項被動神力，強化本局的所有植物塔！</p>
         </div>
         <div id="talent-card-container" class="talent-cards-container"></div>
+      </div>
+    </div>
+
+    <!-- 🔮 已獲取神力天賦詳情彈窗 (點擊右上方 #relic-btn 展開) -->
+    <div id="acquired-talents-modal" class="screen hidden">
+      <div class="screen-content talent-modal-content" style="max-height: 82vh;">
+        <div class="talent-modal-header">
+          <span class="talent-header-icon">🔮</span>
+          <h2>已獲取自然神力</h2>
+          <p class="talent-modal-subtitle" id="acquired-talents-subtitle">本局累計已啟動的神力天賦詳情</p>
+        </div>
+        <div id="acquired-talents-list" class="talent-cards-container" style="max-height: 52vh; overflow-y: auto;"></div>
+        <button id="close-acquired-talents-btn" class="btn-primary" style="margin-top: 14px; width: 100%;">返回戰鬥</button>
       </div>
     </div>
 
@@ -451,6 +468,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.11.1"></script>
+  <script src="game.js?v=1.11.2"></script>
 </body>
 </html>
