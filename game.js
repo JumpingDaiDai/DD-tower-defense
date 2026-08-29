@@ -393,6 +393,7 @@ const ENEMY_DATA = {
   dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
   armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 420, speed: 34, reward: 45, damage: 3, resist: { physical: 0.6 } },
   mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 150, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.6 } },
+  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 220, speed: 76, reward: 38, damage: 2, immuneSlow: true },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -481,15 +482,15 @@ const WAVE_DATA_L5 = [
   { enemies: [{ type: 'bee', count: 18, interval: 0.29 }, { type: 'beetle', count: 6, interval: 1.08 }, { type: 'butterfly', count: 6, interval: 0.68 }], bonus: 200 },
   { enemies: [{ type: 'caterpillar', count: 10, interval: 0.4 }, { type: 'snail', count: 7, interval: 1.17 }, { type: 'beetle', count: 6, interval: 0.9 }], bonus: 250 },
   { enemies: [{ type: 'bee', count: 22, interval: 0.25 }, { type: 'beetle', count: 8, interval: 0.81 }, { type: 'butterfly', count: 8, interval: 0.5 }], bonus: 275 },
-  { enemies: [{ type: 'butterfly', count: 14, interval: 0.33 }, { type: 'bee', count: 18, interval: 0.26 }], bonus: 395 },
+  { enemies: [{ type: 'butterfly', count: 10, interval: 0.33 }, { type: 'mantis', count: 4, interval: 0.65 }, { type: 'bee', count: 14, interval: 0.26 }], bonus: 395 },
   { enemies: [{ type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 10, interval: 0.68 }, { type: 'bee', count: 14, interval: 0.29 }], bonus: 365 },
   { enemies: [{ type: 'bee', count: 32, interval: 0.16 }, { type: 'butterfly', count: 19, interval: 0.23 }, { type: 'beetle', count: 6, interval: 0.72 }], bonus: 425 },
-  { enemies: [{ type: 'mist_moth', count: 1, interval: 3.0, isBoss: true }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 12, interval: 0.3 }], bonus: 600 },
+  { enemies: [{ type: 'mantis', count: 1, interval: 3.0, isBoss: true }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 12, interval: 0.3 }], bonus: 600 },
   { enemies: [{ type: 'butterfly', count: 26, interval: 0.18 }, { type: 'beetle', count: 14, interval: 0.5 }, { type: 'snail', count: 8, interval: 0.72 }], bonus: 505 },
-  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 22, interval: 0.18 }, { type: 'beetle', count: 8, interval: 0.5 }], bonus: 555 },
+  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 22, interval: 0.18 }, { type: 'mantis', count: 6, interval: 0.5 }], bonus: 555 },
   { enemies: [{ type: 'snail', count: 16, interval: 0.41 }, { type: 'beetle', count: 10, interval: 0.41 }], bonus: 660 },
-  { enemies: [{ type: 'beetle', count: 19, interval: 0.33 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'snail', count: 14, interval: 0.35 }, { type: 'bee', count: 22, interval: 0.12 }], bonus: 740 },
-  { enemies: [{ type: 'beetle', count: 1, interval: 4.0, isBoss: true, hpMultiplier: 4.5 }, { type: 'dragon', count: 2, interval: 3.0, isBoss: true }, { type: 'mist_moth', count: 4, interval: 0.8 }, { type: 'bee', count: 24, interval: 0.1 }], bonus: 1250 },
+  { enemies: [{ type: 'mantis', count: 8, interval: 0.35 }, { type: 'beetle', count: 15, interval: 0.33 }, { type: 'snail', count: 12, interval: 0.35 }, { type: 'bee', count: 22, interval: 0.12 }], bonus: 740 },
+  { enemies: [{ type: 'beetle', count: 1, interval: 4.0, isBoss: true, hpMultiplier: 4.5 }, { type: 'dragon', count: 2, interval: 3.0, isBoss: true }, { type: 'mantis', count: 5, interval: 0.7 }, { type: 'bee', count: 24, interval: 0.1 }], bonus: 1250 },
 ];
 
 // 第六關：水晶裂谷（第 10 波：裝甲神盾王，第 15 波：薄暮幽蛾神 + 雙抗性霸主）
@@ -3259,6 +3260,139 @@ const Sprites = {
     }
     ctx.restore();
     ctx.restore();
+  },
+
+  // 9. 疾風螳螂 (Mantis - 緩速免疫 / 破風雙鐮)
+  drawEnemy_mantis: function(ctx, time, isBoss) {
+    ctx.save();
+    const bob = Math.sin(time * 9) * 1.2;
+    const slash = Math.sin(time * 6) * 0.15;
+    ctx.translate(0, bob);
+
+    if (isBoss) {
+      // ─── 黃金疾風螳螂王 (Boss) ───
+      // 1. 破風疾行氣流光環
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+
+      // 2. 金甲六足
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 5, 2); ctx.lineTo(s * 12, 6); ctx.lineTo(s * 15, 14);
+        ctx.moveTo(s * 4, 6); ctx.lineTo(s * 10, 14);
+        ctx.stroke();
+      });
+
+      // 3. 腹部流線金甲
+      const abGrad = ctx.createLinearGradient(0, 0, 0, 16);
+      abGrad.addColorStop(0, '#ffd600'); abGrad.addColorStop(1, '#ff6f00');
+      ctx.fillStyle = abGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 6, 7, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. 胸部與頭部
+      ctx.fillStyle = '#ffb300';
+      ctx.beginPath(); ctx.ellipse(0, -4, 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe082';
+      ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(6, -8); ctx.lineTo(0, -2); ctx.closePath(); ctx.fill();
+
+      // 5. 雙持赤金破風巨鐮
+      [-1, 1].forEach(s => {
+        ctx.save();
+        ctx.translate(s * 6, -6);
+        ctx.rotate(s * (0.4 + slash));
+        // 上臂
+        ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 5, -8); ctx.stroke();
+        // 前鐮刀刃
+        ctx.fillStyle = '#ffd600'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(s * 5, -8);
+        ctx.quadraticCurveTo(s * 14, -6, s * 11, 6);
+        ctx.quadraticCurveTo(s * 7, 0, s * 5, -8);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      });
+
+      // 6. 皇冠與複眼
+      this.drawMiniCrown(ctx, 0, -18);
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath(); ctx.arc(-3.5, -9, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5, -9, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-4, -10, 0.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -10, 0.8, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // ─── 疾風螳螂 (普通) ───
+      // 1. 破風氣流
+      ctx.strokeStyle = 'rgba(0, 230, 118, 0.35)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 2, 14, Math.PI * 0.25, Math.PI * 0.75); ctx.stroke();
+
+      // 2. 翡翠細足
+      ctx.strokeStyle = '#1b5e20'; ctx.lineWidth = 2.0; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 4, 1); ctx.lineTo(s * 10, 5); ctx.lineTo(s * 13, 12);
+        ctx.moveTo(s * 3, 5); ctx.lineTo(s * 8, 12);
+        ctx.stroke();
+      });
+
+      // 3. 翠綠流線水滴身軀
+      const bgGrad = ctx.createLinearGradient(0, -6, 0, 14);
+      bgGrad.addColorStop(0, '#76ff03'); bgGrad.addColorStop(0.5, '#00e676'); bgGrad.addColorStop(1, '#1b5e20');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 5.5, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. 頭部 (倒三角)
+      ctx.fillStyle = '#69f0ae';
+      ctx.beginPath();
+      ctx.moveTo(-5, -7); ctx.lineTo(5, -7); ctx.lineTo(0, -2);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. 雙前鐮 (綠光刀刃)
+      [-1, 1].forEach(s => {
+        ctx.save();
+        ctx.translate(s * 5, -5);
+        ctx.rotate(s * (0.35 + slash));
+        ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 4, -7); ctx.stroke();
+        // 鐮刃
+        ctx.fillStyle = '#b9f6ca'; ctx.strokeStyle = '#00c853'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(s * 4, -7);
+        ctx.quadraticCurveTo(s * 12, -5, s * 9, 5);
+        ctx.quadraticCurveTo(s * 6, -1, s * 4, -7);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      });
+
+      // 6. 水汪汪大金眼
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-3, -7.5, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -7.5, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1b5e20';
+      ctx.beginPath(); ctx.arc(-2.8, -7.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.8, -7.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-3.2, -8, 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.4, -8, 0.6, 0, Math.PI * 2); ctx.fill();
+
+      // 7. 纖細觸角
+      ctx.strokeStyle = '#00c853'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-2, -8); ctx.quadraticCurveTo(-6, -13, -8, -15); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2, -8); ctx.quadraticCurveTo(6, -13, 8, -15); ctx.stroke();
+    }
+    ctx.restore();
   }
 };
 
@@ -3598,6 +3732,7 @@ class Enemy {
     // 特性旗標與技能計時
     this.canEnrage = !!data.canEnrage;
     this.isEnraged = false;
+    this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
     this.resist = data.resist || {}; // e.g. { physical: 0.6 } = 對物理傷害減傷 60%
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
     this.summonedStages = new Set();
@@ -3729,9 +3864,12 @@ class Enemy {
     }
 
     // 減速/定身效果不能被更弱的效果蓋掉：例如絕對零度把怪完全定身（slowFactor=0）之後，
-    // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動
+    // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動；
+    // 若該怪物具備 immuneSlow（如疾風螳螂），則完全免疫任何緩速與定身效果
     if (typeof slowFactor === 'number' && typeof slowDuration === 'number' && slowDuration > 0) {
-      if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
+      if (this.immuneSlow) {
+        // 緩速免疫，不套用 slowFactor
+      } else if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
         this.slowFactor = slowFactor;
         this.slowTimer = slowDuration;
       }
@@ -4426,12 +4564,13 @@ class WaveManager {
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
 
-    const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'armored_ladybug', 'mist_moth'];
+    const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'armored_ladybug', 'mist_moth', 'mantis'];
     const selectedTypes = [];
 
-    // 依波數解鎖更高階怪物
+    // 依波數解鎖更高階怪物（包含免疫緩速的疾風螳螂）
     if (waveNum > 10) selectedTypes.push('mist_moth', 'armored_ladybug');
-    if (waveNum > 5) selectedTypes.push('beetle', 'butterfly');
+    if (waveNum > 6) selectedTypes.push('mantis');
+    if (waveNum > 4) selectedTypes.push('beetle', 'butterfly');
     selectedTypes.push('caterpillar', 'bee', 'snail');
 
     const enemies = [];
@@ -4458,7 +4597,8 @@ class WaveManager {
         hpMultiplier: Number((hpScale * 2.8).toFixed(2))
       });
     } else if (isMidBossWave) {
-      const bossType = Math.random() < 0.5 ? 'armored_ladybug' : 'mist_moth';
+      const bossTypes = ['armored_ladybug', 'mist_moth', 'mantis'];
+      const bossType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
       enemies.push({
         type: bossType,
         count: 1,
@@ -6407,9 +6547,21 @@ class Game {
     this.sfx.play('ice');
     this.showToast('全體冰封 3.5 秒！');
 
-    // 全體怪物定身並凍結
+    // 全體怪物定身並凍結（緩速免疫怪不受定身影響）
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
+      if (enemy.immuneSlow) {
+        this.spawnParticle(enemy.x, enemy.y - 15, {
+          text: '💨 免疫',
+          color: '#00e676',
+          fontSize: 12,
+          vx: 0,
+          vy: -30,
+          gravity: 0,
+          life: 0.8
+        });
+        continue;
+      }
       enemy.slowFactor = 0; // 完全定身
       enemy.slowTimer = skill.duration;
       this.spawnParticle(enemy.x, enemy.y - 15, {
