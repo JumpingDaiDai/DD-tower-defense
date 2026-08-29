@@ -1777,7 +1777,7 @@ const relicManager = new RelicManager();
 
 function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
   // 1. 單塔專用天賦（顯示該防禦塔圖示）
-  if (schoolKey === 'ice') return { towerKey: 'ice' };
+  if (schoolKey === 'ice') return { towerKey: 'ice_crystal' };
   if (schoolKey === 'mushroom') return { towerKey: 'mushroom' };
   if (schoolKey === 'thunder') return { towerKey: 'lavender' };
   if (schoolKey === 'petal') return { towerKey: 'petal' };
@@ -5179,14 +5179,15 @@ class Game {
 
     // 1. 若為某個防禦塔專用的天賦，繪製該塔的專屬圖片
     if (talent.towerKey) {
-      const svgImg = assets.get('tower_' + talent.towerKey);
+      const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+      const svgImg = assets.get('tower_' + towerKey);
       if (svgImg) {
         ictx.drawImage(svgImg, 2, 2, width - 4, height - 4);
       } else {
         ictx.save();
         ictx.translate(width / 2, height / 2 + 1);
         ictx.scale(width / 52, height / 52);
-        const drawFn = Sprites['drawTower_' + talent.towerKey];
+        const drawFn = Sprites['drawTower_' + towerKey];
         if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
         ictx.restore();
       }

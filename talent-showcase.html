@@ -204,7 +204,7 @@
     </div>
 
     <!-- 2. 全 8 大防禦塔專屬天賦展示清單 -->
-    <div class="section-title">🏰 2. 防禦塔專屬天賦清單（左側為對應防禦塔圖片）</div>
+    <div class="section-title">🏰 2. 防禦塔專屬天賦清單（左側為對應防禦塔專屬圖片）</div>
     <div class="catalog-grid" id="tower-talents-catalog">
       <!-- JS rendered -->
     </div>
@@ -237,9 +237,9 @@
       { id: 'petal_blossom_storm', name: '萬花千刃', desc: '粉櫻箭塔每攻擊 5 次釋放 8 瓣櫻花飛刃風暴，造成 2.5 倍物理貫穿真傷', rarity: 'legendary', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔隱藏質變' },
 
       // ❄️ 極光冰晶專屬
-      { id: 'ice_pierce', name: '強化貫穿 Lv.1', desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%', rarity: 'common', towerKey: 'ice', categoryName: '❄️ 極光冰晶塔專屬' },
-      { id: 'ice_frost_field', name: '霜凍結界 Lv.2', desc: '攻擊時於擊中點留下直徑 70px 冰霜漩渦，減速 40% 持續 2.5 秒', rarity: 'rare', towerKey: 'ice', categoryName: '❄️ 極光冰晶塔專屬' },
-      { id: 'absolute_zero', name: '絕對零度・霜爆連鎖', desc: '被冰凍或減速的怪物陣亡時引爆冰爆，造成最大血量 25% 魔法範圍傷害', rarity: 'legendary', towerKey: 'ice', categoryName: '❄️ 極光冰晶塔隱藏質變' },
+      { id: 'ice_pierce', name: '強化貫穿 Lv.1', desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%', rarity: 'common', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_frost_field', name: '霜凍結界 Lv.2', desc: '攻擊時於擊中點留下直徑 70px 冰霜漩渦，減速 40% 持續 2.5 秒', rarity: 'rare', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'absolute_zero', name: '絕對零度・霜爆連鎖', desc: '被冰凍或減速的怪物陣亡時引爆冰爆，造成最大血量 25% 魔法範圍傷害', rarity: 'legendary', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔隱藏質變' },
 
       // ⚡ 紫晶雷電法杖專屬
       { id: 'chain_reach', name: '連鎖躍遷 Lv.1', desc: '紫晶雷電法杖彈跳目標 +1 體，彈跳半徑 +25px', rarity: 'common', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
@@ -279,128 +279,165 @@
       { id: 'gold_interest', name: '利滾利息 Lv.2', desc: '每波次結束時，依現有金幣餘額提供 10% 銀行利息（上限 80 💰）', rarity: 'rare', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息客製圖標' }
     ];
 
-    // 純淨 Vector Sprite 手繪器 (完全獨立，無需任何外部依賴)
-    function drawVectorTowerSprite(ctx, towerKey) {
-      if (towerKey === 'petal') {
-        // 粉櫻箭塔 (粉嫩櫻花瓣 + 弓箭核心)
-        const g = ctx.createLinearGradient(0, -18, 0, 18);
-        g.addColorStop(0, '#f48fb1'); g.addColorStop(1, '#ad1457');
-        ctx.fillStyle = g;
+    // 遊戲本體精緻手繪 Vector Sprites (與遊戲內完全一致)
+    const TowerSprites = {
+      drawTower_petal: function(ctx) {
+        ctx.save();
+        // 1. 白石金紋底座
+        ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ffa726'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(-14, 8, 28, 7, 3); ctx.fill(); ctx.stroke();
+        // 2. 翡翠藤蔓
+        ctx.fillStyle = '#66bb6a'; ctx.fillRect(-3, -3, 6, 12);
+        // 3. 五瓣粉櫻花冠
+        ctx.save(); ctx.translate(0, -9);
         for (let i = 0; i < 5; i++) {
-          ctx.save();
-          ctx.rotate((Math.PI * 2 / 5) * i);
-          ctx.beginPath();
-          ctx.ellipse(0, -12, 6.5, 11, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
+          ctx.rotate((Math.PI * 2) / 5);
+          const grad = ctx.createLinearGradient(0, -13, 0, 0);
+          grad.addColorStop(0, '#ff4081'); grad.addColorStop(0.6, '#ff80ab'); grad.addColorStop(1, '#ffcdd2');
+          ctx.fillStyle = grad;
+          ctx.beginPath(); ctx.ellipse(0, -8, 5, 8, 0, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.fillStyle = '#fff9c4';
-        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#f57f17';
-        ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI * 2); ctx.fill();
-      } else if (towerKey === 'ice') {
-        // 極光冰晶塔 (六芒晶透冰錐)
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.25)';
-        ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
-        const icg = ctx.createLinearGradient(0, -18, 0, 18);
-        icg.addColorStop(0, '#e0f7fa'); icg.addColorStop(0.5, '#00e5ff'); icg.addColorStop(1, '#0097a7');
-        ctx.fillStyle = icg; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1;
-        for (let i = 0; i < 6; i++) {
-          ctx.save();
-          ctx.rotate((Math.PI / 3) * i);
-          ctx.beginPath();
-          ctx.moveTo(0, -19); ctx.lineTo(4.5, -4); ctx.lineTo(-4.5, -4); ctx.closePath();
-          ctx.fill(); ctx.stroke();
-          ctx.restore();
+        ctx.restore();
+        // 4. 黃金核心
+        ctx.fillStyle = '#ffd54f'; ctx.beginPath(); ctx.arc(0, -9, 6.5, 0, Math.PI * 2); ctx.fill();
+        // 5. 頂端翡翠光之箭
+        ctx.fillStyle = '#00e676';
+        ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(3.5, -18); ctx.lineTo(-3.5, -18); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      },
+
+      drawTower_sunflower: function(ctx) {
+        ctx.save();
+        // 底座花盆
+        ctx.fillStyle = '#fff8e1'; ctx.strokeStyle = '#ffb300'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(-13, 16); ctx.lineTo(13, 16); ctx.lineTo(9, 5); ctx.lineTo(-9, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // 金黃花瓣
+        ctx.save(); ctx.translate(0, -5);
+        ctx.fillStyle = '#ffb300';
+        for (let i = 0; i < 8; i++) {
+          ctx.rotate((Math.PI * 2) / 8);
+          ctx.beginPath(); ctx.ellipse(0, -11, 3.5, 6.5, 0, 0, Math.PI * 2); ctx.fill();
         }
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
-      } else if (towerKey === 'lavender') {
-        // 紫晶雷電法杖 (紫晶多層晶球 + 閃電環)
-        const lg = ctx.createLinearGradient(0, -18, 0, 18);
-        lg.addColorStop(0, '#e1bee7'); lg.addColorStop(0.5, '#ab47bc'); lg.addColorStop(1, '#4a148c');
-        ctx.fillStyle = lg;
-        for (let i = 0; i < 4; i++) {
-          ctx.beginPath(); ctx.arc(0, 12 - i * 8, 7 - i * 1.2, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(-5, -6); ctx.lineTo(2, -2); ctx.lineTo(-2, 3); ctx.lineTo(5, 7);
-        ctx.stroke();
-      } else if (towerKey === 'mushroom') {
-        // 魔幻蘑菇 (波點紫紅傘蓋)
-        ctx.fillStyle = '#7cb342';
-        ctx.beginPath(); ctx.rect(-5, 0, 10, 16); ctx.fill();
-        const mg = ctx.createRadialGradient(-3, -8, 2, 0, -4, 16);
+        ctx.restore();
+        // 暖心花蕊
+        ctx.fillStyle = '#6d4c41'; ctx.beginPath(); ctx.arc(0, -5, 7.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath(); ctx.arc(-2.5, -6.5, 1.3, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(2.5, -6.5, 1.3, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(0, -4, 3, 0, Math.PI); ctx.stroke();
+        ctx.restore();
+      },
+
+      drawTower_lavender: function(ctx) {
+        ctx.save();
+        // 紫晶雙層花柱
+        const g1 = ctx.createLinearGradient(0, -16, 0, 16);
+        g1.addColorStop(0, '#e1bee7'); g1.addColorStop(0.5, '#ab47bc'); g1.addColorStop(1, '#4a148c');
+        ctx.fillStyle = g1;
+        ctx.beginPath(); ctx.ellipse(0, 10, 10, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 2, 8, 5.5, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, -6, 6.5, 5, 0, 0, Math.PI * 2); ctx.fill();
+        // 頂部紫晶寶珠
+        ctx.fillStyle = '#ea80fc'; ctx.beginPath(); ctx.arc(0, -14, 5.5, 0, Math.PI * 2); ctx.fill();
+        // 閃電電弧
+        ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(-5, -6); ctx.lineTo(2, -2); ctx.lineTo(-2, 3); ctx.lineTo(5, 7); ctx.stroke();
+        ctx.restore();
+      },
+
+      drawTower_mushroom: function(ctx) {
+        ctx.save();
+        // 白色蕈柄
+        ctx.fillStyle = '#f1f8e9'; ctx.beginPath(); ctx.roundRect(-5, 0, 10, 16, 3); ctx.fill();
+        // 巨大毒蕈傘蓋
+        const mg = ctx.createRadialGradient(-3, -8, 2, 0, -5, 15);
         mg.addColorStop(0, '#ba68c8'); mg.addColorStop(1, '#4a148c');
         ctx.fillStyle = mg;
-        ctx.beginPath(); ctx.arc(0, 0, 17, Math.PI, 0); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -2, 16, Math.PI, 0); ctx.closePath(); ctx.fill();
+        // 金黃孢子點
         ctx.fillStyle = '#ffd54f';
-        [[-8, -8, 3], [4, -10, 2.5], [8, -4, 2], [-2, -4, 2.2]].forEach(([x, y, r]) => {
+        [[-8, -8, 2.5], [4, -10, 2.2], [8, -5, 1.8], [-2, -5, 2]].forEach(([x, y, r]) => {
           ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
         });
-      } else if (towerKey === 'treant') {
-        // 古木牢籠 (厚重樹幹與藤蔓)
-        ctx.fillStyle = '#5d4037';
-        ctx.beginPath(); ctx.ellipse(0, 4, 12, 14, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#2e7d32';
-        ctx.beginPath(); ctx.arc(-7, -10, 9, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, -10, 9, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(0, -14, 10, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd600';
-        ctx.beginPath(); ctx.arc(-4, 3, 2, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(4, 3, 2, 0, Math.PI * 2); ctx.fill();
-      } else if (towerKey === 'cannon') {
-        // 熔岩巨砲 (鋼鐵砲身 + 熾熱砲口)
-        ctx.fillStyle = '#37474f';
-        ctx.beginPath(); ctx.arc(0, 6, 13, 0, Math.PI * 2); ctx.fill();
-        ctx.save(); ctx.rotate(-0.5);
-        ctx.fillStyle = '#455a64'; ctx.fillRect(-6, -18, 12, 18);
-        ctx.fillStyle = '#ff3d00';
-        ctx.beginPath(); ctx.ellipse(0, -18, 6, 2.5, 0, 0, Math.PI * 2); ctx.fill();
         ctx.restore();
-      } else if (towerKey === 'laser') {
-        // 超弦日光雷射 (八角水晶稜鏡)
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-        ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#263238';
-        ctx.beginPath(); ctx.moveTo(-9, 14); ctx.lineTo(9, 14); ctx.lineTo(4, -6); ctx.lineTo(-4, -6); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#00e5ff';
-        ctx.beginPath(); ctx.arc(0, -9, 7.5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath(); ctx.arc(0, -9, 3.5, 0, Math.PI * 2); ctx.fill();
-      } else if (towerKey === 'sunflower') {
-        // 陽光向日葵 (金黃花瓣 + 圓潤笑臉)
-        ctx.fillStyle = '#ffb300';
-        for (let i = 0; i < 10; i++) {
-          ctx.save();
-          ctx.rotate((Math.PI * 2 / 10) * i);
-          ctx.beginPath(); ctx.ellipse(0, -12, 3.5, 7, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
-        }
-        ctx.fillStyle = '#6d4c41';
-        ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd54f';
-        ctx.beginPath(); ctx.arc(-2.5, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-        ctx.beginPath(); ctx.arc(2.5, -2, 1.5, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#ffd54f'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(0, 1, 3.5, 0, Math.PI); ctx.stroke();
-      }
-    }
+      },
 
-    // 獨立乾淨的 Canvas 圖案繪製器
+      drawTower_treant: function(ctx) {
+        ctx.save();
+        // 粗壯樹幹
+        ctx.fillStyle = '#5d4037'; ctx.beginPath(); ctx.ellipse(0, 5, 11, 13, 0, 0, Math.PI * 2); ctx.fill();
+        // 茂密樹冠
+        ctx.fillStyle = '#2e7d32';
+        ctx.beginPath(); ctx.arc(-6, -9, 8.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(6, -9, 8.5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(0, -13, 9.5, 0, Math.PI * 2); ctx.fill();
+        // 靈動雙眼
+        ctx.fillStyle = '#ffd600';
+        ctx.beginPath(); ctx.arc(-3.5, 4, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(3.5, 4, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      },
+
+      drawTower_cannon: function(ctx) {
+        ctx.save();
+        // 鋼鐵重砲座
+        ctx.fillStyle = '#37474f'; ctx.beginPath(); ctx.ellipse(0, 12, 17, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#455a64'; ctx.fillRect(-10, 0, 20, 12);
+        // 巨型砲管
+        ctx.fillStyle = '#263238'; ctx.fillRect(-7, -16, 14, 18);
+        ctx.fillStyle = '#ff3d00'; ctx.fillRect(-8, -20, 16, 4.5);
+        // 核心赤紅熔岩
+        ctx.fillStyle = '#ff7043'; ctx.beginPath(); ctx.arc(0, -2, 4.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      },
+
+      drawTower_ice_crystal: function(ctx) {
+        ctx.save();
+        // 霜雪寒冰光環
+        ctx.fillStyle = 'rgba(64, 196, 255, 0.25)'; ctx.beginPath(); ctx.ellipse(0, 14, 16, 5, 0, 0, Math.PI * 2); ctx.fill();
+        // 多稜晶石主體
+        ctx.fillStyle = '#00e5ff';
+        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(11, -4); ctx.lineTo(0, 9); ctx.lineTo(-11, -4); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#e0f7fa';
+        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(5.5, -4); ctx.lineTo(0, 9); ctx.closePath(); ctx.fill();
+        // 冰晶星芒
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.3;
+        ctx.beginPath(); ctx.moveTo(0, -25); ctx.lineTo(0, 12); ctx.moveTo(-14, -6); ctx.lineTo(14, -6); ctx.stroke();
+        ctx.restore();
+      },
+
+      drawTower_laser: function(ctx) {
+        ctx.save();
+        // 科技金屬底座
+        ctx.fillStyle = '#212121'; ctx.beginPath(); ctx.ellipse(0, 13, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#424242'; ctx.beginPath(); ctx.arc(0, 5, 12, Math.PI, 0); ctx.fill();
+        // 懸浮黃金光環
+        ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(0, -9, 12.5, 0, Math.PI * 2); ctx.stroke();
+        // 核心日光聚能球
+        ctx.fillStyle = '#fff176'; ctx.beginPath(); ctx.arc(0, -9, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, -11, 2.5, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    };
+
+    // 獨立 Canvas 圖案繪製器
     function renderTalentCanvas(ctx, talent, width = 40, height = 40) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      // 1. 若為防禦塔專屬天賦，繪製該塔專屬圖示
+      // 1. 若為防禦塔專屬天賦，繪製該塔專屬 Vector Sprite
       if (talent.towerKey) {
-        ctx.save();
-        ctx.translate(width / 2, height / 2);
-        ctx.scale(width / 46, height / 46);
-        drawVectorTowerSprite(ctx, talent.towerKey);
-        ctx.restore();
-        return;
+        const drawFn = TowerSprites['drawTower_' + talent.towerKey];
+        if (drawFn) {
+          ctx.save();
+          ctx.translate(width / 2, height / 2 + 1);
+          ctx.scale(width / 50, height / 50);
+          drawFn(ctx);
+          ctx.restore();
+          return;
+        }
       }
 
       // 2. 若為非單塔專屬，繪製量身定制圖案
