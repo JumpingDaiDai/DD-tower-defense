@@ -651,10 +651,10 @@ const GAME_MODES = {
 let CURRENT_GAME_MODE = GAME_MODES.CAMPAIGN;
 
 const ROGUELIKE_LEVEL_DATA = [
-  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.5, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.8, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 3.0, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.0, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.15, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 1.3, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 1.5, mode: GAME_MODES.ROGUELIKE },
 ];
 
 // ─── 5.1.6 Roguelike 天賦技能樹 (Branch + Level + Hidden Combo) ─────────
@@ -3790,12 +3790,13 @@ class Enemy {
 
     // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
     const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 4.0 : 6.0)) : 1.0;
-    // 幻境秘境精銳怪物強度全域指數性成長：
-    // 若 customHpMult > 1.0（例如 generateEndlessWave 算出的 hpScale）直接採用；
-    // 若是幻境前幾波固定波表，亦套用 1.75 * Math.pow(1.18, waveIndex) 高血量指數成長
+    // 幻境秘境怪物強度曲線：
+    // 初始波次 (波 1~3) 平滑起步 (1.0x ~ 1.33x)，確保只有初始單塔時也能輕鬆過渡；
+    // 第 3 波起隨神力加成穩健增長
     let waveHpMult = 1.0;
     if (isRogue) {
-      waveHpMult = customHpMult > 1.0 ? customHpMult : Number((1.75 * Math.pow(1.18, waveIndex)).toFixed(2));
+      const rogueWaveScale = Number((1.0 + waveIndex * 0.10 + Math.pow(waveIndex, 1.35) * 0.05).toFixed(2));
+      waveHpMult = customHpMult > 1.0 ? customHpMult : rogueWaveScale;
     } else if (!this.isBoss && customHpMult > 1.0) {
       waveHpMult = customHpMult;
     }
@@ -4663,8 +4664,8 @@ class WaveManager {
   // 🔮 幻境秘境全域指數性數值成長 (數量精簡 + 單體高血高抗精銳化)
   generateEndlessWave(waveIndex) {
     const waveNum = waveIndex + 1;
-    // 基礎血量係數：指數級成長 (2.2 * 1.20^(waveNum-1))
-    const hpScale = Number((2.2 * Math.pow(1.20, waveNum - 1)).toFixed(2));
+    // 基礎血量係數：平滑起步 + 中後期依天賦強度穩步增長
+    const hpScale = Number((1.0 + (waveNum - 1) * 0.10 + Math.pow(waveNum - 1, 1.35) * 0.05).toFixed(2));
 
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
