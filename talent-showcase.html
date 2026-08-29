@@ -538,11 +538,16 @@
     }
 
     function createCardHTML(talent, canvasClass = 'talent-card-canvas') {
+      let iconHtml = '';
+      if (talent.towerKey) {
+        const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+        iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
+      } else {
+        iconHtml = `<canvas class="${canvasClass}" width="40" height="40" data-id="${talent.id}"></canvas>`;
+      }
       return `
         <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
-          <div class="talent-card-icon">
-            <canvas class="${canvasClass}" width="40" height="40" data-id="${talent.id}"></canvas>
-          </div>
+          <div class="talent-card-icon">${iconHtml}</div>
           <div class="talent-card-info">
             <div class="talent-card-title">
               <span>${talent.name}</span>
@@ -584,11 +589,6 @@
             ${createCardHTML(t, 'tower-cat-canvas')}
           </div>
         `).join('');
-        towerCatalog.querySelectorAll('.tower-cat-canvas').forEach(cv => {
-          const id = cv.dataset.id;
-          const talent = TALENTS_DATABASE.find(t => t.id === id);
-          if (talent) renderTalentCanvas(cv.getContext('2d'), talent, 40, 40);
-        });
       }
 
       // 3. 渲染非單塔專屬天賦目錄
@@ -615,11 +615,17 @@
           TALENTS_DATABASE[9], TALENTS_DATABASE[12], TALENTS_DATABASE[15],
           TALENTS_DATABASE[18], SPECIAL_TALENTS[0], SPECIAL_TALENTS[1], SPECIAL_TALENTS[2], SPECIAL_TALENTS[3]
         ];
-        hudContainer.innerHTML = sampleList.map((t, idx) => `
-          <div class="relic-badge rarity-${t.rarity}" title="${t.name}">
-            <canvas class="hud-canvas" width="28" height="28" data-idx="${idx}"></canvas>
-          </div>
-        `).join('');
+        hudContainer.innerHTML = sampleList.map((t, idx) => {
+          let badgeIconHtml = '';
+          if (t.towerKey) {
+            const towerKey = (t.towerKey === 'ice') ? 'ice_crystal' : t.towerKey;
+            badgeIconHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${t.name}" />`;
+          } else {
+            badgeIconHtml = `<canvas class="hud-canvas" width="28" height="28" data-idx="${idx}"></canvas>`;
+          }
+          return `<div class="relic-badge rarity-${t.rarity}" title="${t.name}">${badgeIconHtml}</div>`;
+        }).join('');
+
         hudContainer.querySelectorAll('.hud-canvas').forEach(cv => {
           const idx = parseInt(cv.dataset.idx);
           const t = sampleList[idx];

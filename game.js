@@ -7351,22 +7351,29 @@ class Game {
       return;
     }
 
-    container.innerHTML = cards.map(talent => `
-      <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
-        <div class="talent-card-icon">
-          <canvas class="talent-card-canvas" width="40" height="40" data-id="${talent.id}"></canvas>
-        </div>
-        <div class="talent-card-info">
-          <div class="talent-card-title">
-            <span>${talent.name}</span>
-            <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+    container.innerHTML = cards.map(talent => {
+      let iconHtml = '';
+      if (talent.towerKey) {
+        const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+        iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
+      } else {
+        iconHtml = `<canvas class="talent-card-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
+      }
+      return `
+        <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
+          <div class="talent-card-icon">${iconHtml}</div>
+          <div class="talent-card-info">
+            <div class="talent-card-title">
+              <span>${talent.name}</span>
+              <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+            </div>
+            <div class="talent-card-desc">${talent.desc}</div>
           </div>
-          <div class="talent-card-desc">${talent.desc}</div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
-    // 繪製每張卡片的專屬圖片 (塔圖示或專屬設計圖標)
+    // 繪製非塔專屬的特殊天賦圖標
     container.querySelectorAll('.talent-card-canvas').forEach(cv => {
       const talentId = cv.dataset.id;
       const t = cards.find(item => item.id === talentId);
@@ -7429,17 +7436,31 @@ class Game {
         if (level > 0) {
           const meta = BRANCH_LEVEL_META[level];
           const visual = getTalentVisualInfo(schoolKey, branchId, null);
-          const tObj = { ...visual, icon: branch.icon, id: branchId };
-          badgeTalents.push(tObj);
-          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}"><canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas></div>`);
+          let badgeHtml = '';
+          if (visual.towerKey) {
+            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${branch.name}" />`;
+          } else {
+            const tObj = { ...visual, icon: branch.icon, id: branchId };
+            badgeTalents.push(tObj);
+            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
+          }
+          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${badgeHtml}</div>`);
         }
       }
       for (const hidden of school.hidden) {
         if (relicManager.hasHidden(hidden.id)) {
           const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
-          const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
-          badgeTalents.push(tObj);
-          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}"><canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas></div>`);
+          let badgeHtml = '';
+          if (visual.towerKey) {
+            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${hidden.name}" />`;
+          } else {
+            const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
+            badgeTalents.push(tObj);
+            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
+          }
+          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${badgeHtml}</div>`);
         }
       }
     }
