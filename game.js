@@ -1778,8 +1778,8 @@ const relicManager = new RelicManager();
 function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
   // 1. 單塔專用天賦（顯示該防禦塔圖示）
   if (schoolKey === 'ice') return { towerKey: 'ice_crystal' };
-  if (schoolKey === 'mushroom') return { towerKey: 'mushroom' };
-  if (schoolKey === 'thunder') return { towerKey: 'lavender' };
+  if (schoolKey === 'mushroom' || schoolKey === 'poison') return { towerKey: 'mushroom' };
+  if (schoolKey === 'thunder' || schoolKey === 'chain') return { towerKey: 'lavender' };
   if (schoolKey === 'petal') return { towerKey: 'petal' };
   if (schoolKey === 'cannon') return { towerKey: 'cannon' };
   if (schoolKey === 'treant') return { towerKey: 'treant' };
