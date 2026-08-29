@@ -1126,31 +1126,13 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【跨流派究極合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：以財富化為神聖審判，對全場所有存活敵人造成【現有金幣 × 0.1】的真實魔法傷害',
+        desc: '【跨流派究極合成・主動技能】覺醒主動技能【日輪天罰】：於戰鬥中消耗 10% 現有金幣，對全場所有存活敵人造成等額金幣數量的毀滅真實傷害！',
         requires: { gold_boost: 3, laser_overcharge: 2, cannon_blast: 2 },
-        onSunflowerPulse: (sunflowerTower, game) => {
-          if (!game || !game.enemies) return;
-          const currentGold = game.gold || 0;
-          const goldDmg = Math.max(25, Math.floor(currentGold * 0.10));
-          let hitCount = 0;
-          for (const enemy of game.enemies) {
-            if (!enemy.alive) continue;
-            enemy.takeDamage(goldDmg, null, 0, 0, 0, 'magic', game);
-            game.spawnParticle(enemy.x, enemy.y, {
-              color: '#ffd700', size: 3.5, vx: (Math.random() - 0.5) * 100, vy: (Math.random() - 0.5) * 100, life: 0.4, gravity: 0
-            });
-            hitCount++;
+        apply: (game) => {
+          if (game && game.updateSkillBarLockState) {
+            game.updateSkillBarLockState();
+            game.showToast('☀️ 究極技能【日輪天罰】已覺醒！');
           }
-          if (hitCount > 0) {
-            game.sfx.play('explosion');
-            game.spawnParticle(CANVAS_W / 2, 80, {
-              text: `☀️ 日輪天罰！全屏造成 ${goldDmg} 傷害 (金幣×10%)`, color: '#ffd600', fontSize: 14, vx: 0, vy: -30, life: 1.2, gravity: 0
-            });
-          }
-        },
-        onWaveStart: (wave, game) => {
-          if (!game || !game.enemies) return;
-          // 波次開始若有敵人也給予定點威懾
         }
       }
     ]
@@ -3573,20 +3555,29 @@ class GameMap {
 class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0, isBossOverride = null, customHpMult = 1.0) {
     const data = ENEMY_DATA[typeKey];
+    const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
     // 難度成長依關卡倍率與 Boss 倍率
-    const levelHpMult = LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0;
+    const levelHpMult = (isRogue
+      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.3)
+      : (LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0));
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
     this.name = data.name;
     this.emoji = data.emoji;
     this.isBoss = isBossOverride !== null ? isBossOverride : !!data.isBoss;
 
-    // 王的數值：若為 isBoss，血量大幅飆升（5x~8x），獎勵與扣心也顯著增加
-    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 3.2 : 5.5)) : 1.0;
-    // 幻境秘境無盡波次的小怪血量成長 (generateEndlessWave 算出的 hpScale)：
-    // 過去只套用在王身上，一般小怪完全沒吃到，導致波次越後面小怪血量卻沒變化
-    const waveHpMult = (!this.isBoss && customHpMult > 1.0) ? customHpMult : 1.0;
-    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult * waveHpMult);
+    // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
+    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 3.5 : 5.5)) : 1.0;
+    // 幻境秘境怪物強度全域指數性成長：
+    // 若 customHpMult > 1.0（例如 generateEndlessWave 算出的 hpScale）直接採用；
+    // 若是幻境前幾波固定波表，亦套用指數波次係數 Math.pow(1.15, waveIndex)
+    let waveHpMult = 1.0;
+    if (isRogue) {
+      waveHpMult = customHpMult > 1.0 ? customHpMult : Number(Math.pow(1.15, waveIndex).toFixed(2));
+    } else if (!this.isBoss && customHpMult > 1.0) {
+      waveHpMult = customHpMult;
+    }
+    this.maxHp = Math.round(data.hp * levelHpMult * (this.isBoss ? bossHpMult : 1.0) * waveHpMult);
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
@@ -4425,18 +4416,12 @@ class WaveManager {
     return null;
   }
 
-  // 階梯式平滑多項式數值成長 (Soft Polynomial Scaling)
+  // 🔮 幻境秘境全域指數性數值成長 (Exponential Scaling)
   generateEndlessWave(waveIndex) {
     const waveNum = waveIndex + 1;
-    // 基礎血量係數：前15波線性(+12%/波)，16~30波多項式溫和爬升，31波以上穩健挑戰
-    let hpScale = 1.0;
-    if (waveNum <= 15) {
-      hpScale = 1.0 + (waveNum - 1) * 0.12;
-    } else if (waveNum <= 30) {
-      hpScale = 2.68 + (waveNum - 15) * 0.18 + Math.pow((waveNum - 15) * 0.05, 1.4);
-    } else {
-      hpScale = 6.2 + (waveNum - 30) * 0.25 + Math.pow((waveNum - 30) * 0.08, 1.5);
-    }
+    // 基礎血量係數：指數級成長 (1.18^(waveNum-1))
+    // 例如：W1=1x, W5=1.94x, W10=4.44x, W15=10.1x, W20=23.2x, W30=121x, W40=635x, W50=3320x
+    const hpScale = Number(Math.pow(1.18, waveNum - 1).toFixed(2));
 
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
@@ -4450,7 +4435,7 @@ class WaveManager {
     selectedTypes.push('caterpillar', 'bee', 'snail');
 
     const enemies = [];
-    const countScale = Math.min(2.5, 1 + Math.floor(waveNum / 8) * 0.3);
+    const countScale = Math.min(3.2, 1 + Math.floor(waveNum / 6) * 0.35);
 
     // 隨機組裝 2~3 組常規雜兵
     for (let g = 0; g < 2; g++) {
@@ -4458,34 +4443,34 @@ class WaveManager {
       enemies.push({
         type: type,
         count: Math.floor((10 + Math.random() * 8) * countScale),
-        interval: Math.max(0.08, 0.35 - waveNum * 0.005),
+        interval: Math.max(0.06, 0.35 - waveNum * 0.005),
         hpMultiplier: hpScale
       });
     }
 
-    // 每 5 波 Mid-Boss / 每 10 波 Final Boss
+    // 每 5 波 Mid-Boss / 每 10 波 Final Boss (血量倍率隨波數幾何倍增)
     if (isBossWave) {
       enemies.push({
         type: 'dragon',
-        count: Math.min(3, 1 + Math.floor(waveNum / 20)),
-        interval: 3.0,
+        count: Math.min(3, 1 + Math.floor(waveNum / 15)),
+        interval: 2.5,
         isBoss: true,
-        hpMultiplier: hpScale * 2.2
+        hpMultiplier: Number((hpScale * 2.8).toFixed(2))
       });
     } else if (isMidBossWave) {
       const bossType = Math.random() < 0.5 ? 'armored_ladybug' : 'mist_moth';
       enemies.push({
         type: bossType,
         count: 1,
-        interval: 2.5,
+        interval: 2.0,
         isBoss: true,
-        hpMultiplier: hpScale * 1.8
+        hpMultiplier: Number((hpScale * 2.0).toFixed(2))
       });
     }
 
     return {
       enemies: enemies,
-      bonus: Math.floor(100 + waveNum * 30)
+      bonus: Math.floor(100 + waveNum * 40)
     };
   }
 
@@ -4613,7 +4598,8 @@ class Game {
     // Active Skills System
     this.skills = {
       meteor: { cd: 30, timer: 0, cost: 0, range: 110, damage: 60 },
-      freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 }
+      freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 },
+      solar_wrath: { cd: 4, timer: 0 }
     };
     this.activeTargetingSkill = null; // 'meteor' or null
 
@@ -5112,6 +5098,73 @@ class Game {
       ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
 
       ctx.restore();
+    } else if (key === 'solar_wrath' || key === 'solar-wrath') {
+      // ─── ☀️ 日輪天罰・金耀天劫 (耀陽八芒光冕 + 金耀神聖核心 + 審判烈芒) ───
+      ctx.save();
+      ctx.scale(0.85, 0.85);
+
+      // 1. 最外層日冕神聖金色光暈 (脈動)
+      const pulse = 1 + Math.sin(time * 6) * 0.08;
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.28)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 17 * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. 旋轉 8 芒日輪尖芒
+      ctx.save();
+      ctx.rotate(time * 0.5);
+      ctx.fillStyle = '#ffb300';
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, -17);
+        ctx.lineTo(3.5, -9);
+        ctx.lineTo(-3.5, -9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.rotate(Math.PI / 4);
+      }
+      ctx.restore();
+
+      // 3. 內層交錯 8 芒烈焰尖芒
+      ctx.save();
+      ctx.rotate(-time * 0.3 + Math.PI / 8);
+      ctx.fillStyle = '#ff9100';
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, -14);
+        ctx.lineTo(2.5, -7);
+        ctx.lineTo(-2.5, -7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.rotate(Math.PI / 4);
+      }
+      ctx.restore();
+
+      // 4. 金陽外環
+      ctx.strokeStyle = '#ffd54f';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 5. 金黃耀眼核心漸層
+      const sunGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 9);
+      sunGrad.addColorStop(0, '#ffffff');
+      sunGrad.addColorStop(0.4, '#fff59d');
+      sunGrad.addColorStop(0.8, '#ffd700');
+      sunGrad.addColorStop(1, '#ff6d00');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6. 核心高光白點
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-2, -2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
     ctx.restore();
   }
@@ -5197,6 +5250,8 @@ class Game {
     if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
     const freezeCv = document.getElementById('skill-canvas-freeze');
     if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+    const solarCv = document.getElementById('skill-canvas-solar_wrath');
+    if (solarCv) this.drawSkillIcon(solarCv.getContext('2d'), 'solar_wrath');
     const titleCv = document.getElementById('menu-title-canvas');
     if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
   }
@@ -5215,6 +5270,9 @@ class Game {
 
     const freezeCv = document.getElementById('skill-canvas-freeze');
     if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+
+    const solarCv = document.getElementById('skill-canvas-solar_wrath');
+    if (solarCv) this.drawSkillIcon(solarCv.getContext('2d'), 'solar_wrath');
 
     // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree)
     const titleCv = document.getElementById('menu-title-canvas');
@@ -6119,6 +6177,11 @@ class Game {
       this.toggleSkillTargeting('freeze');
     });
 
+    document.getElementById('skill-solar_wrath-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleSkillTargeting('solar_wrath');
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -6137,6 +6200,9 @@ class Game {
       }
       if (e.key === '2') {
         this.toggleSkillTargeting('freeze');
+      }
+      if (e.key === '3') {
+        this.toggleSkillTargeting('solar_wrath');
       }
     });
   }
@@ -6225,6 +6291,27 @@ class Game {
 
   // ─── Active Skills (主動技能系統) ───
   toggleSkillTargeting(skillKey) {
+    if (skillKey === 'solar_wrath') {
+      if (typeof relicManager === 'undefined' || !relicManager.hasHidden('solar_wrath')) {
+        this.showToast('🔒 尚未領悟【日輪天罰】天賦！');
+        this.sfx.play('error');
+        return;
+      }
+      if (this.state !== 'wave') {
+        this.showToast('戰鬥開始後才能施放技能！');
+        this.sfx.play('error');
+        return;
+      }
+      const skill = this.skills.solar_wrath;
+      if (skill && skill.timer > 0) {
+        this.showToast(`天罰冷卻中 (${Math.ceil(skill.timer)} 秒)`);
+        this.sfx.play('error');
+        return;
+      }
+      this.castSolarWrath();
+      return;
+    }
+
     if (!isSkillUnlocked(skillKey)) {
       this.showToast('🔒 這個技能尚未在商店解鎖');
       this.sfx.play('error');
@@ -6337,6 +6424,67 @@ class Game {
     }
   }
 
+  castSolarWrath() {
+    if (this.state !== 'wave') return;
+    const skill = this.skills.solar_wrath;
+    const currentGold = this.gold || 0;
+    const cost = Math.floor(currentGold * 0.10);
+    if (cost < 1) {
+      this.showToast('🪙 金幣不足 10，無法消耗 10% 引導天罰！');
+      this.sfx.play('error');
+      return;
+    }
+
+    // 扣除 10% 現有金幣
+    this.gold -= cost;
+    this.updateUI();
+    if (skill) skill.timer = skill.cd;
+
+    this.sfx.play('explosion');
+    this.showToast(`☀️ 日輪天罰！消耗 ${cost} 金幣，全場造成 ${cost} 毀滅傷害！`);
+
+    // 螢幕震動
+    if (navigator.vibrate) navigator.vibrate([150, 60, 150]);
+
+    // 全場天罰日輪金色光柱與神聖粒子
+    for (let i = 0; i < 35; i++) {
+      this.spawnParticle(Math.random() * CANVAS_W, Math.random() * CANVAS_H, {
+        color: Math.random() < 0.6 ? '#ffd700' : '#fff59d',
+        size: 3 + Math.random() * 5,
+        vx: (Math.random() - 0.5) * 160,
+        vy: (Math.random() - 0.5) * 160 - 40,
+        gravity: 60,
+        life: 0.8 + Math.random() * 0.4
+      });
+    }
+
+    // 全場存活敵人受到等同消耗金幣的真實傷害
+    let hitCount = 0;
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      enemy.takeDamage(cost, null, 0, 0, 0, 'true', this);
+      this.spawnParticle(enemy.x, enemy.y, {
+        color: '#ffea00',
+        size: 4,
+        vx: (Math.random() - 0.5) * 120,
+        vy: (Math.random() - 0.5) * 120,
+        gravity: 0,
+        life: 0.5
+      });
+      hitCount++;
+    }
+
+    this.spawnParticle(CANVAS_W / 2, CANVAS_H / 2 - 40, {
+      text: `☀️ -${cost} (天罰)`,
+      color: '#ffd700',
+      fontSize: 24,
+      vx: 0,
+      vy: -50,
+      gravity: 0,
+      life: 1.5
+    });
+  }
+
   updateSkills(dt) {
     // 只有在戰鬥波次進行中 (wave 狀態) 才倒數技能 CD，準備階段 (planning) 凍結 CD
     if (this.state === 'wave') {
@@ -6353,8 +6501,10 @@ class Game {
     this.activeTargetingSkill = null;
     this.skills.meteor.timer = 0;
     this.skills.freeze.timer = 0;
+    if (this.skills.solar_wrath) this.skills.solar_wrath.timer = 0;
     document.getElementById('skill-meteor-btn')?.classList.remove('targeting', 'on-cd');
     document.getElementById('skill-freeze-btn')?.classList.remove('targeting', 'on-cd');
+    document.getElementById('skill-solar_wrath-btn')?.classList.remove('targeting', 'on-cd');
     this.updateSkillsUI();
   }
 
@@ -6377,6 +6527,17 @@ class Game {
       freezeBtn.classList.toggle('on-cd', onCd);
       const overlay = freezeBtn.querySelector('.skill-cd-overlay');
       const text = freezeBtn.querySelector('.skill-cd-text');
+      if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
+      if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
+    }
+
+    const solarWrathBtn = document.getElementById('skill-solar_wrath-btn');
+    if (solarWrathBtn && this.skills.solar_wrath) {
+      const s = this.skills.solar_wrath;
+      const onCd = s.timer > 0;
+      solarWrathBtn.classList.toggle('on-cd', onCd);
+      const overlay = solarWrathBtn.querySelector('.skill-cd-overlay');
+      const text = solarWrathBtn.querySelector('.skill-cd-text');
       if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
       if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
     }
@@ -7533,6 +7694,17 @@ class Game {
     if (meteorBtn) meteorBtn.style.display = isSkillUnlocked('meteor') ? '' : 'none';
     const freezeBtn = document.getElementById('skill-freeze-btn');
     if (freezeBtn) freezeBtn.style.display = isSkillUnlocked('freeze') ? '' : 'none';
+
+    // ☀️ 日輪天罰主動技能：只有在當前局中學會【日輪天罰】質變天賦後才會出現！
+    const solarWrathBtn = document.getElementById('skill-solar_wrath-btn');
+    if (solarWrathBtn) {
+      const isLearned = (typeof relicManager !== 'undefined' && relicManager.hasHidden('solar_wrath'));
+      solarWrathBtn.style.display = isLearned ? '' : 'none';
+      if (isLearned) {
+        const cv = document.getElementById('skill-canvas-solar_wrath');
+        if (cv) this.drawSkillIcon(cv.getContext('2d'), 'solar_wrath');
+      }
+    }
   }
 
   updateTowerPanel() {
