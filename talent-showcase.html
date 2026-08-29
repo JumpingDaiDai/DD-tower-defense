@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔮 天賦專屬圖片與圖標展示手冊 - DD Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #12151f;
+      --card-bg: rgba(28, 33, 53, 0.95);
+      --primary: #fff;
+      --gold: #ffd700;
+      --accent: #00e5ff;
+      --border: rgba(255, 255, 255, 0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Zen Maru Gothic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 20%, #1e2538 0%, #0d1017 100%);
+      color: #e0e0e0;
+      padding: 28px 16px 60px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    .container { width: 100%; max-width: 1020px; }
+    
+    .header {
+      text-align: center;
+      background: var(--card-bg);
+      border: 1.5px solid rgba(255, 215, 0, 0.35);
+      border-radius: 20px;
+      padding: 24px 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    h1 { font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+    .subtitle { font-size: 13.5px; color: #90a4ae; line-height: 1.6; }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffd700;
+      margin: 28px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 2px solid rgba(255, 215, 0, 0.2);
+      padding-bottom: 8px;
+    }
+
+    /* Live Pick Modal Simulation */
+    .sim-box {
+      background: rgba(15, 18, 28, 0.85);
+      border: 2px dashed rgba(0, 229, 255, 0.4);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 28px;
+    }
+    .sim-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .sim-btn {
+      background: linear-gradient(135deg, #00e5ff, #00b0ff);
+      color: #002244;
+      font-weight: 900;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 18px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+    }
+    .sim-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    .sim-btn:active { transform: scale(0.96); }
+
+    /* Talent Cards Layout */
+    .talent-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    
+    .talent-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .talent-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .talent-card.rarity-common { border-color: rgba(200, 200, 200, 0.35); }
+    .talent-card.rarity-rare {
+      border-color: #29b6f6;
+      background: linear-gradient(135deg, rgba(41, 182, 246, 0.15), rgba(3, 169, 244, 0.04));
+      box-shadow: 0 0 14px rgba(41, 182, 246, 0.25);
+    }
+    .talent-card.rarity-epic {
+      border-color: #ab47bc;
+      background: linear-gradient(135deg, rgba(171, 71, 188, 0.2), rgba(142, 36, 170, 0.05));
+      box-shadow: 0 0 16px rgba(171, 71, 188, 0.3);
+    }
+    .talent-card.rarity-legendary {
+      border-color: #ffd700;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.22), rgba(255, 152, 0, 0.08));
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .talent-card-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 10px;
+      flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .talent-card-icon canvas {
+      display: block;
+      width: 40px;
+      height: 40px;
+    }
+
+    .talent-card-info { flex: 1; text-align: left; }
+    .talent-card-title {
+      font-size: 13.5px;
+      font-weight: 900;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .talent-rarity-pill {
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .talent-rarity-pill.common { background: #78909c; color: #fff; }
+    .talent-rarity-pill.rare { background: #0288d1; color: #fff; }
+    .talent-rarity-pill.epic { background: #7b1fa2; color: #fff; }
+    .talent-rarity-pill.legendary { background: #f57f17; color: #fff; }
+
+    .talent-card-desc {
+      font-size: 11px;
+      color: #cfd8dc;
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+    .talent-type-tag {
+      font-size: 9.5px;
+      color: #80cbc4;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    /* Category Group */
+    .cat-group {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+    }
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cat-title { font-size: 15px; font-weight: 900; color: #fff; }
+    .cat-desc { font-size: 11.5px; color: #90a4ae; }
+
+    .badge-preview-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-top: 14px;
+    }
+    .relic-badge {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .relic-badge canvas {
+      width: 28px;
+      height: 28px;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 24px;
+      color: #4fc3f7;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #81d4fa; text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔮 幻境神力天賦專屬圖片手冊</h1>
+      <p class="subtitle">
+        規則對焦：若天賦為<b>特定防禦塔專屬</b>，左側圖示直接呈現<b>該防禦塔專屬圖片</b>；<br>
+        若為<b>全域/經濟/主動技能/非單塔天賦</b>，則呈現<b>量身繪製的專屬圖標</b>（如日輪天罰、豐饒祝福、自然之靈、金庫利息）。
+      </p>
+    </div>
+
+    <!-- 1. 即時三選一抽卡介面模擬 -->
+    <div class="section-title">🎲 局內「三選一神力抽卡」即時渲染模擬</div>
+    <div class="sim-box">
+      <div class="sim-controls">
+        <span style="font-size: 13px; font-weight: 800; color: #b0bec5;">點擊按鈕隨機抽取 3 張神力卡牌，檢視左側專屬圖示渲染：</span>
+        <button class="sim-btn" onclick="drawDemoCards()">✨ 隨機抽卡 (Reroll 3 Cards)</button>
+      </div>
+      <div class="talent-cards-grid" id="demo-card-container">
+        <!-- JS rendered -->
+      </div>
+    </div>
+
+    <!-- 2. 防禦塔專屬天賦展示組 -->
+    <div class="section-title">🏰 類別一：防禦塔專屬天賦（左側呈現對應防禦塔專屬圖片）</div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">🌸 粉櫻箭塔專屬天賦 (Petal Tower)</div>
+          <div class="cat-desc">包含：急速射擊、多重射擊、萬花千刃等分支與隱藏質變</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-petal"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">❄️ 極光霜藍冰晶塔專屬天賦 (Ice Crystal Tower)</div>
+          <div class="cat-desc">包含：強化貫穿、霜凍結界、絕對零度・霜爆連鎖</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-ice"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">⚡ 紫晶雷電法杖專屬天賦 (Lavender Thunder Tower)</div>
+          <div class="cat-desc">包含：連鎖躍遷、雷霆暴擊、雷霆過載</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-thunder"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">🍄 魔幻劇毒蘑菇專屬天賦 (Mushroom Spore Tower)</div>
+          <div class="cat-desc">包含：劇毒孢子、毒霧擴散、劇毒瘟疫・血影蔓延</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-mushroom"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">🌲 古木荊棘牢籠專屬天賦 (Treant Thorns Tower)</div>
+          <div class="cat-desc">包含：森之纏繞、荊棘倒刺、遠古守護者</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-treant"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">💣 熔岩熾火巨砲專屬天賦 (Cannon Tower)</div>
+          <div class="cat-desc">包含：核能彈頭、焦土餘燼、軌道巨砲・天基轟炸</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-cannon"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">🔦 超弦稜鏡日光雷射專屬天賦 (Laser Tower)</div>
+          <div class="cat-desc">包含：超導聚能、光束折射、超新星核爆・星滅坍縮</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-laser"></div>
+    </div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">🌻 陽光向日葵專屬天賦 (Sunflower Economy Tower)</div>
+          <div class="cat-desc">包含：陽光充沛（向日葵產金加速 25%~60%）</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-sunflower"></div>
+    </div>
+
+    <!-- 3. 非單塔專用天賦展示組 -->
+    <div class="section-title">🌟 類別二：非單塔專用天賦（左側呈現量身設計的客製圖標）</div>
+
+    <div class="cat-group">
+      <div class="cat-header">
+        <div>
+          <div class="cat-title">✨ 全域 / 跨流派 / 經濟 / 主動技能天賦</div>
+          <div class="cat-desc">不屬於單一特定防禦塔，每項皆量身設計專屬手繪 Vector Canvas 圖標</div>
+        </div>
+      </div>
+      <div class="talent-cards-grid" id="group-special"></div>
+    </div>
+
+    <!-- 4. 局內右上角徽章欄模擬 -->
+    <div class="section-title">🛡️ 局內右上角神力徽章欄 (Relic Badges HUD) 即時模擬</div>
+    <div class="cat-group">
+      <div class="cat-desc">玩家獲得神力後，局內右上角常駐的精簡 28x28 徽章圖案（支援 SVG / Canvas / 特殊圖標）：</div>
+      <div class="badge-preview-bar" id="badge-bar-container"></div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+      <a class="back-link" href="talent-tree.html">📖 查看完整天賦樹手冊 (talent-tree.html)</a> ｜
+      <a class="back-link" href="manual.html">← 回開發手冊首頁 (manual.html)</a> ｜
+      <a class="back-link" href="index.html">🎮 進入遊戲對局 (index.html)</a>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    // 預先準備的展示天賦資料庫
+    const SHOWCASE_DATA = {
+      petal: [
+        { id: 'petal_speed', name: '急速射擊 Lv.1', desc: '粉櫻箭塔射速提升 15%，彈道飛行速度 +20%', rarity: 'common', towerKey: 'petal', typeTag: '粉櫻箭塔專屬' },
+        { id: 'petal_penetrate', name: '貫穿箭矢 Lv.2', desc: '箭矢貫穿敵人數量 +2 體，每穿透一名怪物傷害衰減降低', rarity: 'rare', towerKey: 'petal', typeTag: '粉櫻箭塔專屬' },
+        { id: 'petal_blossom_storm', name: '萬花千刃', desc: '粉櫻箭塔每攻擊 5 次釋放 8 瓣櫻花飛刃風暴，造成 2.5 倍物理貫穿真傷', rarity: 'legendary', towerKey: 'petal', typeTag: '粉櫻箭塔隱藏質變' }
+      ],
+      ice: [
+        { id: 'ice_pierce', name: '強化貫穿 Lv.1', desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%', rarity: 'common', towerKey: 'ice', typeTag: '冰晶塔專屬' },
+        { id: 'ice_frost_field', name: '霜凍結界 Lv.2', desc: '攻擊時於擊中點留下直徑 70px 冰霜漩渦，減速 40% 持續 2.5 秒', rarity: 'rare', towerKey: 'ice', typeTag: '冰晶塔專屬' },
+        { id: 'absolute_zero', name: '絕對零度・霜爆連鎖', desc: '被冰凍或減速的怪物陣亡時引爆冰爆，造成最大血量 25% 魔法範圍傷害', rarity: 'legendary', towerKey: 'ice', typeTag: '冰晶塔隱藏質變' }
+      ],
+      thunder: [
+        { id: 'chain_reach', name: '連鎖躍遷 Lv.1', desc: '紫晶雷電法杖彈跳目標 +1 體，彈跳半徑 +25px', rarity: 'common', towerKey: 'lavender', typeTag: '紫晶雷電塔專屬' },
+        { id: 'crit_strike', name: '雷霆暴擊 Lv.2', desc: '連鎖雷電具備 35% 機率觸發 2.2 倍超導暴擊', rarity: 'rare', towerKey: 'lavender', typeTag: '紫晶雷電塔專屬' },
+        { id: 'thunder_overload', name: '雷霆過載', desc: '每次連鎖彈跳傷害不再衰減，每次額外增傷 15% 且附帶 0.5 秒麻痺', rarity: 'legendary', towerKey: 'lavender', typeTag: '紫晶雷電塔隱藏質變' }
+      ],
+      mushroom: [
+        { id: 'mushroom_poison_dps', name: '劇毒孢子 Lv.1', desc: '蘑菇毒素每秒持續傷害提升 25%，疊毒上限 +1 層', rarity: 'common', towerKey: 'mushroom', typeTag: '魔幻蘑菇塔專屬' },
+        { id: 'mushroom_corrode', name: '毒霧腐蝕 Lv.2', desc: '中毒目標護甲與魔抗雙重削弱 25%，受到所有傷害加深', rarity: 'rare', towerKey: 'mushroom', typeTag: '魔幻蘑菇塔專屬' },
+        { id: 'lethal_plague', name: '劇毒瘟疫・血影蔓延', desc: '滿層中毒敵人陣亡時向周圍散播致命毒雲，傳染全額劇毒 DOT', rarity: 'legendary', towerKey: 'mushroom', typeTag: '魔幻蘑菇塔隱藏質變' }
+      ],
+      treant: [
+        { id: 'treant_entangle', name: '森之纏繞 Lv.1', desc: '古木牢籠定身減速強度提升至 75%，持續時間 +1.0 秒', rarity: 'common', towerKey: 'treant', typeTag: '古木荊棘塔專屬' },
+        { id: 'treant_thorns_burst', name: '荊棘倒刺 Lv.2', desc: '處於定身狀態下的敵人受到所有防禦塔傷害 +35%', rarity: 'rare', towerKey: 'treant', typeTag: '古木荊棘塔專屬' },
+        { id: 'ancient_guardian', name: '遠古守護者', desc: '古木牢籠化身大地圖騰：周圍 130px 內所有防禦塔攻擊力 +35%、射速 +20%', rarity: 'legendary', towerKey: 'treant', typeTag: '古木荊棘塔隱藏質變' }
+      ],
+      cannon: [
+        { id: 'cannon_blast', name: '核能彈頭 Lv.1', desc: '熔岩巨砲爆炸半徑 +15px，核心範圍造成 130% 傷害', rarity: 'common', towerKey: 'cannon', typeTag: '熾火巨砲專屬' },
+        { id: 'cannon_shrapnel', name: '焦土餘燼 Lv.2', desc: '爆炸後留下 3 秒熔岩燃燒區域，每秒造成 45 點高溫真實傷害', rarity: 'rare', towerKey: 'cannon', typeTag: '熾火巨砲專屬' },
+        { id: 'orbital_cannon', name: '軌道巨砲・天基轟炸', desc: '每第 4 發砲彈升級為天基轟炸，範圍覆蓋全場 180px 並造成 3 倍無視抗性真傷', rarity: 'legendary', towerKey: 'cannon', typeTag: '熾火巨砲隱藏質變' }
+      ],
+      laser: [
+        { id: 'laser_overcharge', name: '超導聚能 Lv.1', desc: '聚能雷射射速 +15%，貫穿敵人數量 +1 體', rarity: 'common', towerKey: 'laser', typeTag: '日光雷射塔專屬' },
+        { id: 'laser_prismatic_refract', name: '光束折射 Lv.2', desc: '穿透敵人後 50% 機率折射副光束（75% 傷害）打擊周遭目標', rarity: 'rare', towerKey: 'laser', typeTag: '日光雷射塔專屬' },
+        { id: 'supernova_core', name: '超新星核爆・星滅坍縮', desc: '雷射消滅任何敵人時引發超新星核爆，造成目標最大血量 40% 高熱魔法爆炸', rarity: 'legendary', towerKey: 'laser', typeTag: '日光雷射塔隱藏質變' }
+      ],
+      sunflower: [
+        { id: 'gold_boost_1', name: '陽光充沛 Lv.1', desc: '向日葵產金週期縮短 15%，每次額外產出 +2 💰', rarity: 'common', towerKey: 'sunflower', typeTag: '向日葵專屬' },
+        { id: 'gold_boost_3', name: '日耀豐產 Lv.3', desc: '向日葵產金速度大幅提升 50%，波次開始直接發放 40 💰', rarity: 'epic', towerKey: 'sunflower', typeTag: '向日葵專屬' }
+      ],
+      special: [
+        { id: 'solar_wrath', name: '日輪天罰・金耀天劫', desc: '【局內專屬主動技能】消耗現有 10% 金幣，召喚全屏日冕金光造成等額金幣真傷', rarity: 'legendary', specialIconKey: 'solar_wrath', typeTag: '☀️ 專屬主動技能圖標' },
+        { id: 'bountiful_blessing', name: '豐饒祝福', desc: '全場擊殺怪物額外掉落 +3 金幣，每波結束基地恢復 1 點生命', rarity: 'legendary', specialIconKey: 'bountiful_blessing', typeTag: '💖 全域經濟/回復客製圖標' },
+        { id: 'tower_growth', name: '強化生長 Lv.2', desc: '全場所有植物類防禦塔（粉櫻/向日葵/蘑菇/古木）射速與攻擊力各 +15%', rarity: 'rare', specialIconKey: 'nature_growth', typeTag: '🍃 全植物增益客製圖標' },
+        { id: 'gold_interest', name: '利滾利息 Lv.2', desc: '每波次結束時，依現有金幣餘額提供 10% 銀行利息（上限 80 💰）', rarity: 'rare', specialIconKey: 'gold_interest', typeTag: '🪙 金融利息客製圖標' }
+      ]
+    };
+
+    // 建立臨時 Game 物件以利用 drawTalentIcon 方法
+    let gameInstance = null;
+
+    function renderCardHTML(talent) {
+      return `
+        <div class="talent-card rarity-${talent.rarity}">
+          <div class="talent-card-icon">
+            <canvas class="card-canvas" width="40" height="40" data-talent-id="${talent.id}"></canvas>
+          </div>
+          <div class="talent-card-info">
+            <div class="talent-card-title">
+              <span>${talent.name}</span>
+              <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+            </div>
+            <div class="talent-card-desc">${talent.desc}</div>
+            <div class="talent-type-tag">${talent.typeTag || ''}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function initShowcase() {
+      gameInstance = new Game();
+
+      // 渲染所有分組卡片
+      for (const groupKey in SHOWCASE_DATA) {
+        const container = document.getElementById('group-' + groupKey);
+        if (!container) continue;
+        const list = SHOWCASE_DATA[groupKey];
+        container.innerHTML = list.map(renderCardHTML).join('');
+        container.querySelectorAll('.card-canvas').forEach(cv => {
+          const tid = cv.dataset.talentId;
+          const talent = list.find(t => t.id === tid);
+          if (talent) gameInstance.drawTalentIcon(cv.getContext('2d'), talent, 40, 40);
+        });
+      }
+
+      // 渲染右上方徽章模擬欄
+      const badgeContainer = document.getElementById('badge-bar-container');
+      const allSampleTalents = [
+        SHOWCASE_DATA.petal[0], SHOWCASE_DATA.ice[2], SHOWCASE_DATA.thunder[1],
+        SHOWCASE_DATA.cannon[2], SHOWCASE_DATA.laser[2], SHOWCASE_DATA.sunflower[0],
+        SHOWCASE_DATA.special[0], SHOWCASE_DATA.special[1], SHOWCASE_DATA.special[2], SHOWCASE_DATA.special[3]
+      ];
+      badgeContainer.innerHTML = allSampleTalents.map((t, idx) => `
+        <div class="relic-badge rarity-${t.rarity}" title="${t.name}">
+          <canvas class="badge-canvas" width="28" height="28" data-idx="${idx}"></canvas>
+        </div>
+      `).join('');
+      badgeContainer.querySelectorAll('.badge-canvas').forEach(cv => {
+        const idx = parseInt(cv.dataset.idx);
+        const t = allSampleTalents[idx];
+        if (t) gameInstance.drawTalentIcon(cv.getContext('2d'), t, 28, 28);
+      });
+
+      // 初始化抽卡 Demo
+      drawDemoCards();
+    }
+
+    function drawDemoCards() {
+      if (!gameInstance) return;
+      const allTalents = [];
+      for (const k in SHOWCASE_DATA) allTalents.push(...SHOWCASE_DATA[k]);
+      // 隨機洗牌抽 3 張
+      const shuffled = [...allTalents].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 3);
+      
+      const container = document.getElementById('demo-card-container');
+      container.innerHTML = selected.map(renderCardHTML).join('');
+      container.querySelectorAll('.card-canvas').forEach(cv => {
+        const tid = cv.dataset.talentId;
+        const talent = selected.find(t => t.id === tid);
+        if (talent) gameInstance.drawTalentIcon(cv.getContext('2d'), talent, 40, 40);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initShowcase);
+  </script>
+</body>
+</html>
