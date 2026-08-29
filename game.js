@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.10.0',
+  VERSION: 'v1.11.0',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -393,6 +393,7 @@ const ENEMY_DATA = {
   dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
   armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 420, speed: 34, reward: 45, damage: 3, resist: { physical: 0.6 } },
   mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 150, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.6 } },
+  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 220, speed: 76, reward: 38, damage: 2, immuneSlow: true },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -481,15 +482,15 @@ const WAVE_DATA_L5 = [
   { enemies: [{ type: 'bee', count: 18, interval: 0.29 }, { type: 'beetle', count: 6, interval: 1.08 }, { type: 'butterfly', count: 6, interval: 0.68 }], bonus: 200 },
   { enemies: [{ type: 'caterpillar', count: 10, interval: 0.4 }, { type: 'snail', count: 7, interval: 1.17 }, { type: 'beetle', count: 6, interval: 0.9 }], bonus: 250 },
   { enemies: [{ type: 'bee', count: 22, interval: 0.25 }, { type: 'beetle', count: 8, interval: 0.81 }, { type: 'butterfly', count: 8, interval: 0.5 }], bonus: 275 },
-  { enemies: [{ type: 'butterfly', count: 14, interval: 0.33 }, { type: 'bee', count: 18, interval: 0.26 }], bonus: 395 },
+  { enemies: [{ type: 'butterfly', count: 10, interval: 0.33 }, { type: 'mantis', count: 4, interval: 0.65 }, { type: 'bee', count: 14, interval: 0.26 }], bonus: 395 },
   { enemies: [{ type: 'snail', count: 10, interval: 0.9 }, { type: 'beetle', count: 10, interval: 0.68 }, { type: 'bee', count: 14, interval: 0.29 }], bonus: 365 },
   { enemies: [{ type: 'bee', count: 32, interval: 0.16 }, { type: 'butterfly', count: 19, interval: 0.23 }, { type: 'beetle', count: 6, interval: 0.72 }], bonus: 425 },
-  { enemies: [{ type: 'mist_moth', count: 1, interval: 3.0, isBoss: true }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 12, interval: 0.3 }], bonus: 600 },
+  { enemies: [{ type: 'mantis', count: 1, interval: 3.0, isBoss: true }, { type: 'snail', count: 8, interval: 0.8 }, { type: 'butterfly', count: 12, interval: 0.3 }], bonus: 600 },
   { enemies: [{ type: 'butterfly', count: 26, interval: 0.18 }, { type: 'beetle', count: 14, interval: 0.5 }, { type: 'snail', count: 8, interval: 0.72 }], bonus: 505 },
-  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 22, interval: 0.18 }, { type: 'beetle', count: 8, interval: 0.5 }], bonus: 555 },
+  { enemies: [{ type: 'bee', count: 40, interval: 0.12 }, { type: 'butterfly', count: 22, interval: 0.18 }, { type: 'mantis', count: 6, interval: 0.5 }], bonus: 555 },
   { enemies: [{ type: 'snail', count: 16, interval: 0.41 }, { type: 'beetle', count: 10, interval: 0.41 }], bonus: 660 },
-  { enemies: [{ type: 'beetle', count: 19, interval: 0.33 }, { type: 'butterfly', count: 26, interval: 0.16 }, { type: 'snail', count: 14, interval: 0.35 }, { type: 'bee', count: 22, interval: 0.12 }], bonus: 740 },
-  { enemies: [{ type: 'beetle', count: 1, interval: 4.0, isBoss: true, hpMultiplier: 4.5 }, { type: 'dragon', count: 2, interval: 3.0, isBoss: true }, { type: 'mist_moth', count: 4, interval: 0.8 }, { type: 'bee', count: 24, interval: 0.1 }], bonus: 1250 },
+  { enemies: [{ type: 'mantis', count: 8, interval: 0.35 }, { type: 'beetle', count: 15, interval: 0.33 }, { type: 'snail', count: 12, interval: 0.35 }, { type: 'bee', count: 22, interval: 0.12 }], bonus: 740 },
+  { enemies: [{ type: 'beetle', count: 1, interval: 4.0, isBoss: true, hpMultiplier: 4.5 }, { type: 'dragon', count: 2, interval: 3.0, isBoss: true }, { type: 'mantis', count: 5, interval: 0.7 }, { type: 'bee', count: 24, interval: 0.1 }], bonus: 1250 },
 ];
 
 // 第六關：水晶裂谷（第 10 波：裝甲神盾王，第 15 波：薄暮幽蛾神 + 雙抗性霸主）
@@ -650,10 +651,10 @@ const GAME_MODES = {
 let CURRENT_GAME_MODE = GAME_MODES.CAMPAIGN;
 
 const ROGUELIKE_LEVEL_DATA = [
-  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.15, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.35, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 1.6, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.5, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.8, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 3.0, mode: GAME_MODES.ROGUELIKE },
 ];
 
 // ─── 5.1.6 Roguelike 天賦技能樹 (Branch + Level + Hidden Combo) ─────────
@@ -727,9 +728,9 @@ const TALENT_SCHOOLS = {
         name: '強化冰爆',
         icon: '💠',
         levels: [
-          { desc: '解鎖冰爆：擊殺處於緩速狀態的敵人時，55px 範圍造成 20% 最大血量的爆炸傷害' },
-          { desc: '冰爆範圍擴大至 70px，爆炸傷害提升至 27% 最大血量' },
-          { desc: '冰爆範圍擴大至 85px，爆炸傷害提升至 34% 最大血量，且被炸到的敵人附加 1.5 秒緩速' },
+          { desc: '解鎖冰爆：擊殺緩速目標時，55px 範圍造成 20% 最大血量傷害' },
+          { desc: '冰爆範圍擴至 70px，爆炸傷害提升至 27% 最大血量' },
+          { desc: '冰爆範圍 85px，傷害 34% 最大血量且附加 1.5 秒緩速' },
         ],
         onKill: (enemy, game, level) => {
           if (!game) return;
@@ -745,16 +746,16 @@ const TALENT_SCHOOLS = {
         icon: '🌨️',
         levels: [
           {
-            desc: '冰晶塔周圍 100px 散發霜寒光環，踏入光環的敵人跑速降低 15%',
+            desc: '冰晶塔周圍 100px 散發霜環，踏入者跑速降低 15%',
             onHitTarget: (proj, target, game) => {
               // passive aura tick handled or on hit slow booster
             }
           },
           {
-            desc: '霜寒光環範圍擴大至 125px，跑速降低 25%，且光環內敵人受到魔法傷害 +15%',
+            desc: '霜寒光環擴至 125px，跑速 -25%，受魔傷 +15%',
           },
           {
-            desc: '光環範圍擴大至 150px，跑速降低 35%，光環內敵人受到魔法傷害 +30%',
+            desc: '霜寒光環擴至 150px，跑速 -35%，受魔傷 +30%',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -773,7 +774,7 @@ const TALENT_SCHOOLS = {
         icon: '🧊',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】冰晶塔任何命中都會觸發冰爆（不再需要目標已被緩速），且被炸死的敵人會立即引爆下一輪冰爆，最多連鎖 5 次——一發子彈就能雪崩式清空整群怪',
+        desc: '【質變】冰晶塔任何命中皆觸發冰爆，被炸死敵人連鎖引爆，最多連鎖 5 次。',
         requires: { ice_pierce: 3, ice_shatter: 2, ice_aura: 1 },
       }
     ]
@@ -817,9 +818,9 @@ const TALENT_SCHOOLS = {
         name: '強化擴散',
         icon: '☠️',
         levels: [
-          { desc: '解鎖疫病擴散：中毒敵人死亡時，60px 內敵人感染 70% 強度的毒素' },
-          { desc: '擴散範圍提升至 75px，感染強度提升至 100%' },
-          { desc: '擴散範圍提升至 95px，感染強度 100%，且擴散不限連鎖次數（被感染的敵人死亡會繼續擴散）' },
+          { desc: '解鎖擴散：中毒死亡時，60px 內感染 70% 毒素' },
+          { desc: '擴散半徑 75px，感染強度提升至 100%' },
+          { desc: '擴散半徑 95px，感染 100% 且具備無限連鎖傳染' },
         ],
         onKill: (enemy, game, level) => {
           if (!(enemy.poisonTimer > 0) || !game) return;
@@ -868,7 +869,7 @@ const TALENT_SCHOOLS = {
         icon: '💀',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結',
+        desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺。',
         requires: { toxin_potency: 2, toxin_spread: 2, toxin_corrosion: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
@@ -938,13 +939,13 @@ const TALENT_SCHOOLS = {
         icon: '🧲',
         levels: [
           {
-            desc: '電弧每次彈射命中敵人，使其陷入 1.5 秒感電（受到所有魔法傷害 +15%）',
+            desc: '電弧每次命中，使敵人陷入 1.5 秒感電（受魔傷 +15%）',
           },
           {
-            desc: '感電傷害加深提升至 +25%，彈射衰減由 20% 減半為 10%',
+            desc: '感電增傷 +25%，彈射衰減由 20% 減半為 10%',
           },
           {
-            desc: '感電傷害加深提升至 +40%，且彈射傷害不再衰減（每擊皆為 100% 全額傷害）',
+            desc: '感電增傷 +40%，且彈射傷害不再衰減（每擊 100%）',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -963,7 +964,7 @@ const TALENT_SCHOOLS = {
         icon: '🌩️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】電弧連鎖的每一次彈射都會獨立判定暴擊（原本整發子彈只有第一擊能觸發暴擊，彈射到後面的目標完全吃不到），彈得越遠、暴擊次數越多',
+        desc: '【質變】電弧每次彈射獨立判定暴擊，且全額無衰減，連鎖越多暴擊越強。',
         requires: { chain_reach: 2, crit_strike: 1, electromagnetic_field: 2 },
       }
     ]
@@ -1076,7 +1077,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '利息比率提升至 10%（上限 +200 金幣），且全塔升級費用降低 15%',
+            desc: '利息提升至 10%（上限 +200 💰），全塔升級費 -15%',
             apply: () => {
               Object.values(TOWER_DATA).forEach(tower => {
                 if (!tower.levels) return;
@@ -1104,7 +1105,7 @@ const TALENT_SCHOOLS = {
         icon: '💖',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】經濟不再只靠向日葵定時產金——場上每消滅一隻敵人，立即額外獲得其擊殺獎勵 50% 的金幣（不限哪座塔殺的）；每波結束仍自動回復 1 點基地生命',
+        desc: '【質變】全場擊殺額外獲得 50% 金幣，每波結束基地自動回復 1 點生命。',
         requires: { gold_boost: 1, tower_growth: 2, gold_interest: 2 },
         onKill: (enemy, game) => {
           if (!game || !enemy.reward) return;
@@ -1126,31 +1127,13 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【跨流派究極合成】向日葵每次產金或波次開始時，降下全屏耀陽天罰：以財富化為神聖審判，對全場所有存活敵人造成【現有金幣 × 0.1】的真實魔法傷害',
+        desc: '【專屬技能】戰鬥中消耗 10% 現有金幣，召喚全屏日冕金光造成等額真實傷害！',
         requires: { gold_boost: 3, laser_overcharge: 2, cannon_blast: 2 },
-        onSunflowerPulse: (sunflowerTower, game) => {
-          if (!game || !game.enemies) return;
-          const currentGold = game.gold || 0;
-          const goldDmg = Math.max(25, Math.floor(currentGold * 0.10));
-          let hitCount = 0;
-          for (const enemy of game.enemies) {
-            if (!enemy.alive) continue;
-            enemy.takeDamage(goldDmg, null, 0, 0, 0, 'magic', game);
-            game.spawnParticle(enemy.x, enemy.y, {
-              color: '#ffd700', size: 3.5, vx: (Math.random() - 0.5) * 100, vy: (Math.random() - 0.5) * 100, life: 0.4, gravity: 0
-            });
-            hitCount++;
+        apply: (game) => {
+          if (game && game.updateSkillBarLockState) {
+            game.updateSkillBarLockState();
+            game.showToast('☀️ 究極技能【日輪天罰】已覺醒！');
           }
-          if (hitCount > 0) {
-            game.sfx.play('explosion');
-            game.spawnParticle(CANVAS_W / 2, 80, {
-              text: `☀️ 日輪天罰！全屏造成 ${goldDmg} 傷害 (金幣×10%)`, color: '#ffd600', fontSize: 14, vx: 0, vy: -30, life: 1.2, gravity: 0
-            });
-          }
-        },
-        onWaveStart: (wave, game) => {
-          if (!game || !game.enemies) return;
-          // 波次開始若有敵人也給予定點威懾
         }
       }
     ]
@@ -1211,7 +1194,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '粉櫻箭傷害再 +35%，完全無視敵人 100% 物理抗性（全額真傷）',
+            desc: '粉櫻箭傷害 +35%，無視 100% 物理抗性（全額真傷）',
             apply: () => {
               TOWER_DATA.petal.levels.forEach(lvl => {
                 lvl.damage = Math.round(lvl.damage * 1.35);
@@ -1236,13 +1219,13 @@ const TALENT_SCHOOLS = {
         icon: '🪶',
         levels: [
           {
-            desc: '粉櫻塔每次攻擊有 25% 機率額外發射 1 枚散射花箭',
+            desc: '粉櫻塔攻擊有 25% 機率額外發射 1 枚散射花箭',
           },
           {
-            desc: '多重箭觸發機率提升至 45%，且散射箭傷害提升至 80%',
+            desc: '多重箭機率提升至 45%，且散射箭傷害提升至 80%',
           },
           {
-            desc: '多重箭觸發機率提升至 70%，且每次必定額外散射 2 枚全額傷害花箭',
+            desc: '多重箭機率提升至 70%，且每次散射 2 枚全額花箭',
           },
         ],
         onHitTarget: (proj, target, game, level) => {
@@ -1271,7 +1254,7 @@ const TALENT_SCHOOLS = {
         icon: '🌺',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】粉櫻箭擊中目標時，原地炸裂射出 3 枚追蹤粉櫻花瓣，自動追擊並打擊周遭敵人（造成 60% 傷害）',
+        desc: '【質變】擊中炸裂 3 枚追蹤花瓣，自動追擊周遭造成 60% 傷害。',
         requires: { petal_speed: 2, petal_pierce_armor: 2, petal_multishot: 1 },
         onHitTarget: (proj, target, game) => {
           if (proj.towerType !== 'petal' || !game || !game.enemies) return;
@@ -1316,7 +1299,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '爆炸半徑再 +25px，基礎傷害再 +30%，中心 40px 內敵人承受雙倍傷害',
+            desc: '爆炸半徑 +25px，傷害 +30%，中心 40px 雙倍傷害',
             apply: () => {
               TOWER_DATA.cannon.levels.forEach(lvl => {
                 lvl.splashRadius = (lvl.splashRadius || 70) + 25;
@@ -1330,9 +1313,9 @@ const TALENT_SCHOOLS = {
         name: '焦土餘燼',
         icon: '🔥',
         levels: [
-          { desc: '解鎖焦土：砲彈爆炸地面留下 2.5 秒烈焰焦土，進入者每秒受到 30 點燃燒傷害' },
-          { desc: '焦土地面持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒' },
-          { desc: '焦土地面持續時間提升至 5.5 秒，燃燒傷害提升至 85/秒，並降低敵人 25% 跑速' },
+          { desc: '解鎖焦土：地面留下 2.5 秒焦土，每秒受到 30 點燃燒傷害' },
+          { desc: '焦土持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒' },
+          { desc: '焦土持續 5.5 秒，燃燒 85/秒且降低敵人 25% 跑速' },
         ],
         onHitTarget: (proj, target, game, level) => {
           if (proj.towerType !== 'cannon' || !game) return;
@@ -1363,13 +1346,13 @@ const TALENT_SCHOOLS = {
         icon: '💥',
         levels: [
           {
-            desc: '砲彈爆炸向周圍噴射 4 枚高溫彈片，對 70px 內隨機敵人造成 35 點物理傷害',
+            desc: '爆炸噴射 4 枚高溫彈片，對 70px 隨機敵人造成 35 點傷害',
           },
           {
             desc: '彈片數量提升至 6 枚，每枚傷害提升至 60 點',
           },
           {
-            desc: '彈片數量提升至 8 枚，每枚傷害提升至 95 點且附帶微震擊退效果',
+            desc: '彈片提升至 8 枚，每枚傷害 95 點且附帶微震擊退',
           },
         ],
         onHitTarget: (proj, target, game, level) => {
@@ -1400,7 +1383,7 @@ const TALENT_SCHOOLS = {
         icon: '🌋',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】熔岩巨砲每第 4 發砲彈升級為「天基天火」，爆炸範圍覆蓋全場 180px，造成 3 倍無視抗性的毀滅真實傷害',
+        desc: '【質變】巨砲第 4 發升級天基天火，全場 180px 造成 3 倍真傷。',
         requires: { cannon_blast: 2, cannon_scorched_earth: 2, cannon_cluster_shrapnel: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (attacker && attacker.towerType === 'cannon') {
@@ -1426,7 +1409,7 @@ const TALENT_SCHOOLS = {
         icon: '🌿',
         levels: [
           {
-            desc: '古木定身減速強度提升至 75%，減速持續時間 +1.0 秒',
+            desc: '古木定身減速強度提升至 75%，持續時間 +1.0 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.slowFactor = Math.max(0.1, (lvl.slowFactor || 0.35) * 0.75);
@@ -1444,7 +1427,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '古木定身減速強度提升至 95%（近乎完全定身），持續時間再 +1.5 秒',
+            desc: '古木定身強度提升至 95%，持續時間再 +1.5 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.slowFactor = 0.05;
@@ -1459,13 +1442,13 @@ const TALENT_SCHOOLS = {
         icon: '🌵',
         levels: [
           {
-            desc: '處於古木定身/緩速狀態下的敵人，受到所有防禦塔傷害 +20%',
+            desc: '處於古木定身/緩速狀態下的敵人，受傷加深 +20%',
           },
           {
-            desc: '緩速受傷加深提升至 +35%，且古木攻擊時 50px 範圍附帶劇烈震裂波',
+            desc: '定身受傷加深 +35%，且古木攻擊附帶 50px 劇烈震裂波',
           },
           {
-            desc: '緩速受傷加深提升至 +50%，且敵人每被定身 1 秒直接承受古木攻擊力 100% 的流血真實傷害',
+            desc: '定身受傷加深 +50%，每定身 1 秒承受 100% 攻擊力真傷',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -1481,7 +1464,7 @@ const TALENT_SCHOOLS = {
         icon: '🪨',
         levels: [
           {
-            desc: '古木牢籠攻擊範圍 +15px，擊中時震飛半徑 60px 內敵人並打斷其狂暴衝刺',
+            desc: '古木牢籠攻擊範圍 +15px，擊中震飛 60px 敵人並打斷衝刺',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.15);
@@ -1489,7 +1472,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '攻擊範圍再 +20px，震裂波傷害提升至 100%，並附加 1 秒眩暈定身',
+            desc: '攻擊範圍再 +20px，震裂波傷害 100% 且附加 1 秒眩暈',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.15);
@@ -1497,7 +1480,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '大地震波擴及全圖 100px，全場移動中怪物短暫停滯 1.2 秒',
+            desc: '大地震波擴及全圖 100px，全場怪物短暫停滯 1.2 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.20);
@@ -1514,7 +1497,7 @@ const TALENT_SCHOOLS = {
         icon: '🌲',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】古木牢籠化身大地圖騰：其周圍 130px 範圍內的所有防禦塔獲得「遠古共鳴」，攻擊力永久提升 35% 且射速 +20%',
+        desc: '【質變】古木圖騰：周圍 130px 所有塔攻擊 +35%、射速 +20%。',
         requires: { treant_entangle: 2, treant_thorns: 2, treant_earthquake: 1 },
         apply: (game) => {
           Object.values(TOWER_DATA).forEach(tower => {
@@ -1567,9 +1550,9 @@ const TALENT_SCHOOLS = {
         name: '光束折射',
         icon: '💎',
         levels: [
-          { desc: '雷射穿透敵人後，30% 機率折射一道副光束攻擊鄰近敵人（造成 50% 傷害）' },
+          { desc: '雷射穿透敵人後，30% 機率折射副光束（50% 傷害）打擊鄰近敵人' },
           { desc: '折射機率提升至 50%，副光束傷害提升至 75%' },
-          { desc: '折射機率提升至 75%，副光束傷害 100%，並額外折射至 2 名敵人' },
+          { desc: '折射機率提升至 75%，副光束傷害 100%，並折射至 2 名敵人' },
         ],
         onHitTarget: (proj, target, game, level) => {
           if (proj.towerType !== 'laser' || !game || !game.enemies) return;
@@ -1594,13 +1577,13 @@ const TALENT_SCHOOLS = {
         icon: '🔬',
         levels: [
           {
-            desc: '雷射對同一敵人持續打擊時，傷害每次疊加 15%（最多疊加 3 層）',
+            desc: '雷射持續打擊同一敵人時，每次增傷 15%（最多 3 層）',
           },
           {
-            desc: '聚焦傷害每層提升至 25%（最多 4 層），且打擊 Boss 額外增傷 20%',
+            desc: '聚焦每層增傷 25%（最多 4 層），打擊 Boss 額外 +20%',
           },
           {
-            desc: '聚焦傷害每層提升至 35%（最多 5 層，最高可達 2.75 倍極限高傷），且打擊 Boss 額外增傷 40%',
+            desc: '聚焦每層增傷 35%（最多 5 層），打擊 Boss 額外 +40%',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -1621,7 +1604,7 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【隱藏合成・質變】日光雷射消滅任何敵人時，引發超新星核爆，對全場直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害',
+        desc: '【質變】消滅敵人引發超新星核爆，90px 造成最大血量 40% 傷害。',
         requires: { laser_overcharge: 2, laser_refract: 2, laser_focus_beam: 1 },
         onKill: (enemy, game) => {
           if (!game || !game.enemies) return;
@@ -1792,8 +1775,32 @@ class RelicManager {
 
 const relicManager = new RelicManager();
 
+function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
+  // 1. 單塔專用天賦（顯示該防禦塔圖示）
+  if (schoolKey === 'ice') return { towerKey: 'ice_crystal' };
+  if (schoolKey === 'mushroom') return { towerKey: 'mushroom' };
+  if (schoolKey === 'thunder') return { towerKey: 'lavender' };
+  if (schoolKey === 'petal') return { towerKey: 'petal' };
+  if (schoolKey === 'cannon') return { towerKey: 'cannon' };
+  if (schoolKey === 'treant') return { towerKey: 'treant' };
+  if (schoolKey === 'laser') return { towerKey: 'laser' };
+
+  // 2. 經濟流派（向日葵專用 vs 全域自然/金幣/天罰天賦）
+  if (schoolKey === 'economy') {
+    if (branchId === 'gold_boost') return { towerKey: 'sunflower' };
+    if (branchId === 'tower_growth') return { specialIconKey: 'nature_growth' };
+    if (branchId === 'gold_interest') return { specialIconKey: 'gold_interest' };
+    if (hiddenId === 'bountiful_blessing') return { specialIconKey: 'bountiful_blessing' };
+    if (hiddenId === 'solar_wrath') return { specialIconKey: 'solar_wrath' };
+    return { towerKey: 'sunflower' };
+  }
+
+  return {};
+}
+
 // 把 TALENT_SCHOOLS 展開成當下可抽的候選清單：每條分支只會出現「下一等級」那一張，
-// 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現
+// 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現。
+// 【核心規則】若為某個防禦塔專屬天賦，只會出現玩家「建造清單中已解鎖/擁有」的防禦塔天賦！
 function buildTalentCandidates() {
   const candidates = [];
   for (const schoolKey in TALENT_SCHOOLS) {
@@ -1804,6 +1811,18 @@ function buildTalentCandidates() {
       if (currentLevel >= branch.levels.length) continue;
       const nextLevel = currentLevel + 1;
       const meta = BRANCH_LEVEL_META[nextLevel];
+      const visual = getTalentVisualInfo(schoolKey, branchId, null);
+
+      // 【建造清單擁有過濾】若為某座防禦塔專屬天賦，但玩家建造清單中尚未解鎖該塔，則絕對不出現！
+      if (visual.towerKey) {
+        const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (typeof isTowerUnlocked === 'function') {
+          if (!isTowerUnlocked(towerKey) && !isTowerUnlocked(visual.towerKey)) {
+            continue; // 建造清單沒有這個塔，跳過
+          }
+        }
+      }
+
       candidates.push({
         id: `${branchId}_lv${nextLevel}`,
         kind: 'branch',
@@ -1815,6 +1834,8 @@ function buildTalentCandidates() {
         icon: branch.icon,
         rarity: meta.rarity,
         weight: meta.weight,
+        towerKey: visual.towerKey,
+        specialIconKey: visual.specialIconKey,
       });
     }
     for (const hidden of school.hidden) {
@@ -1823,6 +1844,18 @@ function buildTalentCandidates() {
         ([branchId, minLevel]) => relicManager.getBranchLevel(branchId) >= minLevel
       );
       if (!meetsRequirement) continue;
+      const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
+
+      // 隱藏質變天賦同樣檢查建造清單解鎖
+      if (visual.towerKey) {
+        const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (typeof isTowerUnlocked === 'function') {
+          if (!isTowerUnlocked(towerKey) && !isTowerUnlocked(visual.towerKey)) {
+            continue;
+          }
+        }
+      }
+
       candidates.push({
         id: hidden.id,
         kind: 'hidden',
@@ -1833,6 +1866,8 @@ function buildTalentCandidates() {
         icon: hidden.icon,
         rarity: hidden.rarity,
         weight: hidden.weight,
+        towerKey: visual.towerKey,
+        specialIconKey: visual.specialIconKey,
       });
     }
   }
@@ -1840,9 +1875,45 @@ function buildTalentCandidates() {
 }
 
 function drawRandomTalents(count = 3) {
-  const pool = buildTalentCandidates();
-  const picked = [];
+  let pool = buildTalentCandidates();
+  // 若因擁有的塔太少且分支全滿導致候選池不足 count 張，則放寬通用/經濟天賦補充
+  if (pool.length < count) {
+    // 取得所有可用天賦（含通用天賦）
+    const allPool = [];
+    for (const schoolKey in TALENT_SCHOOLS) {
+      const school = TALENT_SCHOOLS[schoolKey];
+      for (const branchId in school.branches) {
+        const branch = school.branches[branchId];
+        const nextLevel = relicManager.getBranchLevel(branchId) + 1;
+        if (nextLevel <= branch.levels.length) {
+          const meta = BRANCH_LEVEL_META[nextLevel];
+          const visual = getTalentVisualInfo(schoolKey, branchId, null);
+          allPool.push({
+            id: `${branchId}_lv${nextLevel}`,
+            kind: 'branch',
+            schoolKey,
+            branchId,
+            targetLevel: nextLevel,
+            name: `${branch.name} Lv.${nextLevel}`,
+            desc: branch.levels[nextLevel - 1].desc,
+            icon: branch.icon,
+            rarity: meta.rarity,
+            weight: meta.weight,
+            towerKey: visual.towerKey,
+            specialIconKey: visual.specialIconKey,
+          });
+        }
+      }
+    }
+    for (const item of allPool) {
+      if (!pool.some(t => t.id === item.id)) {
+        pool.push(item);
+        if (pool.length >= count) break;
+      }
+    }
+  }
 
+  const picked = [];
   for (let i = 0; i < Math.min(count, pool.length); i++) {
     const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
     let rand = Math.random() * totalWeight;
@@ -3277,6 +3348,139 @@ const Sprites = {
     }
     ctx.restore();
     ctx.restore();
+  },
+
+  // 9. 疾風螳螂 (Mantis - 緩速免疫 / 破風雙鐮)
+  drawEnemy_mantis: function(ctx, time, isBoss) {
+    ctx.save();
+    const bob = Math.sin(time * 9) * 1.2;
+    const slash = Math.sin(time * 6) * 0.15;
+    ctx.translate(0, bob);
+
+    if (isBoss) {
+      // ─── 黃金疾風螳螂王 (Boss) ───
+      // 1. 破風疾行氣流光環
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
+
+      // 2. 金甲六足
+      ctx.strokeStyle = '#e65100'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 5, 2); ctx.lineTo(s * 12, 6); ctx.lineTo(s * 15, 14);
+        ctx.moveTo(s * 4, 6); ctx.lineTo(s * 10, 14);
+        ctx.stroke();
+      });
+
+      // 3. 腹部流線金甲
+      const abGrad = ctx.createLinearGradient(0, 0, 0, 16);
+      abGrad.addColorStop(0, '#ffd600'); abGrad.addColorStop(1, '#ff6f00');
+      ctx.fillStyle = abGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 6, 7, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. 胸部與頭部
+      ctx.fillStyle = '#ffb300';
+      ctx.beginPath(); ctx.ellipse(0, -4, 6, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffe082';
+      ctx.beginPath(); ctx.moveTo(-6, -8); ctx.lineTo(6, -8); ctx.lineTo(0, -2); ctx.closePath(); ctx.fill();
+
+      // 5. 雙持赤金破風巨鐮
+      [-1, 1].forEach(s => {
+        ctx.save();
+        ctx.translate(s * 6, -6);
+        ctx.rotate(s * (0.4 + slash));
+        // 上臂
+        ctx.strokeStyle = '#ff8f00'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 5, -8); ctx.stroke();
+        // 前鐮刀刃
+        ctx.fillStyle = '#ffd600'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(s * 5, -8);
+        ctx.quadraticCurveTo(s * 14, -6, s * 11, 6);
+        ctx.quadraticCurveTo(s * 7, 0, s * 5, -8);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      });
+
+      // 6. 皇冠與複眼
+      this.drawMiniCrown(ctx, 0, -18);
+      ctx.fillStyle = '#00e5ff';
+      ctx.beginPath(); ctx.arc(-3.5, -9, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5, -9, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-4, -10, 0.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -10, 0.8, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // ─── 疾風螳螂 (普通) ───
+      // 1. 破風氣流
+      ctx.strokeStyle = 'rgba(0, 230, 118, 0.35)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(0, 2, 14, Math.PI * 0.25, Math.PI * 0.75); ctx.stroke();
+
+      // 2. 翡翠細足
+      ctx.strokeStyle = '#1b5e20'; ctx.lineWidth = 2.0; ctx.lineCap = 'round';
+      [-1, 1].forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(s * 4, 1); ctx.lineTo(s * 10, 5); ctx.lineTo(s * 13, 12);
+        ctx.moveTo(s * 3, 5); ctx.lineTo(s * 8, 12);
+        ctx.stroke();
+      });
+
+      // 3. 翠綠流線水滴身軀
+      const bgGrad = ctx.createLinearGradient(0, -6, 0, 14);
+      bgGrad.addColorStop(0, '#76ff03'); bgGrad.addColorStop(0.5, '#00e676'); bgGrad.addColorStop(1, '#1b5e20');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 5.5, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. 頭部 (倒三角)
+      ctx.fillStyle = '#69f0ae';
+      ctx.beginPath();
+      ctx.moveTo(-5, -7); ctx.lineTo(5, -7); ctx.lineTo(0, -2);
+      ctx.closePath();
+      ctx.fill();
+
+      // 5. 雙前鐮 (綠光刀刃)
+      [-1, 1].forEach(s => {
+        ctx.save();
+        ctx.translate(s * 5, -5);
+        ctx.rotate(s * (0.35 + slash));
+        ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 4, -7); ctx.stroke();
+        // 鐮刃
+        ctx.fillStyle = '#b9f6ca'; ctx.strokeStyle = '#00c853'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(s * 4, -7);
+        ctx.quadraticCurveTo(s * 12, -5, s * 9, 5);
+        ctx.quadraticCurveTo(s * 6, -1, s * 4, -7);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      });
+
+      // 6. 水汪汪大金眼
+      ctx.fillStyle = '#ffd600';
+      ctx.beginPath(); ctx.arc(-3, -7.5, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, -7.5, 1.8, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1b5e20';
+      ctx.beginPath(); ctx.arc(-2.8, -7.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.8, -7.5, 1, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-3.2, -8, 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(2.4, -8, 0.6, 0, Math.PI * 2); ctx.fill();
+
+      // 7. 纖細觸角
+      ctx.strokeStyle = '#00c853'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-2, -8); ctx.quadraticCurveTo(-6, -13, -8, -15); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2, -8); ctx.quadraticCurveTo(6, -13, 8, -15); ctx.stroke();
+    }
+    ctx.restore();
   }
 };
 
@@ -3573,20 +3777,29 @@ class GameMap {
 class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0, isBossOverride = null, customHpMult = 1.0) {
     const data = ENEMY_DATA[typeKey];
-    // 難度成長依關卡倍率與 Boss 倍率
-    const levelHpMult = LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0;
+    const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
+    // 難度成長依關卡倍率與 Boss 倍率 (幻境基礎難度提升)
+    const levelHpMult = (isRogue
+      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.6)
+      : (LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0));
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
     this.name = data.name;
     this.emoji = data.emoji;
     this.isBoss = isBossOverride !== null ? isBossOverride : !!data.isBoss;
 
-    // 王的數值：若為 isBoss，血量大幅飆升（5x~8x），獎勵與扣心也顯著增加
-    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 3.2 : 5.5)) : 1.0;
-    // 幻境秘境無盡波次的小怪血量成長 (generateEndlessWave 算出的 hpScale)：
-    // 過去只套用在王身上，一般小怪完全沒吃到，導致波次越後面小怪血量卻沒變化
-    const waveHpMult = (!this.isBoss && customHpMult > 1.0) ? customHpMult : 1.0;
-    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult * waveHpMult);
+    // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
+    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 4.0 : 6.0)) : 1.0;
+    // 幻境秘境精銳怪物強度全域指數性成長：
+    // 若 customHpMult > 1.0（例如 generateEndlessWave 算出的 hpScale）直接採用；
+    // 若是幻境前幾波固定波表，亦套用 1.75 * Math.pow(1.18, waveIndex) 高血量指數成長
+    let waveHpMult = 1.0;
+    if (isRogue) {
+      waveHpMult = customHpMult > 1.0 ? customHpMult : Number((1.75 * Math.pow(1.18, waveIndex)).toFixed(2));
+    } else if (!this.isBoss && customHpMult > 1.0) {
+      waveHpMult = customHpMult;
+    }
+    this.maxHp = Math.round(data.hp * levelHpMult * (this.isBoss ? bossHpMult : 1.0) * waveHpMult);
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
@@ -3607,7 +3820,17 @@ class Enemy {
     // 特性旗標與技能計時
     this.canEnrage = !!data.canEnrage;
     this.isEnraged = false;
-    this.resist = data.resist || {}; // e.g. { physical: 0.6 } = 對物理傷害減傷 60%
+    this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
+
+    // 幻境關卡強化抗性機制：所有怪物獲取隨波數攀升的雙重抗性
+    this.resist = Object.assign({}, data.resist || {});
+    if (isRogue) {
+      // 幻境波次基礎雙抗加成：前幾波 +15% 抗性，每 4 波 +5%，最高可達 40% 雙減傷
+      const rogueWaveResist = Math.min(0.40, 0.15 + Math.floor(waveIndex / 4) * 0.05);
+      this.resist.physical = Math.min(0.85, (this.resist.physical || 0) + rogueWaveResist);
+      this.resist.magic = Math.min(0.85, (this.resist.magic || 0) + rogueWaveResist);
+    }
+
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
     this.summonedStages = new Set();
 
@@ -3738,9 +3961,12 @@ class Enemy {
     }
 
     // 減速/定身效果不能被更弱的效果蓋掉：例如絕對零度把怪完全定身（slowFactor=0）之後，
-    // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動
+    // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動；
+    // 若該怪物具備 immuneSlow（如疾風螳螂），則完全免疫任何緩速與定身效果
     if (typeof slowFactor === 'number' && typeof slowDuration === 'number' && slowDuration > 0) {
-      if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
+      if (this.immuneSlow) {
+        // 緩速免疫，不套用 slowFactor
+      } else if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
         this.slowFactor = slowFactor;
         this.slowTimer = slowDuration;
       }
@@ -4388,14 +4614,23 @@ class WaveManager {
       return;
     }
 
+    const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
     dbgLog(`🌊 [Wave] 第 ${waveIndex + 1} 波開始生成，組數: ${wave.enemies.length}`);
     for (const group of wave.enemies) {
-      for (let i = 0; i < group.count; i++) {
+      // 幻境關卡怪物數量大幅精簡 (每組數量減半至 40%~50%，避免怪海，突顯單怪精銳強度)
+      const count = isRogue
+        ? Math.max(1, Math.round(group.count * 0.45))
+        : group.count;
+      const interval = isRogue
+        ? Math.max(0.2, (group.interval || 0.5) * 1.3)
+        : group.interval;
+
+      for (let i = 0; i < count; i++) {
         this.spawnQueue.push({
           type: group.type,
           isBoss: group.isBoss,
           hpMultiplier: group.hpMultiplier,
-          delay: group.interval,
+          delay: interval,
           waveIndex: waveIndex,
         });
       }
@@ -4425,61 +4660,57 @@ class WaveManager {
     return null;
   }
 
-  // 階梯式平滑多項式數值成長 (Soft Polynomial Scaling)
+  // 🔮 幻境秘境全域指數性數值成長 (數量精簡 + 單體高血高抗精銳化)
   generateEndlessWave(waveIndex) {
     const waveNum = waveIndex + 1;
-    // 基礎血量係數：前15波線性(+12%/波)，16~30波多項式溫和爬升，31波以上穩健挑戰
-    let hpScale = 1.0;
-    if (waveNum <= 15) {
-      hpScale = 1.0 + (waveNum - 1) * 0.12;
-    } else if (waveNum <= 30) {
-      hpScale = 2.68 + (waveNum - 15) * 0.18 + Math.pow((waveNum - 15) * 0.05, 1.4);
-    } else {
-      hpScale = 6.2 + (waveNum - 30) * 0.25 + Math.pow((waveNum - 30) * 0.08, 1.5);
-    }
+    // 基礎血量係數：指數級成長 (2.2 * 1.20^(waveNum-1))
+    const hpScale = Number((2.2 * Math.pow(1.20, waveNum - 1)).toFixed(2));
 
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
 
-    const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'armored_ladybug', 'mist_moth'];
+    const enemyTypes = ['caterpillar', 'bee', 'snail', 'beetle', 'butterfly', 'armored_ladybug', 'mist_moth', 'mantis'];
     const selectedTypes = [];
 
-    // 依波數解鎖更高階怪物
+    // 依波數解鎖更高階怪物（包含免疫緩速的疾風螳螂）
     if (waveNum > 10) selectedTypes.push('mist_moth', 'armored_ladybug');
-    if (waveNum > 5) selectedTypes.push('beetle', 'butterfly');
+    if (waveNum > 6) selectedTypes.push('mantis');
+    if (waveNum > 4) selectedTypes.push('beetle', 'butterfly');
     selectedTypes.push('caterpillar', 'bee', 'snail');
 
     const enemies = [];
-    const countScale = Math.min(2.5, 1 + Math.floor(waveNum / 8) * 0.3);
+    // 精簡怪群數量（每組僅 4~8 隻精銳，最高不超過 10 隻）
+    const countScale = Math.min(1.6, 1 + Math.floor(waveNum / 10) * 0.12);
 
-    // 隨機組裝 2~3 組常規雜兵
+    // 隨機組裝 2 組精銳怪群
     for (let g = 0; g < 2; g++) {
       const type = selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
       enemies.push({
         type: type,
-        count: Math.floor((10 + Math.random() * 8) * countScale),
-        interval: Math.max(0.08, 0.35 - waveNum * 0.005),
+        count: Math.max(3, Math.floor((4 + Math.random() * 3) * countScale)),
+        interval: Math.max(0.25, 0.65 - waveNum * 0.006),
         hpMultiplier: hpScale
       });
     }
 
-    // 每 5 波 Mid-Boss / 每 10 波 Final Boss
+    // 每 5 波 Mid-Boss / 每 10 波 Final Boss (單體血量極高)
     if (isBossWave) {
       enemies.push({
         type: 'dragon',
-        count: Math.min(3, 1 + Math.floor(waveNum / 20)),
-        interval: 3.0,
+        count: Math.min(2, 1 + Math.floor(waveNum / 25)),
+        interval: 3.5,
         isBoss: true,
-        hpMultiplier: hpScale * 2.2
+        hpMultiplier: Number((hpScale * 3.5).toFixed(2))
       });
     } else if (isMidBossWave) {
-      const bossType = Math.random() < 0.5 ? 'armored_ladybug' : 'mist_moth';
+      const bossTypes = ['armored_ladybug', 'mist_moth', 'mantis'];
+      const bossType = bossTypes[Math.floor(Math.random() * bossTypes.length)];
       enemies.push({
         type: bossType,
         count: 1,
         interval: 2.5,
         isBoss: true,
-        hpMultiplier: hpScale * 1.8
+        hpMultiplier: Number((hpScale * 2.4).toFixed(2))
       });
     }
 
@@ -4613,7 +4844,8 @@ class Game {
     // Active Skills System
     this.skills = {
       meteor: { cd: 30, timer: 0, cost: 0, range: 110, damage: 60 },
-      freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 }
+      freeze: { cd: 45, timer: 0, cost: 0, duration: 3.5 },
+      solar_wrath: { cd: 4, timer: 0 }
     };
     this.activeTargetingSkill = null; // 'meteor' or null
 
@@ -4999,6 +5231,128 @@ class Game {
     }
   }
 
+  // 繪製天賦卡牌/徽章專屬圖示：若為防禦塔專屬天賦則繪製該塔圖案；若非則繪製專屬圖標
+  drawTalentIcon(ictx, talent, width = 40, height = 40) {
+    ictx.setTransform(1, 0, 0, 1, 0, 0);
+    ictx.clearRect(0, 0, width, height);
+
+    // 1. 若為某個防禦塔專用的天賦，繪製該塔的專屬圖片
+    if (talent.towerKey) {
+      const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+      const svgImg = assets.get('tower_' + towerKey);
+      if (svgImg) {
+        ictx.drawImage(svgImg, 2, 2, width - 4, height - 4);
+      } else {
+        ictx.save();
+        ictx.translate(width / 2, height / 2 + 1);
+        ictx.scale(width / 52, height / 52);
+        const drawFn = Sprites['drawTower_' + towerKey];
+        if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
+        ictx.restore();
+      }
+      return;
+    }
+
+    // 2. 若不是單塔專用，繪製精心設計的專屬圖標
+    const iconKey = talent.specialIconKey || talent.hiddenId || talent.branchId || talent.id;
+    ictx.save();
+    ictx.translate(width / 2, height / 2);
+
+    if (iconKey === 'solar_wrath') {
+      // ☀️ 日輪天罰：日冕光環 + 八芒烈焰金陽
+      ictx.save();
+      ictx.scale(width / 42, height / 42);
+      this.drawSkillIcon(ictx, 'solar_wrath');
+      ictx.restore();
+    } else if (iconKey === 'bountiful_blessing') {
+      // 💖 豐饒祝福：神聖粉金之心 + 金幣散落 + 祝福晶芒
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      // 光暈
+      ictx.fillStyle = 'rgba(255, 105, 180, 0.25)';
+      ictx.beginPath(); ictx.arc(0, 0, 18, 0, Math.PI * 2); ictx.fill();
+      // 愛心本體
+      const ctx = ictx;
+      ctx.fillStyle = '#ff4081';
+      ctx.beginPath();
+      ctx.moveTo(0, 5);
+      ctx.bezierCurveTo(-10, -5, -12, -14, 0, -12);
+      ctx.bezierCurveTo(12, -14, 10, -5, 0, 5);
+      ctx.fill();
+      // 金幣微粒
+      ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1;
+      [[-7, 7], [7, 7], [0, 12]].forEach(([cx, cy]) => {
+        ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      });
+      // 高光晶芒
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-4, -8, 1.5, 0, Math.PI * 2); ctx.fill();
+      ictx.restore();
+    } else if (iconKey === 'nature_growth' || iconKey === 'tower_growth') {
+      // 🍃 強化生長 / 自然之靈：翡翠旋轉生命雙葉 + 露珠高光
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      const ctx = ictx;
+      // 翡翠光環
+      ctx.fillStyle = 'rgba(105, 240, 174, 0.25)';
+      ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+      // 主葉片
+      ctx.save(); ctx.rotate(-0.35);
+      const leafGrad = ctx.createLinearGradient(0, -14, 0, 14);
+      leafGrad.addColorStop(0, '#b9f6ca'); leafGrad.addColorStop(0.5, '#00e676'); leafGrad.addColorStop(1, '#1b5e20');
+      ctx.fillStyle = leafGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.quadraticCurveTo(12, -4, 0, 14);
+      ctx.quadraticCurveTo(-12, -4, 0, -14);
+      ctx.fill();
+      // 葉脈
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(0, 12); ctx.stroke();
+      ctx.restore();
+      // 副小葉
+      ctx.save(); ctx.rotate(0.65);
+      ctx.fillStyle = '#69f0ae';
+      ctx.beginPath();
+      ctx.moveTo(0, -8); ctx.quadraticCurveTo(8, -2, 0, 10); ctx.quadraticCurveTo(-8, -2, 0, -8);
+      ctx.fill();
+      ctx.restore();
+      // 晶瑩露珠
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, -3, 2, 0, Math.PI * 2); ctx.fill();
+      ictx.restore();
+    } else if (iconKey === 'gold_interest') {
+      // 🪙 利滾利息 / 銀行金庫：金幣山丘 + 閃亮四角星芒
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      const ctx = ictx;
+      // 金色光環
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.25)';
+      ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+      // 金幣堆
+      const coinPositions = [[-6, 3], [6, 3], [0, -4], [-3, 7], [4, 7]];
+      coinPositions.forEach(([cx, cy]) => {
+        const cg = ctx.createLinearGradient(cx - 5, cy - 5, cx + 5, cy + 5);
+        cg.addColorStop(0, '#fff59d'); cg.addColorStop(0.5, '#ffd600'); cg.addColorStop(1, '#ff8f00');
+        ctx.fillStyle = cg; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#e65100'; ctx.font = '900 5.5px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('$', cx, cy);
+      });
+      // 閃爍星芒
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(8, -10); ctx.lineTo(10, -8); ctx.lineTo(8, -6); ctx.lineTo(6, -8); ctx.closePath(); ctx.fill();
+      ictx.restore();
+    } else {
+      // 通用回退圖示
+      ictx.font = `${Math.round(width * 0.55)}px sans-serif`;
+      ictx.textAlign = 'center';
+      ictx.textBaseline = 'middle';
+      ictx.fillText(talent.icon || '✨', 0, 0);
+    }
+    ictx.restore();
+  }
+
   // 繪製主動技能快捷欄圖示：#1 卡通天火隕石 & #4 永凍雪花晶核 (Canvas 動態 Sprite)
   drawSkillIcon(ctx, key, time = 0) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -5112,6 +5466,73 @@ class Game {
       ctx.beginPath(); ctx.arc(0, 0, 2, 0, Math.PI * 2); ctx.fill();
 
       ctx.restore();
+    } else if (key === 'solar_wrath' || key === 'solar-wrath') {
+      // ─── ☀️ 日輪天罰・金耀天劫 (耀陽八芒光冕 + 金耀神聖核心 + 審判烈芒) ───
+      ctx.save();
+      ctx.scale(0.85, 0.85);
+
+      // 1. 最外層日冕神聖金色光暈 (脈動)
+      const pulse = 1 + Math.sin(time * 6) * 0.08;
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.28)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 17 * pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. 旋轉 8 芒日輪尖芒
+      ctx.save();
+      ctx.rotate(time * 0.5);
+      ctx.fillStyle = '#ffb300';
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, -17);
+        ctx.lineTo(3.5, -9);
+        ctx.lineTo(-3.5, -9);
+        ctx.closePath();
+        ctx.fill();
+        ctx.rotate(Math.PI / 4);
+      }
+      ctx.restore();
+
+      // 3. 內層交錯 8 芒烈焰尖芒
+      ctx.save();
+      ctx.rotate(-time * 0.3 + Math.PI / 8);
+      ctx.fillStyle = '#ff9100';
+      for (let i = 0; i < 8; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, -14);
+        ctx.lineTo(2.5, -7);
+        ctx.lineTo(-2.5, -7);
+        ctx.closePath();
+        ctx.fill();
+        ctx.rotate(Math.PI / 4);
+      }
+      ctx.restore();
+
+      // 4. 金陽外環
+      ctx.strokeStyle = '#ffd54f';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 5. 金黃耀眼核心漸層
+      const sunGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, 9);
+      sunGrad.addColorStop(0, '#ffffff');
+      sunGrad.addColorStop(0.4, '#fff59d');
+      sunGrad.addColorStop(0.8, '#ffd700');
+      sunGrad.addColorStop(1, '#ff6d00');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6. 核心高光白點
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(-2, -2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
     ctx.restore();
   }
@@ -5197,6 +5618,8 @@ class Game {
     if (meteorCv) this.drawSkillIcon(meteorCv.getContext('2d'), 'meteor');
     const freezeCv = document.getElementById('skill-canvas-freeze');
     if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+    const solarCv = document.getElementById('skill-canvas-solar_wrath');
+    if (solarCv) this.drawSkillIcon(solarCv.getContext('2d'), 'solar_wrath');
     const titleCv = document.getElementById('menu-title-canvas');
     if (titleCv) this.drawTitleTree(titleCv.getContext('2d'));
   }
@@ -5215,6 +5638,9 @@ class Game {
 
     const freezeCv = document.getElementById('skill-canvas-freeze');
     if (freezeCv) this.drawSkillIcon(freezeCv.getContext('2d'), 'freeze');
+
+    const solarCv = document.getElementById('skill-canvas-solar_wrath');
+    if (solarCv) this.drawSkillIcon(solarCv.getContext('2d'), 'solar_wrath');
 
     // 繪製首頁精靈世界樹大插畫 Canvas (Aurora Crystal World Tree)
     const titleCv = document.getElementById('menu-title-canvas');
@@ -6119,6 +6545,11 @@ class Game {
       this.toggleSkillTargeting('freeze');
     });
 
+    document.getElementById('skill-solar_wrath-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleSkillTargeting('solar_wrath');
+    });
+
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -6137,6 +6568,9 @@ class Game {
       }
       if (e.key === '2') {
         this.toggleSkillTargeting('freeze');
+      }
+      if (e.key === '3') {
+        this.toggleSkillTargeting('solar_wrath');
       }
     });
   }
@@ -6225,6 +6659,27 @@ class Game {
 
   // ─── Active Skills (主動技能系統) ───
   toggleSkillTargeting(skillKey) {
+    if (skillKey === 'solar_wrath') {
+      if (typeof relicManager === 'undefined' || !relicManager.hasHidden('solar_wrath')) {
+        this.showToast('🔒 尚未領悟【日輪天罰】天賦！');
+        this.sfx.play('error');
+        return;
+      }
+      if (this.state !== 'wave') {
+        this.showToast('戰鬥開始後才能施放技能！');
+        this.sfx.play('error');
+        return;
+      }
+      const skill = this.skills.solar_wrath;
+      if (skill && skill.timer > 0) {
+        this.showToast(`天罰冷卻中 (${Math.ceil(skill.timer)} 秒)`);
+        this.sfx.play('error');
+        return;
+      }
+      this.castSolarWrath();
+      return;
+    }
+
     if (!isSkillUnlocked(skillKey)) {
       this.showToast('🔒 這個技能尚未在商店解鎖');
       this.sfx.play('error');
@@ -6320,9 +6775,21 @@ class Game {
     this.sfx.play('ice');
     this.showToast('全體冰封 3.5 秒！');
 
-    // 全體怪物定身並凍結
+    // 全體怪物定身並凍結（緩速免疫怪不受定身影響）
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
+      if (enemy.immuneSlow) {
+        this.spawnParticle(enemy.x, enemy.y - 15, {
+          text: '💨 免疫',
+          color: '#00e676',
+          fontSize: 12,
+          vx: 0,
+          vy: -30,
+          gravity: 0,
+          life: 0.8
+        });
+        continue;
+      }
       enemy.slowFactor = 0; // 完全定身
       enemy.slowTimer = skill.duration;
       this.spawnParticle(enemy.x, enemy.y - 15, {
@@ -6335,6 +6802,67 @@ class Game {
         life: 1.0
       });
     }
+  }
+
+  castSolarWrath() {
+    if (this.state !== 'wave') return;
+    const skill = this.skills.solar_wrath;
+    const currentGold = this.gold || 0;
+    const cost = Math.floor(currentGold * 0.10);
+    if (cost < 1) {
+      this.showToast('🪙 金幣不足 10，無法消耗 10% 引導天罰！');
+      this.sfx.play('error');
+      return;
+    }
+
+    // 扣除 10% 現有金幣
+    this.gold -= cost;
+    this.updateUI();
+    if (skill) skill.timer = skill.cd;
+
+    this.sfx.play('explosion');
+    this.showToast(`☀️ 日輪天罰！消耗 ${cost} 金幣，全場造成 ${cost} 毀滅傷害！`);
+
+    // 螢幕震動
+    if (navigator.vibrate) navigator.vibrate([150, 60, 150]);
+
+    // 全場天罰日輪金色光柱與神聖粒子
+    for (let i = 0; i < 35; i++) {
+      this.spawnParticle(Math.random() * CANVAS_W, Math.random() * CANVAS_H, {
+        color: Math.random() < 0.6 ? '#ffd700' : '#fff59d',
+        size: 3 + Math.random() * 5,
+        vx: (Math.random() - 0.5) * 160,
+        vy: (Math.random() - 0.5) * 160 - 40,
+        gravity: 60,
+        life: 0.8 + Math.random() * 0.4
+      });
+    }
+
+    // 全場存活敵人受到等同消耗金幣的真實傷害
+    let hitCount = 0;
+    for (const enemy of this.enemies) {
+      if (!enemy.alive) continue;
+      enemy.takeDamage(cost, null, 0, 0, 0, 'true', this);
+      this.spawnParticle(enemy.x, enemy.y, {
+        color: '#ffea00',
+        size: 4,
+        vx: (Math.random() - 0.5) * 120,
+        vy: (Math.random() - 0.5) * 120,
+        gravity: 0,
+        life: 0.5
+      });
+      hitCount++;
+    }
+
+    this.spawnParticle(CANVAS_W / 2, CANVAS_H / 2 - 40, {
+      text: `☀️ -${cost} (天罰)`,
+      color: '#ffd700',
+      fontSize: 24,
+      vx: 0,
+      vy: -50,
+      gravity: 0,
+      life: 1.5
+    });
   }
 
   updateSkills(dt) {
@@ -6353,8 +6881,10 @@ class Game {
     this.activeTargetingSkill = null;
     this.skills.meteor.timer = 0;
     this.skills.freeze.timer = 0;
+    if (this.skills.solar_wrath) this.skills.solar_wrath.timer = 0;
     document.getElementById('skill-meteor-btn')?.classList.remove('targeting', 'on-cd');
     document.getElementById('skill-freeze-btn')?.classList.remove('targeting', 'on-cd');
+    document.getElementById('skill-solar_wrath-btn')?.classList.remove('targeting', 'on-cd');
     this.updateSkillsUI();
   }
 
@@ -6377,6 +6907,17 @@ class Game {
       freezeBtn.classList.toggle('on-cd', onCd);
       const overlay = freezeBtn.querySelector('.skill-cd-overlay');
       const text = freezeBtn.querySelector('.skill-cd-text');
+      if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
+      if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
+    }
+
+    const solarWrathBtn = document.getElementById('skill-solar_wrath-btn');
+    if (solarWrathBtn && this.skills.solar_wrath) {
+      const s = this.skills.solar_wrath;
+      const onCd = s.timer > 0;
+      solarWrathBtn.classList.toggle('on-cd', onCd);
+      const overlay = solarWrathBtn.querySelector('.skill-cd-overlay');
+      const text = solarWrathBtn.querySelector('.skill-cd-text');
       if (overlay) overlay.style.transform = `scaleY(${s.timer / s.cd})`;
       if (text) text.textContent = onCd ? Math.ceil(s.timer) : '';
     }
@@ -6861,7 +7402,7 @@ class Game {
     const container = document.getElementById('talent-card-container');
     if (!modal || !container) return;
 
-    const cards = drawRandomTalents(3);
+    const cards = drawRandomTalents(3, this);
     if (cards.length === 0) {
       // 牌庫被抽乾，直接開始出怪
       this.state = 'wave';
@@ -6869,18 +7410,34 @@ class Game {
       return;
     }
 
-    container.innerHTML = cards.map(talent => `
-      <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
-        <div class="talent-card-icon">${talent.icon || '✨'}</div>
-        <div class="talent-card-info">
-          <div class="talent-card-title">
-            <span>${talent.name}</span>
-            <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+    container.innerHTML = cards.map(talent => {
+      let iconHtml = '';
+      if (talent.towerKey) {
+        const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
+        iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
+      } else {
+        iconHtml = `<canvas class="talent-card-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
+      }
+      return `
+        <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
+          <div class="talent-card-icon">${iconHtml}</div>
+          <div class="talent-card-info">
+            <div class="talent-card-title">
+              <span>${talent.name}</span>
+              <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
+            </div>
+            <div class="talent-card-desc">${talent.desc}</div>
           </div>
-          <div class="talent-card-desc">${talent.desc}</div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+
+    // 繪製非塔專屬的特殊天賦圖標
+    container.querySelectorAll('.talent-card-canvas').forEach(cv => {
+      const talentId = cv.dataset.id;
+      const t = cards.find(item => item.id === talentId);
+      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 40, 40);
+    });
 
     // 綁定卡牌點擊事件
     container.querySelectorAll('.talent-card').forEach(cardEl => {
@@ -6929,6 +7486,7 @@ class Game {
       return;
     }
     const badges = [];
+    const badgeTalents = [];
     for (const schoolKey in TALENT_SCHOOLS) {
       const school = TALENT_SCHOOLS[schoolKey];
       for (const branchId in school.branches) {
@@ -6936,17 +7494,42 @@ class Game {
         const level = relicManager.getBranchLevel(branchId);
         if (level > 0) {
           const meta = BRANCH_LEVEL_META[level];
-          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${branch.icon || '✨'}</div>`);
+          const visual = getTalentVisualInfo(schoolKey, branchId, null);
+          let badgeHtml = '';
+          if (visual.towerKey) {
+            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${branch.name}" />`;
+          } else {
+            const tObj = { ...visual, icon: branch.icon, id: branchId };
+            badgeTalents.push(tObj);
+            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
+          }
+          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${badgeHtml}</div>`);
         }
       }
       for (const hidden of school.hidden) {
         if (relicManager.hasHidden(hidden.id)) {
-          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${hidden.icon || '✨'}</div>`);
+          const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
+          let badgeHtml = '';
+          if (visual.towerKey) {
+            const towerKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+            badgeHtml = `<img class="relic-mini-img" src="assets/towers/tower_${towerKey}.svg" alt="${hidden.name}" />`;
+          } else {
+            const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
+            badgeTalents.push(tObj);
+            badgeHtml = `<canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas>`;
+          }
+          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${badgeHtml}</div>`);
         }
       }
     }
     relicBar.classList.remove('hidden');
     relicBar.innerHTML = badges.join('');
+    relicBar.querySelectorAll('.relic-mini-canvas').forEach(cv => {
+      const idx = parseInt(cv.dataset.idx);
+      const t = badgeTalents[idx];
+      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 28, 28);
+    });
   }
 
   saveGameRecord() {
@@ -7533,6 +8116,17 @@ class Game {
     if (meteorBtn) meteorBtn.style.display = isSkillUnlocked('meteor') ? '' : 'none';
     const freezeBtn = document.getElementById('skill-freeze-btn');
     if (freezeBtn) freezeBtn.style.display = isSkillUnlocked('freeze') ? '' : 'none';
+
+    // ☀️ 日輪天罰主動技能：只有在當前局中學會【日輪天罰】質變天賦後才會出現！
+    const solarWrathBtn = document.getElementById('skill-solar_wrath-btn');
+    if (solarWrathBtn) {
+      const isLearned = (typeof relicManager !== 'undefined' && relicManager.hasHidden('solar_wrath'));
+      solarWrathBtn.style.display = isLearned ? '' : 'none';
+      if (isLearned) {
+        const cv = document.getElementById('skill-canvas-solar_wrath');
+        if (cv) this.drawSkillIcon(cv.getContext('2d'), 'solar_wrath');
+      }
+    }
   }
 
   updateTowerPanel() {
