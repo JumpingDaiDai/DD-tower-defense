@@ -387,13 +387,13 @@ function restoreTowerDataDefaults() {
 const ENEMY_DATA = {
   caterpillar: { name: '毛毛蟲', emoji: '🐛', hp: 60, speed: 50, reward: 10, damage: 1 },
   bee: { name: '蜜蜂', emoji: '🐝', hp: 40, speed: 90, reward: 12, damage: 1, canEnrage: true },
-  snail: { name: '蝸牛', emoji: '🐌', hp: 190, speed: 28, reward: 25, damage: 2 },
-  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 320, speed: 38, reward: 35, damage: 2, resist: { physical: 0.25 } },
-  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 95, speed: 65, reward: 18, damage: 1, canEnrage: true },
-  dragon: { name: '小龍', emoji: '🐉', hp: 550, speed: 32, reward: 100, damage: 5, isBoss: true },
-  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 420, speed: 34, reward: 45, damage: 3, resist: { physical: 0.6 } },
-  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 150, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.6 } },
-  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 220, speed: 76, reward: 38, damage: 2, immuneSlow: true },
+  snail: { name: '蝸牛', emoji: '🐌', hp: 170, speed: 28, reward: 25, damage: 2 },
+  beetle: { name: '鐵甲甲蟲', emoji: '🪲', hp: 260, speed: 38, reward: 35, damage: 2, resist: { physical: 0.20 } },
+  butterfly: { name: '蝴蝶', emoji: '🦋', hp: 90, speed: 65, reward: 18, damage: 1, canEnrage: true },
+  dragon: { name: '小龍', emoji: '🐉', hp: 300, speed: 32, reward: 100, damage: 4, isBoss: true },
+  armored_ladybug: { name: '裝甲瓢蟲', emoji: '🐞', hp: 200, speed: 34, reward: 45, damage: 3, resist: { physical: 0.35 } },
+  mist_moth: { name: '迷霧幽蛾', emoji: '🦇', hp: 140, speed: 70, reward: 42, damage: 2, canEnrage: true, resist: { magic: 0.35 } },
+  mantis: { name: '疾風螳螂', emoji: '🦗', hp: 190, speed: 76, reward: 38, damage: 2, immuneSlow: true },
 };
 
 // ─── 5. 各關卡波次數據 (每關 15 波，難度各自獨立設計) ─────────────────────
@@ -3778,9 +3778,9 @@ class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0, isBossOverride = null, customHpMult = 1.0) {
     const data = ENEMY_DATA[typeKey];
     const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
-    // 難度成長依關卡倍率與 Boss 倍率 (幻境基礎難度提升)
+    // 難度成長依關卡倍率與 Boss 倍率
     const levelHpMult = (isRogue
-      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.6)
+      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0)
       : (LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0));
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
@@ -3788,24 +3788,26 @@ class Enemy {
     this.emoji = data.emoji;
     this.isBoss = isBossOverride !== null ? isBossOverride : !!data.isBoss;
 
-    // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
-    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 4.0 : 6.0)) : 1.0;
-    // 幻境秘境怪物強度曲線：
-    // 初始波次 (波 1~3) 平滑起步 (1.0x ~ 1.33x)，確保只有初始單塔時也能輕鬆過渡；
-    // 第 3 波起隨神力加成穩健增長
+    // 波次血量倍率計算（修正倍率重複疊乘平方問題）：
     let waveHpMult = 1.0;
-    if (isRogue) {
-      const rogueWaveScale = Number((1.0 + waveIndex * 0.10 + Math.pow(waveIndex, 1.35) * 0.05).toFixed(2));
-      waveHpMult = customHpMult > 1.0 ? customHpMult : rogueWaveScale;
-    } else if (!this.isBoss && customHpMult > 1.0) {
+    if (customHpMult > 1.0) {
       waveHpMult = customHpMult;
+    } else if (isRogue) {
+      waveHpMult = Number((1.0 + waveIndex * 0.10 + Math.pow(waveIndex, 1.35) * 0.05).toFixed(2));
     }
-    this.maxHp = Math.round(data.hp * levelHpMult * (this.isBoss ? bossHpMult : 1.0) * waveHpMult);
+
+    // 若波次數據中未特別指定 customHpMult，且此怪物為 Boss，則套用標準 Boss 加成 (2.5x ~ 3.5x)
+    let bossHpMult = 1.0;
+    if (this.isBoss && !(customHpMult > 1.0)) {
+      bossHpMult = data.isBoss ? 2.5 : 3.5;
+    }
+
+    this.maxHp = Math.round(data.hp * levelHpMult * bossHpMult * waveHpMult);
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
-    this.reward = this.isBoss ? Math.round(data.reward * 4) : data.reward;
-    this.damage = this.isBoss ? Math.max(5, data.damage * 2) : data.damage;
+    this.reward = this.isBoss ? Math.round(data.reward * 3) : data.reward;
+    this.damage = this.isBoss ? Math.max(3, data.damage * 2) : data.damage;
     this.map = gameMap;
 
     this.distance = 0;
@@ -3823,13 +3825,12 @@ class Enemy {
     this.isEnraged = false;
     this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
 
-    // 幻境關卡強化抗性機制：所有怪物獲取隨波數攀升的雙重抗性
+    // 抗性機制：設定合理上限（最高 40% 減傷），避免怪打不動
     this.resist = Object.assign({}, data.resist || {});
     if (isRogue) {
-      // 幻境波次基礎雙抗加成：前幾波 +15% 抗性，每 4 波 +5%，最高可達 40% 雙減傷
-      const rogueWaveResist = Math.min(0.40, 0.15 + Math.floor(waveIndex / 4) * 0.05);
-      this.resist.physical = Math.min(0.85, (this.resist.physical || 0) + rogueWaveResist);
-      this.resist.magic = Math.min(0.85, (this.resist.magic || 0) + rogueWaveResist);
+      const rogueWaveResist = Math.min(0.12, 0.03 + Math.floor(waveIndex / 5) * 0.03);
+      this.resist.physical = Math.min(0.40, (this.resist.physical || 0) + rogueWaveResist);
+      this.resist.magic = Math.min(0.40, (this.resist.magic || 0) + rogueWaveResist);
     }
 
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
