@@ -1799,8 +1799,22 @@ function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
 }
 
 // 把 TALENT_SCHOOLS 展開成當下可抽的候選清單：每條分支只會出現「下一等級」那一張，
-// 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現
-function buildTalentCandidates() {
+// 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現。
+// 【核心規則】若為某個防禦塔專屬天賦，只會出現玩家當前場上已建造/擁有的塔之天賦！
+function buildTalentCandidates(game = null) {
+  const g = game || (typeof window !== 'undefined' ? window.gameInstance : null);
+  let ownedTowers = null;
+  if (g && Array.isArray(g.towers) && g.towers.length > 0) {
+    ownedTowers = new Set();
+    g.towers.forEach(t => {
+      if (t.typeKey) {
+        ownedTowers.add(t.typeKey);
+        if (t.typeKey === 'ice_crystal') ownedTowers.add('ice');
+        if (t.typeKey === 'ice') ownedTowers.add('ice_crystal');
+      }
+    });
+  }
+
   const candidates = [];
   for (const schoolKey in TALENT_SCHOOLS) {
     const school = TALENT_SCHOOLS[schoolKey];
@@ -1811,6 +1825,15 @@ function buildTalentCandidates() {
       const nextLevel = currentLevel + 1;
       const meta = BRANCH_LEVEL_META[nextLevel];
       const visual = getTalentVisualInfo(schoolKey, branchId, null);
+
+      // 【核心過濾】若為某座防禦塔專屬天賦，且玩家場上沒有建造該座塔，則絕對不出現！
+      if (visual.towerKey && ownedTowers) {
+        const normKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (!ownedTowers.has(visual.towerKey) && !ownedTowers.has(normKey)) {
+          continue;
+        }
+      }
+
       candidates.push({
         id: `${branchId}_lv${nextLevel}`,
         kind: 'branch',
@@ -1833,6 +1856,15 @@ function buildTalentCandidates() {
       );
       if (!meetsRequirement) continue;
       const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
+
+      // 隱藏質變天賦也遵循防禦塔擁有過濾
+      if (visual.towerKey && ownedTowers) {
+        const normKey = (visual.towerKey === 'ice') ? 'ice_crystal' : visual.towerKey;
+        if (!ownedTowers.has(visual.towerKey) && !ownedTowers.has(normKey)) {
+          continue;
+        }
+      }
+
       candidates.push({
         id: hidden.id,
         kind: 'hidden',
@@ -1851,10 +1883,20 @@ function buildTalentCandidates() {
   return candidates;
 }
 
-function drawRandomTalents(count = 3) {
-  const pool = buildTalentCandidates();
-  const picked = [];
+function drawRandomTalents(count = 3, game = null) {
+  let pool = buildTalentCandidates(game);
+  // 若因擁有的塔太少且分支全滿導致候選池不足 count 張，則放寬通用/經濟天賦補充
+  if (pool.length < count) {
+    const allPool = buildTalentCandidates(null);
+    for (const item of allPool) {
+      if (!pool.some(t => t.id === item.id)) {
+        pool.push(item);
+        if (pool.length >= count) break;
+      }
+    }
+  }
 
+  const picked = [];
   for (let i = 0; i < Math.min(count, pool.length); i++) {
     const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
     let rand = Math.random() * totalWeight;
@@ -7343,7 +7385,7 @@ class Game {
     const container = document.getElementById('talent-card-container');
     if (!modal || !container) return;
 
-    const cards = drawRandomTalents(3);
+    const cards = drawRandomTalents(3, this);
     if (cards.length === 0) {
       // 牌庫被抽乾，直接開始出怪
       this.state = 'wave';

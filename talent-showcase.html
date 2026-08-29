@@ -183,6 +183,39 @@
     <!-- 1. 遊戲內 100% 擬真三選一彈窗實機展示 -->
     <div class="section-title">📱 1. 遊戲內「三選一神力抽卡」實機渲染效果</div>
     
+    <!-- 擁有防禦塔即時過濾篩選器 -->
+    <div style="background: rgba(0,0,0,0.4); border: 1.5px solid rgba(255,215,0,0.3); border-radius: 16px; padding: 14px 18px; margin-bottom: 20px; text-align: center;">
+      <div style="font-size: 13px; font-weight: 800; color: #ffd54f; margin-bottom: 10px;">
+        🏰 模擬當前場上建造的防禦塔（未勾選的塔，其專屬天賦絕不會出現在抽選中）：
+      </div>
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px;" id="tower-filter-group">
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="petal" checked onchange="drawDemoCards()"> 🌸 粉櫻箭塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="ice_crystal" onchange="drawDemoCards()"> ❄️ 極光冰晶塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="lavender" checked onchange="drawDemoCards()"> ⚡ 紫晶雷電塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="mushroom" onchange="drawDemoCards()"> 🍄 魔幻蘑菇塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="treant" onchange="drawDemoCards()"> 🌲 古木荊棘塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="cannon" onchange="drawDemoCards()"> 💣 熾火巨砲
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="laser" onchange="drawDemoCards()"> 🔦 日光雷射塔
+        </label>
+        <label style="display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; cursor: pointer; color: #fff;">
+          <input type="checkbox" class="tower-filter-chk" value="sunflower" checked onchange="drawDemoCards()"> 🌻 陽光向日葵
+        </label>
+      </div>
+    </div>
+
     <div class="game-phone-frame">
       <div class="phone-notch"></div>
       <div class="game-phone-desc">▼ 以下為遊戲中彈出【#talent-pick-modal】的完全一致畫面 ▼</div>
@@ -559,10 +592,18 @@
       `;
     }
 
-    // 隨機抽卡功能 (Reroll 3 Cards)
+    // 隨機抽卡功能 (Reroll 3 Cards) - 嚴格依據擁有的塔進行過濾
     function drawDemoCards() {
-      const allTalents = [...TALENTS_DATABASE, ...SPECIAL_TALENTS];
-      const shuffled = [...allTalents].sort(() => 0.5 - Math.random());
+      const chks = document.querySelectorAll('.tower-filter-chk:checked');
+      const ownedTowerKeys = new Set(Array.from(chks).map(el => el.value));
+
+      // 過濾：專屬塔天賦必須是勾選擁有的塔，非單塔天賦（通用天賦）永遠允許出現
+      const eligibleTalents = [
+        ...TALENTS_DATABASE.filter(t => ownedTowerKeys.has(t.towerKey)),
+        ...SPECIAL_TALENTS
+      ];
+
+      const shuffled = [...eligibleTalents].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 3);
 
       const container = document.getElementById('in-game-modal-container');
