@@ -728,9 +728,9 @@ const TALENT_SCHOOLS = {
         name: '強化冰爆',
         icon: '💠',
         levels: [
-          { desc: '解鎖冰爆：擊殺處於緩速狀態的敵人時，55px 範圍造成 20% 最大血量的爆炸傷害' },
-          { desc: '冰爆範圍擴大至 70px，爆炸傷害提升至 27% 最大血量' },
-          { desc: '冰爆範圍擴大至 85px，爆炸傷害提升至 34% 最大血量，且被炸到的敵人附加 1.5 秒緩速' },
+          { desc: '解鎖冰爆：擊殺緩速目標時，55px 範圍造成 20% 最大血量傷害' },
+          { desc: '冰爆範圍擴至 70px，爆炸傷害提升至 27% 最大血量' },
+          { desc: '冰爆範圍 85px，傷害 34% 最大血量且附加 1.5 秒緩速' },
         ],
         onKill: (enemy, game, level) => {
           if (!game) return;
@@ -746,16 +746,16 @@ const TALENT_SCHOOLS = {
         icon: '🌨️',
         levels: [
           {
-            desc: '冰晶塔周圍 100px 散發霜寒光環，踏入光環的敵人跑速降低 15%',
+            desc: '冰晶塔周圍 100px 散發霜環，踏入者跑速降低 15%',
             onHitTarget: (proj, target, game) => {
               // passive aura tick handled or on hit slow booster
             }
           },
           {
-            desc: '霜寒光環範圍擴大至 125px，跑速降低 25%，且光環內敵人受到魔法傷害 +15%',
+            desc: '霜寒光環擴至 125px，跑速 -25%，受魔傷 +15%',
           },
           {
-            desc: '光環範圍擴大至 150px，跑速降低 35%，光環內敵人受到魔法傷害 +30%',
+            desc: '霜寒光環擴至 150px，跑速 -35%，受魔傷 +30%',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -818,9 +818,9 @@ const TALENT_SCHOOLS = {
         name: '強化擴散',
         icon: '☠️',
         levels: [
-          { desc: '解鎖疫病擴散：中毒敵人死亡時，60px 內敵人感染 70% 強度的毒素' },
-          { desc: '擴散範圍提升至 75px，感染強度提升至 100%' },
-          { desc: '擴散範圍提升至 95px，感染強度 100%，且擴散不限連鎖次數（被感染的敵人死亡會繼續擴散）' },
+          { desc: '解鎖擴散：中毒死亡時，60px 內感染 70% 毒素' },
+          { desc: '擴散半徑 75px，感染強度提升至 100%' },
+          { desc: '擴散半徑 95px，感染 100% 且具備無限連鎖傳染' },
         ],
         onKill: (enemy, game, level) => {
           if (!(enemy.poisonTimer > 0) || !game) return;
@@ -939,13 +939,13 @@ const TALENT_SCHOOLS = {
         icon: '🧲',
         levels: [
           {
-            desc: '電弧每次彈射命中敵人，使其陷入 1.5 秒感電（受到所有魔法傷害 +15%）',
+            desc: '電弧每次命中，使敵人陷入 1.5 秒感電（受魔傷 +15%）',
           },
           {
-            desc: '感電傷害加深提升至 +25%，彈射衰減由 20% 減半為 10%',
+            desc: '感電增傷 +25%，彈射衰減由 20% 減半為 10%',
           },
           {
-            desc: '感電傷害加深提升至 +40%，且彈射傷害不再衰減（每擊皆為 100% 全額傷害）',
+            desc: '感電增傷 +40%，且彈射傷害不再衰減（每擊 100%）',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -1077,7 +1077,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '利息比率提升至 10%（上限 +200 金幣），且全塔升級費用降低 15%',
+            desc: '利息提升至 10%（上限 +200 💰），全塔升級費 -15%',
             apply: () => {
               Object.values(TOWER_DATA).forEach(tower => {
                 if (!tower.levels) return;
@@ -1194,7 +1194,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '粉櫻箭傷害再 +35%，完全無視敵人 100% 物理抗性（全額真傷）',
+            desc: '粉櫻箭傷害 +35%，無視 100% 物理抗性（全額真傷）',
             apply: () => {
               TOWER_DATA.petal.levels.forEach(lvl => {
                 lvl.damage = Math.round(lvl.damage * 1.35);
@@ -1219,13 +1219,13 @@ const TALENT_SCHOOLS = {
         icon: '🪶',
         levels: [
           {
-            desc: '粉櫻塔每次攻擊有 25% 機率額外發射 1 枚散射花箭',
+            desc: '粉櫻塔攻擊有 25% 機率額外發射 1 枚散射花箭',
           },
           {
-            desc: '多重箭觸發機率提升至 45%，且散射箭傷害提升至 80%',
+            desc: '多重箭機率提升至 45%，且散射箭傷害提升至 80%',
           },
           {
-            desc: '多重箭觸發機率提升至 70%，且每次必定額外散射 2 枚全額傷害花箭',
+            desc: '多重箭機率提升至 70%，且每次散射 2 枚全額花箭',
           },
         ],
         onHitTarget: (proj, target, game, level) => {
@@ -1254,7 +1254,7 @@ const TALENT_SCHOOLS = {
         icon: '🌺',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】粉櫻箭擊中目標原地炸裂 3 枚追蹤花瓣，自動追擊周遭敵人造成 60% 傷害。',
+        desc: '【質變】擊中炸裂 3 枚追蹤花瓣，自動追擊周遭造成 60% 傷害。',
         requires: { petal_speed: 2, petal_pierce_armor: 2, petal_multishot: 1 },
         onHitTarget: (proj, target, game) => {
           if (proj.towerType !== 'petal' || !game || !game.enemies) return;
@@ -1299,7 +1299,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '爆炸半徑再 +25px，基礎傷害再 +30%，中心 40px 內敵人承受雙倍傷害',
+            desc: '爆炸半徑 +25px，傷害 +30%，中心 40px 雙倍傷害',
             apply: () => {
               TOWER_DATA.cannon.levels.forEach(lvl => {
                 lvl.splashRadius = (lvl.splashRadius || 70) + 25;
@@ -1313,9 +1313,9 @@ const TALENT_SCHOOLS = {
         name: '焦土餘燼',
         icon: '🔥',
         levels: [
-          { desc: '解鎖焦土：砲彈爆炸地面留下 2.5 秒烈焰焦土，進入者每秒受到 30 點燃燒傷害' },
-          { desc: '焦土地面持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒' },
-          { desc: '焦土地面持續時間提升至 5.5 秒，燃燒傷害提升至 85/秒，並降低敵人 25% 跑速' },
+          { desc: '解鎖焦土：地面留下 2.5 秒焦土，每秒受到 30 點燃燒傷害' },
+          { desc: '焦土持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒' },
+          { desc: '焦土持續 5.5 秒，燃燒 85/秒且降低敵人 25% 跑速' },
         ],
         onHitTarget: (proj, target, game, level) => {
           if (proj.towerType !== 'cannon' || !game) return;
@@ -1346,13 +1346,13 @@ const TALENT_SCHOOLS = {
         icon: '💥',
         levels: [
           {
-            desc: '砲彈爆炸向周圍噴射 4 枚高溫彈片，對 70px 內隨機敵人造成 35 點物理傷害',
+            desc: '爆炸噴射 4 枚高溫彈片，對 70px 隨機敵人造成 35 點傷害',
           },
           {
             desc: '彈片數量提升至 6 枚，每枚傷害提升至 60 點',
           },
           {
-            desc: '彈片數量提升至 8 枚，每枚傷害提升至 95 點且附帶微震擊退效果',
+            desc: '彈片提升至 8 枚，每枚傷害 95 點且附帶微震擊退',
           },
         ],
         onHitTarget: (proj, target, game, level) => {
@@ -1383,7 +1383,7 @@ const TALENT_SCHOOLS = {
         icon: '🌋',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】熔岩巨砲每第 4 發升級為天基天火，覆蓋全場 180px 造成 3 倍真傷。',
+        desc: '【質變】巨砲第 4 發升級天基天火，全場 180px 造成 3 倍真傷。',
         requires: { cannon_blast: 2, cannon_scorched_earth: 2, cannon_cluster_shrapnel: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (attacker && attacker.towerType === 'cannon') {
@@ -1409,7 +1409,7 @@ const TALENT_SCHOOLS = {
         icon: '🌿',
         levels: [
           {
-            desc: '古木定身減速強度提升至 75%，減速持續時間 +1.0 秒',
+            desc: '古木定身減速強度提升至 75%，持續時間 +1.0 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.slowFactor = Math.max(0.1, (lvl.slowFactor || 0.35) * 0.75);
@@ -1427,7 +1427,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '古木定身減速強度提升至 95%（近乎完全定身），持續時間再 +1.5 秒',
+            desc: '古木定身強度提升至 95%，持續時間再 +1.5 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.slowFactor = 0.05;
@@ -1442,13 +1442,13 @@ const TALENT_SCHOOLS = {
         icon: '🌵',
         levels: [
           {
-            desc: '處於古木定身/緩速狀態下的敵人，受到所有防禦塔傷害 +20%',
+            desc: '處於古木定身/緩速狀態下的敵人，受傷加深 +20%',
           },
           {
-            desc: '緩速受傷加深提升至 +35%，且古木攻擊時 50px 範圍附帶劇烈震裂波',
+            desc: '定身受傷加深 +35%，且古木攻擊附帶 50px 劇烈震裂波',
           },
           {
-            desc: '緩速受傷加深提升至 +50%，且敵人每被定身 1 秒直接承受古木攻擊力 100% 的流血真實傷害',
+            desc: '定身受傷加深 +50%，每定身 1 秒承受 100% 攻擊力真傷',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -1464,7 +1464,7 @@ const TALENT_SCHOOLS = {
         icon: '🪨',
         levels: [
           {
-            desc: '古木牢籠攻擊範圍 +15px，擊中時震飛半徑 60px 內敵人並打斷其狂暴衝刺',
+            desc: '古木牢籠攻擊範圍 +15px，擊中震飛 60px 敵人並打斷衝刺',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.15);
@@ -1472,7 +1472,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '攻擊範圍再 +20px，震裂波傷害提升至 100%，並附加 1 秒眩暈定身',
+            desc: '攻擊範圍再 +20px，震裂波傷害 100% 且附加 1 秒眩暈',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.15);
@@ -1480,7 +1480,7 @@ const TALENT_SCHOOLS = {
             }
           },
           {
-            desc: '大地震波擴及全圖 100px，全場移動中怪物短暫停滯 1.2 秒',
+            desc: '大地震波擴及全圖 100px，全場怪物短暫停滯 1.2 秒',
             apply: () => {
               TOWER_DATA.treant.levels.forEach(lvl => {
                 lvl.range = Math.round(lvl.range * 1.20);
@@ -1497,7 +1497,7 @@ const TALENT_SCHOOLS = {
         icon: '🌲',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】古木牢籠化身大地圖騰：周圍 130px 所有塔攻擊力 +35%、射速 +20%。',
+        desc: '【質變】古木圖騰：周圍 130px 所有塔攻擊 +35%、射速 +20%。',
         requires: { treant_entangle: 2, treant_thorns: 2, treant_earthquake: 1 },
         apply: (game) => {
           Object.values(TOWER_DATA).forEach(tower => {
@@ -1550,9 +1550,9 @@ const TALENT_SCHOOLS = {
         name: '光束折射',
         icon: '💎',
         levels: [
-          { desc: '雷射穿透敵人後，30% 機率折射一道副光束攻擊鄰近敵人（造成 50% 傷害）' },
+          { desc: '雷射穿透敵人後，30% 機率折射副光束（50% 傷害）打擊鄰近敵人' },
           { desc: '折射機率提升至 50%，副光束傷害提升至 75%' },
-          { desc: '折射機率提升至 75%，副光束傷害 100%，並額外折射至 2 名敵人' },
+          { desc: '折射機率提升至 75%，副光束傷害 100%，並折射至 2 名敵人' },
         ],
         onHitTarget: (proj, target, game, level) => {
           if (proj.towerType !== 'laser' || !game || !game.enemies) return;
@@ -1577,13 +1577,13 @@ const TALENT_SCHOOLS = {
         icon: '🔬',
         levels: [
           {
-            desc: '雷射對同一敵人持續打擊時，傷害每次疊加 15%（最多疊加 3 層）',
+            desc: '雷射持續打擊同一敵人時，每次增傷 15%（最多 3 層）',
           },
           {
-            desc: '聚焦傷害每層提升至 25%（最多 4 層），且打擊 Boss 額外增傷 20%',
+            desc: '聚焦每層增傷 25%（最多 4 層），打擊 Boss 額外 +20%',
           },
           {
-            desc: '聚焦傷害每層提升至 35%（最多 5 層，最高可達 2.75 倍極限高傷），且打擊 Boss 額外增傷 40%',
+            desc: '聚焦每層增傷 35%（最多 5 層），打擊 Boss 額外 +40%',
           },
         ],
         modifyDamage: (rawDmg, damageType, attacker, target, game, level) => {
@@ -1604,7 +1604,7 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】雷射消滅敵人時引發超新星核爆，對 90px 敵人造成最大血量 40% 傷害。',
+        desc: '【質變】消滅敵人引發超新星核爆，90px 造成最大血量 40% 傷害。',
         requires: { laser_overcharge: 2, laser_refract: 2, laser_focus_beam: 1 },
         onKill: (enemy, game) => {
           if (!game || !game.enemies) return;
