@@ -1775,6 +1775,29 @@ class RelicManager {
 
 const relicManager = new RelicManager();
 
+function getTalentVisualInfo(schoolKey, branchId, hiddenId) {
+  // 1. 單塔專用天賦（顯示該防禦塔圖示）
+  if (schoolKey === 'ice') return { towerKey: 'ice' };
+  if (schoolKey === 'mushroom') return { towerKey: 'mushroom' };
+  if (schoolKey === 'thunder') return { towerKey: 'lavender' };
+  if (schoolKey === 'petal') return { towerKey: 'petal' };
+  if (schoolKey === 'cannon') return { towerKey: 'cannon' };
+  if (schoolKey === 'treant') return { towerKey: 'treant' };
+  if (schoolKey === 'laser') return { towerKey: 'laser' };
+
+  // 2. 經濟流派（向日葵專用 vs 全域自然/金幣/天罰天賦）
+  if (schoolKey === 'economy') {
+    if (branchId === 'gold_boost') return { towerKey: 'sunflower' };
+    if (branchId === 'tower_growth') return { specialIconKey: 'nature_growth' };
+    if (branchId === 'gold_interest') return { specialIconKey: 'gold_interest' };
+    if (hiddenId === 'bountiful_blessing') return { specialIconKey: 'bountiful_blessing' };
+    if (hiddenId === 'solar_wrath') return { specialIconKey: 'solar_wrath' };
+    return { towerKey: 'sunflower' };
+  }
+
+  return {};
+}
+
 // 把 TALENT_SCHOOLS 展開成當下可抽的候選清單：每條分支只會出現「下一等級」那一張，
 // 滿 Lv.3 就不再出現；隱藏合成天賦要兩條指定分支都到達門檻等級、且尚未取得才會出現
 function buildTalentCandidates() {
@@ -1787,6 +1810,7 @@ function buildTalentCandidates() {
       if (currentLevel >= branch.levels.length) continue;
       const nextLevel = currentLevel + 1;
       const meta = BRANCH_LEVEL_META[nextLevel];
+      const visual = getTalentVisualInfo(schoolKey, branchId, null);
       candidates.push({
         id: `${branchId}_lv${nextLevel}`,
         kind: 'branch',
@@ -1798,6 +1822,8 @@ function buildTalentCandidates() {
         icon: branch.icon,
         rarity: meta.rarity,
         weight: meta.weight,
+        towerKey: visual.towerKey,
+        specialIconKey: visual.specialIconKey,
       });
     }
     for (const hidden of school.hidden) {
@@ -1806,6 +1832,7 @@ function buildTalentCandidates() {
         ([branchId, minLevel]) => relicManager.getBranchLevel(branchId) >= minLevel
       );
       if (!meetsRequirement) continue;
+      const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
       candidates.push({
         id: hidden.id,
         kind: 'hidden',
@@ -1816,6 +1843,8 @@ function buildTalentCandidates() {
         icon: hidden.icon,
         rarity: hidden.rarity,
         weight: hidden.weight,
+        towerKey: visual.towerKey,
+        specialIconKey: visual.specialIconKey,
       });
     }
   }
@@ -5143,6 +5172,127 @@ class Game {
     }
   }
 
+  // 繪製天賦卡牌/徽章專屬圖示：若為防禦塔專屬天賦則繪製該塔圖案；若非則繪製專屬圖標
+  drawTalentIcon(ictx, talent, width = 40, height = 40) {
+    ictx.setTransform(1, 0, 0, 1, 0, 0);
+    ictx.clearRect(0, 0, width, height);
+
+    // 1. 若為某個防禦塔專用的天賦，繪製該塔的專屬圖片
+    if (talent.towerKey) {
+      const svgImg = assets.get('tower_' + talent.towerKey);
+      if (svgImg) {
+        ictx.drawImage(svgImg, 2, 2, width - 4, height - 4);
+      } else {
+        ictx.save();
+        ictx.translate(width / 2, height / 2 + 1);
+        ictx.scale(width / 52, height / 52);
+        const drawFn = Sprites['drawTower_' + talent.towerKey];
+        if (drawFn) drawFn.call(Sprites, ictx, 0, 1);
+        ictx.restore();
+      }
+      return;
+    }
+
+    // 2. 若不是單塔專用，繪製精心設計的專屬圖標
+    const iconKey = talent.specialIconKey || talent.hiddenId || talent.branchId || talent.id;
+    ictx.save();
+    ictx.translate(width / 2, height / 2);
+
+    if (iconKey === 'solar_wrath') {
+      // ☀️ 日輪天罰：日冕光環 + 八芒烈焰金陽
+      ictx.save();
+      ictx.scale(width / 42, height / 42);
+      this.drawSkillIcon(ictx, 'solar_wrath');
+      ictx.restore();
+    } else if (iconKey === 'bountiful_blessing') {
+      // 💖 豐饒祝福：神聖粉金之心 + 金幣散落 + 祝福晶芒
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      // 光暈
+      ictx.fillStyle = 'rgba(255, 105, 180, 0.25)';
+      ictx.beginPath(); ictx.arc(0, 0, 18, 0, Math.PI * 2); ictx.fill();
+      // 愛心本體
+      const ctx = ictx;
+      ctx.fillStyle = '#ff4081';
+      ctx.beginPath();
+      ctx.moveTo(0, 5);
+      ctx.bezierCurveTo(-10, -5, -12, -14, 0, -12);
+      ctx.bezierCurveTo(12, -14, 10, -5, 0, 5);
+      ctx.fill();
+      // 金幣微粒
+      ctx.fillStyle = '#ffd700'; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1;
+      [[-7, 7], [7, 7], [0, 12]].forEach(([cx, cy]) => {
+        ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      });
+      // 高光晶芒
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(-4, -8, 1.5, 0, Math.PI * 2); ctx.fill();
+      ictx.restore();
+    } else if (iconKey === 'nature_growth' || iconKey === 'tower_growth') {
+      // 🍃 強化生長 / 自然之靈：翡翠旋轉生命雙葉 + 露珠高光
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      const ctx = ictx;
+      // 翡翠光環
+      ctx.fillStyle = 'rgba(105, 240, 174, 0.25)';
+      ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+      // 主葉片
+      ctx.save(); ctx.rotate(-0.35);
+      const leafGrad = ctx.createLinearGradient(0, -14, 0, 14);
+      leafGrad.addColorStop(0, '#b9f6ca'); leafGrad.addColorStop(0.5, '#00e676'); leafGrad.addColorStop(1, '#1b5e20');
+      ctx.fillStyle = leafGrad;
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.quadraticCurveTo(12, -4, 0, 14);
+      ctx.quadraticCurveTo(-12, -4, 0, -14);
+      ctx.fill();
+      // 葉脈
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(0, 12); ctx.stroke();
+      ctx.restore();
+      // 副小葉
+      ctx.save(); ctx.rotate(0.65);
+      ctx.fillStyle = '#69f0ae';
+      ctx.beginPath();
+      ctx.moveTo(0, -8); ctx.quadraticCurveTo(8, -2, 0, 10); ctx.quadraticCurveTo(-8, -2, 0, -8);
+      ctx.fill();
+      ctx.restore();
+      // 晶瑩露珠
+      ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-2, -3, 2, 0, Math.PI * 2); ctx.fill();
+      ictx.restore();
+    } else if (iconKey === 'gold_interest') {
+      // 🪙 利滾利息 / 銀行金庫：金幣山丘 + 閃亮四角星芒
+      ictx.save();
+      ictx.scale(width / 44, height / 44);
+      const ctx = ictx;
+      // 金色光環
+      ctx.fillStyle = 'rgba(255, 215, 0, 0.25)';
+      ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI * 2); ctx.fill();
+      // 金幣堆
+      const coinPositions = [[-6, 3], [6, 3], [0, -4], [-3, 7], [4, 7]];
+      coinPositions.forEach(([cx, cy]) => {
+        const cg = ctx.createLinearGradient(cx - 5, cy - 5, cx + 5, cy + 5);
+        cg.addColorStop(0, '#fff59d'); cg.addColorStop(0.5, '#ffd600'); cg.addColorStop(1, '#ff8f00');
+        ctx.fillStyle = cg; ctx.strokeStyle = '#e65100'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(cx, cy, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#e65100'; ctx.font = '900 5.5px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('$', cx, cy);
+      });
+      // 閃爍星芒
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(8, -10); ctx.lineTo(10, -8); ctx.lineTo(8, -6); ctx.lineTo(6, -8); ctx.closePath(); ctx.fill();
+      ictx.restore();
+    } else {
+      // 通用回退圖示
+      ictx.font = `${Math.round(width * 0.55)}px sans-serif`;
+      ictx.textAlign = 'center';
+      ictx.textBaseline = 'middle';
+      ictx.fillText(talent.icon || '✨', 0, 0);
+    }
+    ictx.restore();
+  }
+
   // 繪製主動技能快捷欄圖示：#1 卡通天火隕石 & #4 永凍雪花晶核 (Canvas 動態 Sprite)
   drawSkillIcon(ctx, key, time = 0) {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -7202,7 +7352,9 @@ class Game {
 
     container.innerHTML = cards.map(talent => `
       <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}">
-        <div class="talent-card-icon">${talent.icon || '✨'}</div>
+        <div class="talent-card-icon">
+          <canvas class="talent-card-canvas" width="40" height="40" data-id="${talent.id}"></canvas>
+        </div>
         <div class="talent-card-info">
           <div class="talent-card-title">
             <span>${talent.name}</span>
@@ -7212,6 +7364,13 @@ class Game {
         </div>
       </div>
     `).join('');
+
+    // 繪製每張卡片的專屬圖片 (塔圖示或專屬設計圖標)
+    container.querySelectorAll('.talent-card-canvas').forEach(cv => {
+      const talentId = cv.dataset.id;
+      const t = cards.find(item => item.id === talentId);
+      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 40, 40);
+    });
 
     // 綁定卡牌點擊事件
     container.querySelectorAll('.talent-card').forEach(cardEl => {
@@ -7260,6 +7419,7 @@ class Game {
       return;
     }
     const badges = [];
+    const badgeTalents = [];
     for (const schoolKey in TALENT_SCHOOLS) {
       const school = TALENT_SCHOOLS[schoolKey];
       for (const branchId in school.branches) {
@@ -7267,17 +7427,28 @@ class Game {
         const level = relicManager.getBranchLevel(branchId);
         if (level > 0) {
           const meta = BRANCH_LEVEL_META[level];
-          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}">${branch.icon || '✨'}</div>`);
+          const visual = getTalentVisualInfo(schoolKey, branchId, null);
+          const tObj = { ...visual, icon: branch.icon, id: branchId };
+          badgeTalents.push(tObj);
+          badges.push(`<div class="relic-badge rarity-${meta.rarity}" title="${branch.name} Lv.${level}：${branch.levels[level - 1].desc}"><canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas></div>`);
         }
       }
       for (const hidden of school.hidden) {
         if (relicManager.hasHidden(hidden.id)) {
-          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}">${hidden.icon || '✨'}</div>`);
+          const visual = getTalentVisualInfo(schoolKey, null, hidden.id);
+          const tObj = { ...visual, icon: hidden.icon, id: hidden.id, hiddenId: hidden.id };
+          badgeTalents.push(tObj);
+          badges.push(`<div class="relic-badge rarity-${hidden.rarity}" title="${hidden.name}：${hidden.desc}"><canvas class="relic-mini-canvas" width="28" height="28" data-idx="${badgeTalents.length - 1}"></canvas></div>`);
         }
       }
     }
     relicBar.classList.remove('hidden');
     relicBar.innerHTML = badges.join('');
+    relicBar.querySelectorAll('.relic-mini-canvas').forEach(cv => {
+      const idx = parseInt(cv.dataset.idx);
+      const t = badgeTalents[idx];
+      if (t) this.drawTalentIcon(cv.getContext('2d'), t, 28, 28);
+    });
   }
 
   saveGameRecord() {

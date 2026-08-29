@@ -1959,6 +1959,21 @@ html, body {
   background: rgba(0, 0, 0, 0.35);
   border-radius: 10px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.talent-card-icon canvas {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.relic-badge canvas {
+  display: block;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .talent-card-info {
