@@ -651,10 +651,10 @@ const GAME_MODES = {
 let CURRENT_GAME_MODE = GAME_MODES.CAMPAIGN;
 
 const ROGUELIKE_LEVEL_DATA = [
-  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.15, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.35, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 1.6, mode: GAME_MODES.ROGUELIKE },
-  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_1', name: '幻境・初醒之森', mapId: 'outer_ring', waves: WAVE_DATA_L1, hpMultiplier: 1.5, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_2', name: '幻境・迷霧之谷', mapId: 'serpentine', waves: WAVE_DATA_L3, hpMultiplier: 1.8, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_3', name: '幻境・深淵之環', mapId: 'ring', waves: WAVE_DATA_L5, hpMultiplier: 2.2, mode: GAME_MODES.ROGUELIKE },
+  { id: 'rogue_4', name: '幻境・混沌迷宮', mapId: 'labyrinth_core', waves: WAVE_DATA_L12, hpMultiplier: 3.0, mode: GAME_MODES.ROGUELIKE },
 ];
 
 // ─── 5.1.6 Roguelike 天賦技能樹 (Branch + Level + Hidden Combo) ─────────
@@ -3690,9 +3690,9 @@ class Enemy {
   constructor(typeKey, gameMap, waveIndex = 0, isBossOverride = null, customHpMult = 1.0) {
     const data = ENEMY_DATA[typeKey];
     const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
-    // 難度成長依關卡倍率與 Boss 倍率
+    // 難度成長依關卡倍率與 Boss 倍率 (幻境基礎難度提升)
     const levelHpMult = (isRogue
-      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.3)
+      ? (ROGUELIKE_LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.6)
       : (LEVEL_DATA[CURRENT_LEVEL_INDEX]?.hpMultiplier || 1.0));
     this.typeKey = typeKey;
     this.waveIndex = waveIndex;
@@ -3701,13 +3701,13 @@ class Enemy {
     this.isBoss = isBossOverride !== null ? isBossOverride : !!data.isBoss;
 
     // 王的數值：若為 isBoss，血量大幅飆升，獎勵與扣心也顯著增加
-    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 3.5 : 5.5)) : 1.0;
-    // 幻境秘境怪物強度全域指數性成長：
+    const bossHpMult = this.isBoss ? (customHpMult > 1.0 ? customHpMult : (data.isBoss ? 4.0 : 6.0)) : 1.0;
+    // 幻境秘境精銳怪物強度全域指數性成長：
     // 若 customHpMult > 1.0（例如 generateEndlessWave 算出的 hpScale）直接採用；
-    // 若是幻境前幾波固定波表，亦套用指數波次係數 Math.pow(1.15, waveIndex)
+    // 若是幻境前幾波固定波表，亦套用 1.75 * Math.pow(1.18, waveIndex) 高血量指數成長
     let waveHpMult = 1.0;
     if (isRogue) {
-      waveHpMult = customHpMult > 1.0 ? customHpMult : Number(Math.pow(1.15, waveIndex).toFixed(2));
+      waveHpMult = customHpMult > 1.0 ? customHpMult : Number((1.75 * Math.pow(1.18, waveIndex)).toFixed(2));
     } else if (!this.isBoss && customHpMult > 1.0) {
       waveHpMult = customHpMult;
     }
@@ -3715,7 +3715,9 @@ class Enemy {
     this.hp = this.maxHp;
     this.baseSpeed = this.isBoss ? Math.max(22, data.speed * 0.82) : data.speed;
     this.speed = this.baseSpeed;
-    this.reward = this.isBoss ? Math.round(data.reward * 4) : data.reward;
+    // 幻境怪物數量大幅精簡，擊殺單隻金幣獎勵提升 2.2 倍維持經濟流轉平衡
+    const rewardMult = isRogue ? 2.2 : 1.0;
+    this.reward = Math.round((this.isBoss ? Math.round(data.reward * 4) : data.reward) * rewardMult);
     this.damage = this.isBoss ? Math.max(5, data.damage * 2) : data.damage;
     this.map = gameMap;
 
@@ -3733,7 +3735,16 @@ class Enemy {
     this.canEnrage = !!data.canEnrage;
     this.isEnraged = false;
     this.immuneSlow = !!data.immuneSlow; // 緩速/冰凍/控制免疫
-    this.resist = data.resist || {}; // e.g. { physical: 0.6 } = 對物理傷害減傷 60%
+
+    // 幻境關卡強化抗性機制：所有怪物獲取隨波數攀升的雙重抗性
+    this.resist = Object.assign({}, data.resist || {});
+    if (isRogue) {
+      // 幻境波次基礎雙抗加成：前幾波 +15% 抗性，每 4 波 +5%，最高可達 40% 雙減傷
+      const rogueWaveResist = Math.min(0.40, 0.15 + Math.floor(waveIndex / 4) * 0.05);
+      this.resist.physical = Math.min(0.85, (this.resist.physical || 0) + rogueWaveResist);
+      this.resist.magic = Math.min(0.85, (this.resist.magic || 0) + rogueWaveResist);
+    }
+
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
     this.summonedStages = new Set();
 
@@ -4517,14 +4528,23 @@ class WaveManager {
       return;
     }
 
+    const isRogue = (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE);
     dbgLog(`🌊 [Wave] 第 ${waveIndex + 1} 波開始生成，組數: ${wave.enemies.length}`);
     for (const group of wave.enemies) {
-      for (let i = 0; i < group.count; i++) {
+      // 幻境關卡怪物數量大幅精簡 (每組數量減半至 40%~50%，避免怪海，突顯單怪精銳強度)
+      const count = isRogue
+        ? Math.max(1, Math.round(group.count * 0.45))
+        : group.count;
+      const interval = isRogue
+        ? Math.max(0.2, (group.interval || 0.5) * 1.3)
+        : group.interval;
+
+      for (let i = 0; i < count; i++) {
         this.spawnQueue.push({
           type: group.type,
           isBoss: group.isBoss,
           hpMultiplier: group.hpMultiplier,
-          delay: group.interval,
+          delay: interval,
           waveIndex: waveIndex,
         });
       }
@@ -4554,12 +4574,11 @@ class WaveManager {
     return null;
   }
 
-  // 🔮 幻境秘境全域指數性數值成長 (Exponential Scaling)
+  // 🔮 幻境秘境全域指數性數值成長 (數量精簡 + 單體高血高抗精銳化)
   generateEndlessWave(waveIndex) {
     const waveNum = waveIndex + 1;
-    // 基礎血量係數：指數級成長 (1.18^(waveNum-1))
-    // 例如：W1=1x, W5=1.94x, W10=4.44x, W15=10.1x, W20=23.2x, W30=121x, W40=635x, W50=3320x
-    const hpScale = Number(Math.pow(1.18, waveNum - 1).toFixed(2));
+    // 基礎血量係數：指數級成長 (2.2 * 1.20^(waveNum-1))
+    const hpScale = Number((2.2 * Math.pow(1.20, waveNum - 1)).toFixed(2));
 
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
@@ -4574,27 +4593,28 @@ class WaveManager {
     selectedTypes.push('caterpillar', 'bee', 'snail');
 
     const enemies = [];
-    const countScale = Math.min(3.2, 1 + Math.floor(waveNum / 6) * 0.35);
+    // 精簡怪群數量（每組僅 4~8 隻精銳，最高不超過 10 隻）
+    const countScale = Math.min(1.6, 1 + Math.floor(waveNum / 10) * 0.12);
 
-    // 隨機組裝 2~3 組常規雜兵
+    // 隨機組裝 2 組精銳怪群
     for (let g = 0; g < 2; g++) {
       const type = selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
       enemies.push({
         type: type,
-        count: Math.floor((10 + Math.random() * 8) * countScale),
-        interval: Math.max(0.06, 0.35 - waveNum * 0.005),
+        count: Math.max(3, Math.floor((4 + Math.random() * 3) * countScale)),
+        interval: Math.max(0.25, 0.65 - waveNum * 0.006),
         hpMultiplier: hpScale
       });
     }
 
-    // 每 5 波 Mid-Boss / 每 10 波 Final Boss (血量倍率隨波數幾何倍增)
+    // 每 5 波 Mid-Boss / 每 10 波 Final Boss (單體血量極高)
     if (isBossWave) {
       enemies.push({
         type: 'dragon',
-        count: Math.min(3, 1 + Math.floor(waveNum / 15)),
-        interval: 2.5,
+        count: Math.min(2, 1 + Math.floor(waveNum / 25)),
+        interval: 3.5,
         isBoss: true,
-        hpMultiplier: Number((hpScale * 2.8).toFixed(2))
+        hpMultiplier: Number((hpScale * 3.5).toFixed(2))
       });
     } else if (isMidBossWave) {
       const bossTypes = ['armored_ladybug', 'mist_moth', 'mantis'];
@@ -4602,15 +4622,15 @@ class WaveManager {
       enemies.push({
         type: bossType,
         count: 1,
-        interval: 2.0,
+        interval: 2.5,
         isBoss: true,
-        hpMultiplier: Number((hpScale * 2.0).toFixed(2))
+        hpMultiplier: Number((hpScale * 2.4).toFixed(2))
       });
     }
 
     return {
       enemies: enemies,
-      bonus: Math.floor(100 + waveNum * 40)
+      bonus: Math.floor(120 + waveNum * 50)
     };
   }
 
