@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.11.2',
+  VERSION: 'v1.13.0',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -662,11 +662,24 @@ const ROGUELIKE_LEVEL_DATA = [
 // 會解鎖只出現一次的隱藏合成天賦（不佔用分支升級名額，取得後永久生效）
 // 冰爆殉爆連鎖：被炸死的敵人會在原地引爆下一輪冰爆，chainsLeft 用來防止無限遞迴
 function triggerIceShatterExplosion(origin, game, cfg, chainsLeft) {
-  const boomDmg = Math.max(20, Math.floor(origin.maxHp * cfg.pct));
   const justKilled = [];
   for (const other of game.enemies) {
     if (!other.alive || other === origin) continue;
     if (dist(origin.x, origin.y, other.x, other.y) <= cfg.radius) {
+      let boomDmg = Math.max(20, Math.floor(origin.maxHp * cfg.pct));
+      // 百分比傷害保護上限：單次冰爆對任何目標（小怪與首領）最高 250 點
+      boomDmg = Math.min(boomDmg, 250);
+      
+      // 傷害歸屬：將冰爆傷害精準計入「極光冰晶塔」的傷害統計
+      if (game) {
+        const iceTower = game.towers.find(t => t.typeKey === 'ice_crystal');
+        if (iceTower) {
+          iceTower.totalDamageDealt = (iceTower.totalDamageDealt || 0) + boomDmg;
+        } else if (game.typeTotalDamage) {
+          game.typeTotalDamage.ice_crystal = (game.typeTotalDamage.ice_crystal || 0) + boomDmg;
+        }
+      }
+
       other.takeDamage(boomDmg, cfg.extraSlow ? 0.4 : null, cfg.extraSlow ? 1.5 : 0, 0, 0, 'magic', game);
       if (!other.alive) justKilled.push(other);
     }
@@ -728,9 +741,9 @@ const TALENT_SCHOOLS = {
         name: '強化冰爆',
         icon: '💠',
         levels: [
-          { desc: '解鎖冰爆：擊殺緩速目標時，55px 範圍造成 20% 最大血量傷害' },
-          { desc: '冰爆範圍擴至 70px，爆炸傷害提升至 27% 最大血量' },
-          { desc: '冰爆範圍 85px，傷害 34% 最大血量且附加 1.5 秒緩速' },
+          { desc: '解鎖冰爆：擊殺緩速目標時，55px 範圍造成 20% 最大血量傷害（最高 250 點）' },
+          { desc: '冰爆範圍擴至 70px，爆炸傷害提升至 27% 最大血量（最高 250 點）' },
+          { desc: '冰爆範圍 85px，傷害 34% 最大血量（最高 250 點）且附加 1.5 秒緩速' },
         ],
         onKill: (enemy, game, level) => {
           if (!game) return;
@@ -869,11 +882,14 @@ const TALENT_SCHOOLS = {
         icon: '💀',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺。',
+        desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺（首領免疫直接斬殺，改為承受 1.5 倍加深毒傷）。',
         requires: { toxin_potency: 2, toxin_spread: 2, toxin_corrosion: 1 },
         modifyDamage: (rawDmg, damageType, attacker, target, game) => {
           if (target && target.poisonTimer > 0 && target.hp > 0 && target.hp <= target.maxHp * 0.12) {
-            return target.hp + 1;
+            if (target.isBoss) {
+              return rawDmg * 1.5; // 首領免疫直接斬殺秒殺，轉化為 1.5 倍毒傷加深
+            }
+            return target.hp + 1; // 普通怪直接斬殺
           }
           return rawDmg;
         }
@@ -1604,14 +1620,25 @@ const TALENT_SCHOOLS = {
         icon: '☀️',
         rarity: 'legendary',
         weight: 25,
-        desc: '【質變】消滅敵人引發超新星核爆，90px 造成最大血量 40% 傷害。',
+        desc: '【質變】消滅敵人引發超新星核爆，90px 造成最大血量 25% 傷害（最高 350 點）。',
         requires: { laser_overcharge: 2, laser_refract: 2, laser_focus_beam: 1 },
         onKill: (enemy, game) => {
           if (!game || !game.enemies) return;
-          const boomDmg = Math.max(30, Math.floor(enemy.maxHp * 0.40));
           for (const other of game.enemies) {
             if (!other.alive || other === enemy) continue;
             if (dist(enemy.x, enemy.y, other.x, other.y) <= 90) {
+              let boomDmg = Math.max(30, Math.floor(enemy.maxHp * 0.25));
+              // 百分比傷害保護上限：單次核爆對任何目標（小怪與首領）最高 350 點
+              boomDmg = Math.min(boomDmg, 350);
+
+              // 傷害歸屬：將超新星傷害精準計入「日光雷射塔」的傷害統計
+              const laserTower = game.towers.find(t => t.typeKey === 'laser');
+              if (laserTower) {
+                laserTower.totalDamageDealt = (laserTower.totalDamageDealt || 0) + boomDmg;
+              } else if (game.typeTotalDamage) {
+                game.typeTotalDamage.laser = (game.typeTotalDamage.laser || 0) + boomDmg;
+              }
+
               other.takeDamage(boomDmg, null, 0, 0, 0, 'magic', game);
             }
           }
@@ -1771,6 +1798,44 @@ class RelicManager {
       }
     }
   }
+
+  exportState() {
+    return {
+      branchLevels: { ...this.branchLevels },
+      hiddenAcquired: Array.from(this.hiddenAcquired),
+      isEnabled: this.isEnabled
+    };
+  }
+
+  importState(state, game) {
+    if (!state) return;
+    this.reset(state.isEnabled ? GAME_MODES.ROGUELIKE : GAME_MODES.CAMPAIGN);
+    this.branchLevels = { ...(state.branchLevels || {}) };
+    this.hiddenAcquired = new Set(state.hiddenAcquired || []);
+    this.isEnabled = !!state.isEnabled;
+
+    // 重新應用被動效果 (apply)
+    if (this.isEnabled) {
+      for (const schoolKey in TALENT_SCHOOLS) {
+        const school = TALENT_SCHOOLS[schoolKey];
+        for (const branchId in school.branches) {
+          const level = this.getBranchLevel(branchId);
+          if (level > 0) {
+            const branch = school.branches[branchId];
+            for (let l = 0; l < level; l++) {
+              const lvlDef = branch.levels[l];
+              if (lvlDef && lvlDef.apply) lvlDef.apply(game);
+            }
+          }
+        }
+        for (const hidden of school.hidden) {
+          if (this.hasHidden(hidden.id) && hidden.apply) {
+            hidden.apply(game);
+          }
+        }
+      }
+    }
+  }
 }
 
 const relicManager = new RelicManager();
@@ -1876,9 +1941,9 @@ function buildTalentCandidates() {
 
 function drawRandomTalents(count = 3) {
   let pool = buildTalentCandidates();
-  // 若因擁有的塔太少且分支全滿導致候選池不足 count 張，則放寬通用/經濟天賦補充
+  
+  // 若因當前可用卡片不足 count 張，則放寬所有未滿級分支補充，保證有選項可抽
   if (pool.length < count) {
-    // 取得所有可用天賦（含通用天賦）
     const allPool = [];
     for (const schoolKey in TALENT_SCHOOLS) {
       const school = TALENT_SCHOOLS[schoolKey];
@@ -1913,21 +1978,29 @@ function drawRandomTalents(count = 3) {
     }
   }
 
+  const poolCopy = [...pool];
   const picked = [];
-  for (let i = 0; i < Math.min(count, pool.length); i++) {
-    const totalWeight = pool.reduce((sum, t) => sum + t.weight, 0);
+  const targetCount = Math.min(count, poolCopy.length);
+
+  for (let step = 0; step < targetCount; step++) {
+    const totalWeight = poolCopy.reduce((sum, t) => sum + (t.weight || 25), 0);
+    if (totalWeight <= 0) {
+      picked.push(poolCopy.shift());
+      continue;
+    }
     let rand = Math.random() * totalWeight;
-    let chosenIdx = 0;
-    for (let j = 0; j < pool.length; j++) {
-      rand -= pool[j].weight;
+    let chosenIdx = poolCopy.length - 1;
+    for (let j = 0; j < poolCopy.length; j++) {
+      rand -= (poolCopy[j].weight || 25);
       if (rand <= 0) {
         chosenIdx = j;
         break;
       }
     }
-    picked.push(pool[chosenIdx]);
-    pool.splice(chosenIdx, 1);
+    picked.push(poolCopy[chosenIdx]);
+    poolCopy.splice(chosenIdx, 1);
   }
+
   return picked;
 }
 
@@ -3839,6 +3912,10 @@ class Enemy {
       }
     }
 
+    // 緩速抵抗 (Slow Resistance)：隨波次平緩提高，每 25 波上升 10%（每波 +0.4%），最高上限 60% (0.60)
+    // 算法：第 1 波為 0%，第 25 波 10%，第 50 波 20%，至第 150 波達到最高 60% 封頂
+    this.slowResist = Math.min(0.60, Math.max(0, (waveIndex || 0) * 0.004));
+
     this.summonThresholds = [0.75, 0.5, 0.25]; // 小龍在 75%, 50%, 25% 血量召喚小蜜蜂
     this.summonedStages = new Set();
 
@@ -3970,13 +4047,24 @@ class Enemy {
 
     // 減速/定身效果不能被更弱的效果蓋掉：例如絕對零度把怪完全定身（slowFactor=0）之後，
     // 冰晶塔之類的普通減速（slowFactor=0.5）打中同一隻怪，不該把它蓋掉變成又能動；
-    // 若該怪物具備 immuneSlow（如疾風螳螂），則完全免疫任何緩速與定身效果
+    // 若該怪物具備 immuneSlow（如疾風螳螂），則完全免疫任何緩速與定身效果；
+    // 其餘怪物套用隨波次成長的 slowResist（最高 50%），減少減速深度與減速持續時間
     if (typeof slowFactor === 'number' && typeof slowDuration === 'number' && slowDuration > 0) {
       if (this.immuneSlow) {
         // 緩速免疫，不套用 slowFactor
-      } else if (this.slowTimer <= 0 || slowFactor <= this.slowFactor) {
-        this.slowFactor = slowFactor;
-        this.slowTimer = slowDuration;
+      } else {
+        const resist = this.slowResist || 0;
+        // 計算抵抗後的緩速係數：原始減速量 (1 - slowFactor) 乘上 (1 - resist)
+        // 例如：原始減速 50% (slowFactor=0.5)，有 50% 抵抗時，減速量降為 25% (effectiveSlowFactor=0.75)
+        const baseSlowPercent = 1 - Math.max(0, Math.min(1, slowFactor));
+        const effectiveSlowPercent = baseSlowPercent * (1 - resist);
+        const effectiveSlowFactor = 1 - effectiveSlowPercent;
+        const effectiveDuration = Math.max(0.5, slowDuration * (1 - resist * 0.5));
+
+        if (this.slowTimer <= 0 || effectiveSlowFactor <= this.slowFactor) {
+          this.slowFactor = effectiveSlowFactor;
+          this.slowTimer = effectiveDuration;
+        }
       }
     }
     if (typeof poisonDps === 'number' && typeof poisonDuration === 'number' && poisonDps > 0 && poisonDuration > 0) {
@@ -4120,6 +4208,7 @@ class Projectile {
     this.piercedEnemies = new Set();
     this.towerType = tower.typeKey;
     this.damageType = TOWER_DATA[tower.typeKey]?.damageType || 'physical';
+    this.tower = tower; // 來源防禦塔參照
 
     // Thunder Chain & Poison DOT properties
     this.chainCount = tower.getStats().chainCount || 0;
@@ -4172,6 +4261,9 @@ class Projectile {
       if (typeof relicManager !== 'undefined') {
         finalDamage = relicManager.modifyDamage(finalDamage, this.damageType, this, this.target, game);
       }
+      if (this.tower) {
+        this.tower.totalDamageDealt = (this.tower.totalDamageDealt || 0) + finalDamage;
+      }
       this.target.takeDamage(finalDamage, this.slowFactor, this.slowDuration, this.poisonDps, this.poisonDuration, this.damageType, game);
       this.piercedEnemies.add(this.target);
       this.chainedEnemies.add(this.target);
@@ -4197,6 +4289,9 @@ class Projectile {
             // 雷霆過載：每一次彈射獨立判定暴擊，而不是只有初擊能觸發
             if (typeof relicManager !== 'undefined' && relicManager.hasHidden('thunder_overload')) {
               chainDmg = relicManager.modifyDamage(chainDmg, 'magic', this, nextTarget, game);
+            }
+            if (this.tower) {
+              this.tower.totalDamageDealt = (this.tower.totalDamageDealt || 0) + chainDmg;
             }
             nextTarget.takeDamage(chainDmg, null, 0, 0, 0, 'magic', game); // 閃電為魔法傷害
 
@@ -4333,6 +4428,7 @@ class Tower {
     this.cooldown = 0;
     this.target = null;
     this.angle = 0;
+    this.totalDamageDealt = 0; // 本局累計輸出傷害
 
     // Gold generation
     this.goldTimer = 0;
@@ -4671,8 +4767,16 @@ class WaveManager {
   // 🔮 幻境秘境全域指數性數值成長 (數量精簡 + 單體高血高抗精銳化)
   generateEndlessWave(waveIndex) {
     const waveNum = waveIndex + 1;
-    // 基礎血量係數：平滑起步 + 中後期依天賦強度穩步增長
-    const hpScale = Number((1.0 + (waveNum - 1) * 0.10 + Math.pow(waveNum - 1, 1.35) * 0.05).toFixed(2));
+    // 基礎血量係數：前 50 波 100% 保持原本平滑成長；50 波之後指數狂暴提升
+    let hpScale;
+    if (waveNum <= 50) {
+      hpScale = 1.0 + (waveNum - 1) * 0.10 + Math.pow(waveNum - 1, 1.35) * 0.05;
+    } else {
+      const extra50 = waveNum - 50;
+      // 50 波基準值 (16.32) + 超過 50 波後以 1.85 次方高強度飆升
+      hpScale = 16.32 + extra50 * 0.8 + Math.pow(extra50, 1.85) * 0.22;
+    }
+    hpScale = Number(hpScale.toFixed(2));
 
     const isBossWave = (waveNum % 10 === 0);
     const isMidBossWave = (waveNum % 5 === 0 && !isBossWave);
@@ -4875,6 +4979,12 @@ class Game {
     // Timing
     this.lastTime = 0;
     this.animFrame = null;
+
+    // 歷史累計各塔總傷害（賣掉塔後依然永久保留在本局統計中）
+    this.typeTotalDamage = {};
+    for (const key in TOWER_DATA) {
+      this.typeTotalDamage[key] = 0;
+    }
 
     // Shop tabs & filters
     this.shopStatusTab = 'all'; // 'all', 'locked', 'unlocked'
@@ -5971,29 +6081,24 @@ class Game {
     this.renderLevelCarousel();
     this.setupLevelStarTip();
 
-    bindTap('start-btn', () => this.startGame());
+    bindTap('start-btn', () => {
+      if (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE && this.hasRogueSession()) {
+        this.resumeRogueGame();
+      } else {
+        this.startGame();
+      }
+    });
+    bindTap('rogue-abandon-btn', () => {
+      const ok = window.confirm('確定要放棄當前暫存的幻境進度，從第 1 波重新開始嗎？');
+      if (ok) {
+        this.clearRogueSession();
+        this.renderLevelCarousel();
+        this.showToast('已清除暫存進度，可重新開始第 1 波');
+      }
+    });
     bindTap('level-prev-btn', () => this.changeLevel(-1));
     bindTap('level-next-btn', () => this.changeLevel(1));
     bindTap('start-wave-btn', () => this.startNextWave());
-    bindTap('wave-info', () => {
-      if (this.state === 'planning') {
-        this.startNextWave();
-      } else if (this.state === 'wave' && this.nextWaveCountdown !== null) {
-        this.nextWaveCountdown = null;
-        this.currentWave++;
-        if (typeof relicManager !== 'undefined') {
-          relicManager.onWaveEnd(this.currentWave, this);
-        }
-        if (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE && this.currentWave % 5 === 0) {
-          this.openTalentPickModal();
-        } else {
-          this.waveManager.startWave(this.currentWave);
-          this.sfx.play('wave');
-          this.showToast(`第 ${this.currentWave + 1} 波提早降臨！`);
-        }
-        this.updateUI();
-      }
-    });
     bindTap('retry-btn', () => this.restartGame());
     bindTap('replay-btn', () => this.restartGame());
     bindTap('next-level-btn', () => this.playNextLevel());
@@ -6005,6 +6110,11 @@ class Game {
     bindTap('close-leaderboard-btn', () => this.closeLeaderboardModal());
     bindTap('relic-btn', () => this.openAcquiredTalentsModal());
     bindTap('close-acquired-talents-btn', () => this.closeAcquiredTalentsModal());
+
+    // ⚔️ 塔傷害統計彈窗開關
+    bindTap('dps-btn', () => this.openDamageStatsModal());
+    bindTap('close-damage-stats-btn', () => this.closeDamageStatsModal());
+
     bindTap('open-shop-btn', () => this.openShopModal());
     bindTap('reset-data-btn', () => {
       const ok = window.confirm('確定要重置所有資料嗎？已解鎖的塔/技能、水晶、通關進度、排行榜都會清空，且無法復原。');
@@ -6209,6 +6319,22 @@ class Game {
     if (nextBtn) nextBtn.disabled = (CURRENT_LEVEL_INDEX >= this.getMaxBrowsableLevelIndex());
 
     const startBtn = document.getElementById('start-btn');
+    const startBtnText = document.getElementById('start-btn-text');
+    const abandonBtn = document.getElementById('rogue-abandon-btn');
+
+    if (isRogue && this.hasRogueSession()) {
+      let sessionData = null;
+      try {
+        sessionData = JSON.parse(localStorage.getItem('dd_td_rogue_session_v1'));
+      } catch (e) {}
+      const resumeWave = (sessionData && typeof sessionData.currentWave === 'number') ? sessionData.currentWave + 1 : 1;
+      if (startBtnText) startBtnText.textContent = `繼續幻境 (第 ${resumeWave} 波)`;
+      if (abandonBtn) abandonBtn.classList.remove('hidden');
+    } else {
+      if (startBtnText) startBtnText.textContent = isRogue ? '開始挑戰' : '開始守衛';
+      if (abandonBtn) abandonBtn.classList.add('hidden');
+    }
+
     if (startBtn) startBtn.classList.toggle('btn-locked', !entry.unlocked);
   }
 
@@ -6609,19 +6735,7 @@ class Game {
           return;
         }
         if (this.state === 'wave' && this.nextWaveCountdown !== null) {
-          this.nextWaveCountdown = null;
-          this.currentWave++;
-          if (typeof relicManager !== 'undefined') {
-            relicManager.onWaveEnd(this.currentWave, this);
-          }
-          if (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE && this.currentWave % 5 === 0) {
-            this.openTalentPickModal();
-          } else {
-            this.waveManager.startWave(this.currentWave);
-            this.sfx.play('wave');
-            this.showToast(`第 ${this.currentWave + 1} 波提早降臨！`);
-          }
-          this.updateUI();
+          this.advanceToNextWave(true);
           return;
         }
       }
@@ -6933,6 +7047,33 @@ class Game {
     }
   }
 
+  // 更新技能快捷欄鎖定與顯示狀態（日輪天罰只在學會天賦時顯示）
+  updateSkillBarLockState() {
+    const solarWrathBtn = document.getElementById('skill-solar_wrath-btn');
+    if (solarWrathBtn) {
+      const hasSolar = typeof relicManager !== 'undefined' && relicManager.hasHidden('solar_wrath');
+      solarWrathBtn.style.display = hasSolar ? 'flex' : 'none';
+      if (hasSolar) {
+        const canvas = document.getElementById('skill-canvas-solar_wrath');
+        if (canvas) this.drawSkillIcon(canvas.getContext('2d'), 'solar_wrath');
+      }
+    }
+
+    const meteorBtn = document.getElementById('skill-meteor-btn');
+    if (meteorBtn) {
+      const unlocked = isSkillUnlocked('meteor');
+      meteorBtn.classList.toggle('locked-skill', !unlocked);
+      meteorBtn.style.display = unlocked ? 'flex' : 'none';
+    }
+
+    const freezeBtn = document.getElementById('skill-freeze-btn');
+    if (freezeBtn) {
+      const unlocked = isSkillUnlocked('freeze');
+      freezeBtn.classList.toggle('locked-skill', !unlocked);
+      freezeBtn.style.display = unlocked ? 'flex' : 'none';
+    }
+  }
+
   // ─── Tower management ───
   selectTowerType(typeKey) {
     if (this.state !== 'planning' && this.state !== 'wave') return;
@@ -6986,6 +7127,7 @@ class Game {
     this.sfx.play('place');
     this.updateUI();
     this.updateTowerPanel();
+    this.saveRogueSession();
 
     // Keep type selected for multi-place (unless not enough gold)
     if (this.gold < data.cost) {
@@ -7091,12 +7233,18 @@ class Game {
     this.showToast(`⬆️ ${this.selectedTower.data.name} 升級到 Lv.${this.selectedTower.level}！`);
     this.showTowerInfo(this.selectedTower);
     this.updateUI();
+    this.saveRogueSession();
   }
 
   sellTower() {
     if (!this.selectedTower) return;
     const value = this.selectedTower.getSellValue();
     const key = `${this.selectedTower.col},${this.selectedTower.row}`;
+    const typeKey = this.selectedTower.typeKey;
+    // 將已賣掉防禦塔的累積傷害存入全域本局統計
+    if (this.typeTotalDamage) {
+      this.typeTotalDamage[typeKey] = (this.typeTotalDamage[typeKey] || 0) + (this.selectedTower.totalDamageDealt || 0);
+    }
     delete this.towerGrid[key];
     this.towers = this.towers.filter((t) => t !== this.selectedTower);
     this.gold += value;
@@ -7105,9 +7253,59 @@ class Game {
     this.deselectTower();
     this.updateUI();
     this.updateTowerPanel();
+    this.saveRogueSession();
   }
 
   // ─── Wave management ───
+  advanceToNextWave(isEarlySkip = false) {
+    if (this.nextWaveCountdown === null && this.state !== 'planning') return;
+    this.nextWaveCountdown = null;
+    this.currentWave++;
+
+    // 遺物每波結束 Hook
+    if (typeof relicManager !== 'undefined') {
+      relicManager.onWaveEnd(this.currentWave, this);
+    }
+
+    const isRogue = CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE;
+    
+    // 🔮 幻境秘境：每往後一波即時持久化記錄最高波次（即使重新整理或中途離開亦能保留）
+    if (isRogue) {
+      try {
+        const list = this.getActiveLevelList();
+        const levelId = list[CURRENT_LEVEL_INDEX]?.id || 'rogue_1';
+        const rogueKey = 'dd_td_rogue_best_waves_v1';
+        const rogueBestWaves = JSON.parse(localStorage.getItem(rogueKey)) || {};
+        const currentWaveNum = this.currentWave + 1;
+        if (!rogueBestWaves[levelId] || currentWaveNum > rogueBestWaves[levelId]) {
+          rogueBestWaves[levelId] = currentWaveNum;
+          localStorage.setItem(rogueKey, JSON.stringify(rogueBestWaves));
+        }
+      } catch (e) {
+        console.warn('Rogue best wave live save error:', e);
+      }
+    }
+
+    // 🔮 幻境秘境：統一每滿 5 波（第 5, 10, 15, 20... 波）觸發三選一神力抽卡
+    if (isRogue && this.currentWave % 5 === 0) {
+      this.openTalentPickModal();
+    } else {
+      this.state = 'wave';
+      this.waveManager.startWave(this.currentWave);
+      if (typeof relicManager !== 'undefined') {
+        relicManager.onWaveStart(this.currentWave, this);
+      }
+      this.sfx.play('wave');
+      if (isEarlySkip) {
+        this.showToast(`第 ${this.currentWave + 1} 波提早降臨！`);
+      } else {
+        this.showToast(`第 ${this.currentWave + 1} 波降臨！`);
+      }
+    }
+    this.saveRogueSession();
+    this.updateUI();
+  }
+
   startNextWave() {
     if (this.state !== 'planning' && this.state !== 'wave') return;
     this.nextWaveCountdown = null;
@@ -7117,6 +7315,21 @@ class Game {
       relicManager.onWaveStart(this.currentWave, this);
     }
     this.sfx.play('wave');
+    if (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE) {
+      try {
+        const list = this.getActiveLevelList();
+        const levelId = list[CURRENT_LEVEL_INDEX]?.id || 'rogue_1';
+        const rogueKey = 'dd_td_rogue_best_waves_v1';
+        const rogueBestWaves = JSON.parse(localStorage.getItem(rogueKey)) || {};
+        const currentWaveNum = this.currentWave + 1;
+        if (!rogueBestWaves[levelId] || currentWaveNum > rogueBestWaves[levelId]) {
+          rogueBestWaves[levelId] = currentWaveNum;
+          localStorage.setItem(rogueKey, JSON.stringify(rogueBestWaves));
+        }
+      } catch (e) {
+        console.warn('Rogue best wave live save error:', e);
+      }
+    }
     if (this.currentWave === 9) {
       this.showToast(`👑 第 10 波：中繼領主 (Mid-Boss) 來襲！`);
     } else if (this.currentWave === 14) {
@@ -7129,6 +7342,7 @@ class Game {
     this.selectedTowerType = null;
     this.updateTowerPanel();
     this.updateUI();
+    this.saveRogueSession();
   }
 
   triggerNextWaveAutoCountdown() {
@@ -7153,8 +7367,164 @@ class Game {
     this.updateUI();
   }
 
+  // ─── 🔮 幻境中斷即時存檔與接關系統 ───
+  saveRogueSession() {
+    if (CURRENT_GAME_MODE !== GAME_MODES.ROGUELIKE) return;
+    if (this.state === 'gameover' || this.state === 'victory' || this.state === 'menu') return;
+    try {
+      const list = this.getActiveLevelList();
+      const level = list[CURRENT_LEVEL_INDEX] || ROGUELIKE_LEVEL_DATA[0];
+      const sessionData = {
+        levelId: level.id,
+        levelIndex: CURRENT_LEVEL_INDEX,
+        currentWave: this.currentWave,
+        gold: this.gold,
+        lives: this.lives,
+        score: this.score,
+        // 保存場上防禦塔陣型與各塔傷害
+        towers: this.towers.map(t => ({
+          col: t.col,
+          row: t.row,
+          typeKey: t.typeKey,
+          level: t.level,
+          totalDamageDealt: t.totalDamageDealt || 0
+        })),
+        // 歷史賣塔傷害累積
+        typeTotalDamage: { ...(this.typeTotalDamage || {}) },
+        // 完整神力天賦進度
+        relicState: relicManager.exportState(),
+        timestamp: Date.now()
+      };
+      localStorage.setItem('dd_td_rogue_session_v1', JSON.stringify(sessionData));
+      dbgLog(`💾 [Rogue Save] 已自動儲存第 ${this.currentWave + 1} 波幻境進度 (金幣:${this.gold}, 塔數:${this.towers.length})`);
+    } catch (e) {
+      console.warn('Rogue session save error:', e);
+    }
+  }
+
+  hasRogueSession() {
+    try {
+      const raw = localStorage.getItem('dd_td_rogue_session_v1');
+      if (!raw) return false;
+      const data = JSON.parse(raw);
+      return !!(data && typeof data.currentWave === 'number' && data.levelId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  clearRogueSession() {
+    try {
+      localStorage.removeItem('dd_td_rogue_session_v1');
+      dbgLog('🗑️ [Rogue Save] 已清除幻境中斷存檔');
+    } catch (e) {
+      console.warn('Clear rogue session error:', e);
+    }
+  }
+
+  resumeRogueGame() {
+    try {
+      const raw = localStorage.getItem('dd_td_rogue_session_v1');
+      if (!raw) {
+        this.showToast('⚠️ 查無暫存進度，重新開始新挑戰');
+        this.startGame();
+        return;
+      }
+      const data = JSON.parse(raw);
+      CURRENT_GAME_MODE = GAME_MODES.ROGUELIKE;
+      CURRENT_LEVEL_INDEX = typeof data.levelIndex === 'number' ? data.levelIndex : 0;
+      const list = this.getActiveLevelList();
+      const level = list[CURRENT_LEVEL_INDEX] || ROGUELIKE_LEVEL_DATA[0];
+
+      // 地圖與波次核心初始化
+      CURRENT_MAP_ID = level.mapId;
+      this.map = new GameMap(level.mapId);
+      this.renderMapToBuffer();
+      this.waveManager = new WaveManager(level.waves);
+
+      // 還原基礎數值
+      this.gold = typeof data.gold === 'number' ? data.gold : getStartingGold();
+      this.lives = typeof data.lives === 'number' ? data.lives : getStartingLives();
+      this.score = typeof data.score === 'number' ? data.score : 0;
+      this.currentWave = typeof data.currentWave === 'number' ? data.currentWave : 0;
+      this.speedMultiplier = 1;
+
+      // 還原歷史賣塔傷害
+      this.typeTotalDamage = {};
+      for (const key in TOWER_DATA) {
+        this.typeTotalDamage[key] = (data.typeTotalDamage && data.typeTotalDamage[key]) || 0;
+      }
+
+      // 還原防禦塔
+      this.towers = [];
+      this.towerGrid = {};
+      if (Array.isArray(data.towers)) {
+        for (const tInfo of data.towers) {
+          const tower = new Tower(tInfo.typeKey, tInfo.col, tInfo.row);
+          tower.level = tInfo.level || 1;
+          tower.totalDamageDealt = tInfo.totalDamageDealt || 0;
+          this.towers.push(tower);
+          this.towerGrid[`${tInfo.col},${tInfo.row}`] = tower;
+        }
+      }
+
+      // 還原神力天賦
+      if (typeof relicManager !== 'undefined' && data.relicState) {
+        relicManager.importState(data.relicState, this);
+        this.updateRelicBarUI();
+      }
+
+      this.enemies = [];
+      this.projectiles = [];
+      this.particles = [];
+      this.selectedTower = null;
+      this.selectedTowerType = null;
+      this.nextWaveCountdown = null; // 恢復時絕不自動倒數，等玩家準備好點擊開始
+
+      // 關閉開始選單與各彈窗
+      const menu = document.getElementById('menu-screen');
+      if (menu) {
+        menu.classList.add('hidden');
+        menu.style.display = 'none';
+      }
+      document.getElementById('gameover-screen').classList.add('hidden');
+      document.getElementById('victory-screen').classList.add('hidden');
+      document.getElementById('talent-pick-modal')?.classList.add('hidden');
+      document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+      document.getElementById('damage-stats-modal')?.classList.add('hidden');
+
+      this.state = 'planning';
+      const startWaveBtn = document.getElementById('start-wave-btn');
+      if (startWaveBtn) startWaveBtn.disabled = false;
+      document.getElementById('speed-btn').textContent = '1x';
+
+      this.resetSkills();
+      this.updateSkillBarLockState();
+      this.deselectTower();
+      this.updateWavePreview();
+      this.updateUI();
+      this.updateTowerPanel();
+      this.resizeCanvas();
+
+      this.sfx.init();
+      this.sfx.resume();
+      this.sfx.play('tap');
+
+      this.showToast(`幻境進度已恢復！第 ${this.currentWave + 1} 波，準備好後點擊【開始波次】`);
+      dbgLog(`🚀 [Rogue Resume] 成功恢復第 ${this.currentWave + 1} 波戰局！`);
+    } catch (e) {
+      console.error('Resume rogue error:', e);
+      this.showToast('讀取存檔失敗，重新開始新挑戰');
+      this.startGame();
+    }
+  }
+
   // ─── Game state ───
   startGame() {
+    // 開啟全新局前清空先前的中斷存檔
+    if (CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE) {
+      this.clearRogueSession();
+    }
     const list = this.getActiveLevelList();
     const level = list[CURRENT_LEVEL_INDEX];
     const isRogue = CURRENT_GAME_MODE === GAME_MODES.ROGUELIKE;
@@ -7194,7 +7564,7 @@ class Game {
     const startWaveBtn = document.getElementById('start-wave-btn');
     if (startWaveBtn) startWaveBtn.disabled = false;
     this.resetSkills();
-    this.showToast(isRogue ? '幻境秘境啟動！每 3 波可選一項神力賜福！' : '放置防禦塔，然後開始波次！');
+    this.showToast(isRogue ? '幻境秘境啟動！每 5 波可選一項神力賜福！' : '放置防禦塔，然後開始波次！');
     this.updateWavePreview();
     this.updateUI();
     this.resizeCanvas();
@@ -7216,6 +7586,8 @@ class Game {
     this.projectiles = [];
     this.particles = [];
     this.towerGrid = {};
+    this.typeTotalDamage = {};
+    for (const key in TOWER_DATA) this.typeTotalDamage[key] = 0;
     this.selectedTower = null;
     this.selectedTowerType = null;
     this.waveManager = new WaveManager(level.waves);
@@ -7227,10 +7599,13 @@ class Game {
       relicManager.reset(CURRENT_GAME_MODE);
       this.updateRelicBarUI();
     }
+    this.updateSkillBarLockState();
 
     document.getElementById('gameover-screen').classList.add('hidden');
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('talent-pick-modal')?.classList.add('hidden');
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+    document.getElementById('damage-stats-modal')?.classList.add('hidden');
     const startWaveBtn = document.getElementById('start-wave-btn');
     if (startWaveBtn) startWaveBtn.disabled = false;
     document.getElementById('speed-btn').textContent = '1x';
@@ -7245,6 +7620,7 @@ class Game {
   gameOver() {
     this.state = 'gameover';
     this.sfx.play('gameover');
+    this.clearRogueSession();
     this.saveGameRecord();
     document.getElementById('final-wave').textContent = this.currentWave + 1;
     document.getElementById('final-score').textContent = this.score;
@@ -7256,6 +7632,7 @@ class Game {
   victory() {
     this.state = 'victory';
     this.sfx.play('victory');
+    this.clearRogueSession();
     this.score += this.lives * 50; // Bonus for remaining lives
 
     const lifeRatio = this.lives / getStartingLives();
@@ -7327,9 +7704,15 @@ class Game {
     this.particles = [];
     this.towerGrid = {};
     this.selectedTower = null;
-    this.selectedTowerType = null;
     this.state = 'planning';
     this.resetSkills();
+
+    // 跨關卡重置幻境神力天賦
+    if (typeof relicManager !== 'undefined') {
+      relicManager.reset(CURRENT_GAME_MODE);
+      this.updateRelicBarUI();
+    }
+    this.updateSkillBarLockState();
 
     document.getElementById('victory-screen').classList.add('hidden');
     document.getElementById('speed-btn').textContent = '1x';
@@ -7375,6 +7758,7 @@ class Game {
     document.getElementById('tower-info').classList.add('hidden');
     document.getElementById('talent-pick-modal')?.classList.add('hidden');
     document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+    document.getElementById('damage-stats-modal')?.classList.add('hidden');
 
     // 重置遊戲進行中的單位與狀態
     this.towers = [];
@@ -7382,6 +7766,8 @@ class Game {
     this.projectiles = [];
     this.particles = [];
     this.towerGrid = {};
+    this.typeTotalDamage = {};
+    for (const key in TOWER_DATA) this.typeTotalDamage[key] = 0;
     this.selectedTower = null;
     this.selectedTowerType = null;
     this.gold = getStartingGold();
@@ -7396,6 +7782,7 @@ class Game {
       relicManager.reset(CURRENT_GAME_MODE);
       this.updateRelicBarUI();
     }
+    this.updateSkillBarLockState();
     const speedBtn = document.getElementById('speed-btn');
     if (speedBtn) speedBtn.textContent = '1x';
 
@@ -7478,6 +7865,7 @@ class Game {
     this.showToast(`✨ 獲得神力：【${talent.name}】！`);
     document.getElementById('talent-pick-modal')?.classList.add('hidden');
     this.updateRelicBarUI();
+    this.updateSkillBarLockState();
 
     // 恢復遊戲並開始該波次
     this.state = 'wave';
@@ -7485,6 +7873,7 @@ class Game {
     if (typeof relicManager !== 'undefined') {
       relicManager.onWaveStart(this.currentWave, this);
     }
+    this.saveRogueSession();
     this.updateUI();
   }
 
@@ -7513,15 +7902,147 @@ class Game {
     if (relicBtnCount) relicBtnCount.textContent = count;
   }
 
+  // 取得該天賦分支在指定等級下的累計總效果文字
+  getTalentCumulativeDesc(schoolKey, branchId, level) {
+    const table = {
+      ice_pierce: [
+        '穿透 +1 體，減速強度提升 8%',
+        '穿透 +2 體，減速強度提升 16%',
+        '穿透 +4 體，減速強度提升 26%'
+      ],
+      ice_shatter: [
+        '55px 範圍造成 20% 最大血量傷害（最高 250 點）',
+        '70px 範圍造成 27% 最大血量傷害（最高 250 點）',
+        '85px 範圍造成 34% 最大血量傷害（最高 250 點）+ 緩速 1.5 秒'
+      ],
+      ice_aura: [
+        '100px 霜環，敵人跑速 -15%',
+        '125px 霜環，跑速 -25%，受魔傷 +15%',
+        '150px 霜環，跑速 -35%，受魔傷 +30%'
+      ],
+      toxin_potency: [
+        '毒傷 +15%，持續時間 +1 秒',
+        '毒傷 +32%，持續時間 +2 秒',
+        '毒傷 +58%，持續時間 +3 秒'
+      ],
+      toxin_spread: [
+        '中毒死亡時 60px 感染 70% 毒素',
+        '中毒死亡時 75px 感染 100% 毒素',
+        '中毒死亡時 95px 感染 100% 毒素（具備無限連鎖傳染）'
+      ],
+      toxin_corrosion: [
+        '中毒受傷加深 +15%',
+        '中毒受傷加深 +25%，跳毒頻率加快 30%',
+        '中毒受傷加深 +40%，跳毒加快 30%，跑速 -20%'
+      ],
+      chain_reach: [
+        '彈射 +1 次，彈射範圍 +12%',
+        '彈射 +2 次，彈射範圍 +25%',
+        '彈射 +3 次，彈射範圍 +40%'
+      ],
+      crit_strike: [
+        '10% 機率造成 1.8 倍暴擊傷害',
+        '15% 機率造成 2.0 倍暴擊傷害',
+        '20% 機率造成 2.4 倍暴擊傷害'
+      ],
+      electromagnetic_field: [
+        '電弧命中使敵人陷入 1.5 秒感電（受魔傷 +15%）',
+        '感電增傷 +25%，彈射衰減降至 10%',
+        '感電增傷 +40%，彈射傷害不再衰減（每擊 100%）'
+      ],
+      gold_boost: [
+        '向日葵產金 +20%，每波結束 +40 金幣',
+        '向日葵產金 +44%，每波結束 +80 金幣',
+        '向日葵產金 +80%，每波結束 +120 金幣'
+      ],
+      tower_growth: [
+        '全植物塔射速 +7.0%，射程 +5.0%',
+        '全植物塔射速 +14.5%，射程 +10.3%',
+        '全植物塔射速 +23.6%，射程 +15.8%'
+      ],
+      gold_interest: [
+        '每波結束依現有金幣獲得 4% 利息（上限 +60 💰）',
+        '每波結束依現有金幣獲得 7% 利息（上限 +120 💰）',
+        '每波結束依現有金幣獲得 10% 利息（上限 +200 💰），全塔升級費 -15%'
+      ],
+      petal_speed: [
+        '粉櫻箭射速 +20.0%，射程 +10.0%',
+        '粉櫻箭射速 +50.0%，射程 +21.0%',
+        '粉櫻箭射速 +95.0%，射程 +39.2%'
+      ],
+      petal_pierce_armor: [
+        '粉櫻箭傷害 +25%，無視 30% 物理抗性',
+        '粉櫻箭傷害 +56%，無視 60% 物理抗性',
+        '粉櫻箭傷害 +111%，無視 100% 物理抗性（2.1 倍全額真傷）'
+      ],
+      petal_multishot: [
+        '25% 機率散射 1 枚箭（60% 傷害）',
+        '45% 機率散射 1 枚箭（80% 傷害）',
+        '70% 機率散射 2 枚全額花箭'
+      ],
+      cannon_blast: [
+        '爆炸半徑 +20px，傷害 +20%',
+        '爆炸半徑 +40px，傷害 +50%',
+        '爆炸半徑 +65px，傷害 +95%，中心 40px 雙倍傷害'
+      ],
+      cannon_scorched_earth: [
+        '砲擊留下 2.5 秒焦土，燃燒 30/秒',
+        '砲擊留下 4.0 秒焦土，燃燒 55/秒',
+        '砲擊留下 5.5 秒焦土，燃燒 85/秒，跑速 -25%'
+      ],
+      cannon_cluster_shrapnel: [
+        '爆炸噴射 4 枚彈片（每枚 35 物理傷害）',
+        '爆炸噴射 6 枚彈片（每枚 60 物理傷害）',
+        '爆炸噴射 8 枚彈片（每枚 95 物理傷害 + 微震擊退）'
+      ],
+      treant_entangle: [
+        '古木定身減速強度 75%，持續時間 +1.0 秒',
+        '古木定身減速強度 85%，持續時間 +2.0 秒',
+        '古木定身減速強度 95%，持續時間 +3.5 秒'
+      ],
+      treant_thorns: [
+        '處於定身/緩速目標受傷加深 +20%',
+        '定身受傷加深 +35%，附帶 50px 劇烈震裂波',
+        '定身受傷加深 +50%，每秒承受 100% 攻擊力真傷'
+      ],
+      treant_earthquake: [
+        '攻擊範圍 +15px，震飛 60px 敵人打斷衝刺',
+        '攻擊範圍 +35px，震波 100% 傷害 + 1 秒眩暈',
+        '攻擊範圍 +60px，全圖 100px 震波全場怪物停滯 1.2 秒'
+      ],
+      laser_overcharge: [
+        '日光雷射射速 +15%，貫穿 +1 體',
+        '日光雷射射速 +38%，貫穿 +2 體',
+        '日光雷射射速 +72%，貫穿 +4 體且穿透不衰減'
+      ],
+      laser_refract: [
+        '穿透後 30% 機率折射副光束（50% 傷害）',
+        '穿透後 50% 機率折射副光束（75% 傷害）',
+        '穿透後 75% 機率折射 2 名敵人（100% 傷害）'
+      ],
+      laser_focus_beam: [
+        '持續打擊同一敵人每次增傷 15%（最多 3 層 +45%）',
+        '聚焦每層增傷 25%（最多 4 層 +100%），打擊 Boss +20%',
+        '聚焦每層增傷 35%（最多 5 層 +175%），打擊 Boss +40%'
+      ]
+    };
+    if (table[branchId] && table[branchId][level - 1]) {
+      return table[branchId][level - 1];
+    }
+    const branch = TALENT_SCHOOLS[schoolKey]?.branches[branchId];
+    return branch?.levels[level - 1]?.desc || '';
+  }
+
+  // ─── 自然神力累計總效果彈窗 ───
   openAcquiredTalentsModal() {
     if (this.state === 'menu' || this.state === 'gameover' || this.state === 'victory') return;
     this.previousState = this.state;
     this.state = 'paused';
 
     const modal = document.getElementById('acquired-talents-modal');
-    const container = document.getElementById('acquired-talents-list');
+    const summaryContainer = document.getElementById('acquired-summary-list');
     const subtitle = document.getElementById('acquired-talents-subtitle');
-    if (!modal || !container) return;
+    if (!modal || !summaryContainer) return;
 
     const acquiredList = [];
     for (const schoolKey in TALENT_SCHOOLS) {
@@ -7539,6 +8060,7 @@ class Game {
             level,
             name: `${branch.name} Lv.${level}`,
             desc: branch.levels[level - 1].desc,
+            cumulativeDesc: this.getTalentCumulativeDesc(schoolKey, branchId, level),
             icon: branch.icon,
             rarity: meta.rarity,
             towerKey: visual.towerKey,
@@ -7555,6 +8077,7 @@ class Game {
             hiddenId: hidden.id,
             name: hidden.name,
             desc: hidden.desc,
+            cumulativeDesc: hidden.desc,
             icon: hidden.icon,
             rarity: hidden.rarity,
             towerKey: visual.towerKey,
@@ -7565,36 +8088,36 @@ class Game {
     }
 
     if (subtitle) {
-      subtitle.textContent = `本局累計已啟動 ${acquiredList.length} 項神力天賦`;
+      subtitle.textContent = `本局累計已啟動 ${acquiredList.length} 項神力總效果`;
     }
 
     if (acquiredList.length === 0) {
-      container.innerHTML = `<div class="acquired-talents-empty">本局尚未獲取任何神力天賦</div>`;
+      summaryContainer.innerHTML = `<div class="acquired-talents-empty" style="text-align:center;padding:24px 0;color:#a1887f;font-size:13px;font-weight:700;">本局尚未獲取任何神力天賦</div>`;
     } else {
-      container.innerHTML = acquiredList.map(talent => {
+      // 直接渲染「累計總效果」列表
+      summaryContainer.innerHTML = acquiredList.map(talent => {
         let iconHtml = '';
         if (talent.towerKey) {
           const towerKey = (talent.towerKey === 'ice') ? 'ice_crystal' : talent.towerKey;
           iconHtml = `<img class="talent-card-tower-img" src="assets/towers/tower_${towerKey}.svg" alt="${talent.name}" />`;
         } else {
-          iconHtml = `<canvas class="talent-card-canvas acquired-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
+          iconHtml = `<canvas class="talent-card-canvas acquired-summary-canvas" width="40" height="40" data-id="${talent.id}"></canvas>`;
         }
         return `
-          <div class="talent-card rarity-${talent.rarity}" data-id="${talent.id}" style="cursor: default;">
+          <div class="talent-card rarity-${talent.rarity} unclickable" data-id="${talent.id}">
             <div class="talent-card-icon">${iconHtml}</div>
             <div class="talent-card-info">
               <div class="talent-card-title">
                 <span>${talent.name}</span>
                 <span class="talent-rarity-pill ${talent.rarity}">${talent.rarity}</span>
               </div>
-              <div class="talent-card-desc">${talent.desc}</div>
+              <div class="talent-card-desc" style="color:#ffe082;font-weight:700;line-height:1.4;">${talent.cumulativeDesc}</div>
             </div>
           </div>
         `;
       }).join('');
 
-      // 繪製非塔專屬的特殊天賦圖標
-      container.querySelectorAll('.acquired-canvas').forEach(cv => {
+      summaryContainer.querySelectorAll('.acquired-summary-canvas').forEach(cv => {
         const talentId = cv.dataset.id;
         const t = acquiredList.find(item => item.id === talentId);
         if (t) this.drawTalentIcon(cv.getContext('2d'), t, 40, 40);
@@ -7603,7 +8126,95 @@ class Game {
 
     modal.classList.remove('hidden');
     this.sfx.play('tap');
-    dbgLog('🔮 開啟已獲取神力天賦詳情面板');
+    dbgLog('🔮 開啟自然神力累計效果面板');
+  }
+
+  closeAcquiredTalentsModal() {
+    if (this.state === 'paused') {
+      this.state = this.previousState || 'planning';
+      this.previousState = null;
+    }
+    document.getElementById('acquired-talents-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
+  }
+
+  // ─── ⚔️ 各防禦塔總輸出傷害統計彈窗 ───
+  openDamageStatsModal() {
+    if (this.state === 'menu' || this.state === 'gameover' || this.state === 'victory') return;
+    this.previousState = this.state;
+    this.state = 'paused';
+
+    const modal = document.getElementById('damage-stats-modal');
+    const container = document.getElementById('damage-stats-list');
+    const subtitle = document.getElementById('damage-stats-subtitle');
+    if (!modal || !container) return;
+
+    // 計算各種類塔的總傷害聚合（場上現存塔 + 本局已賣掉的塔）
+    const typeDamageMap = {};
+    let totalTeamDamage = 0;
+    for (const key in TOWER_DATA) {
+      typeDamageMap[key] = (this.typeTotalDamage && this.typeTotalDamage[key]) || 0;
+    }
+    for (const tower of this.towers) {
+      typeDamageMap[tower.typeKey] = (typeDamageMap[tower.typeKey] || 0) + (tower.totalDamageDealt || 0);
+    }
+    for (const key in typeDamageMap) {
+      totalTeamDamage += typeDamageMap[key];
+    }
+
+    // 依傷害高低降序排序（只顯示有實際造成傷害 dmg > 0 的塔，排除 0 傷或未攻擊的塔）
+    const statsList = Object.keys(TOWER_DATA)
+      .map(key => ({
+        key,
+        data: TOWER_DATA[key],
+        dmg: Math.round(typeDamageMap[key] || 0),
+        count: this.towers.filter(t => t.typeKey === key).length
+      }))
+      .filter(item => item.dmg > 0)
+      .sort((a, b) => b.dmg - a.dmg);
+
+    if (subtitle) {
+      subtitle.textContent = `本局隊伍總輸出傷害：${Math.round(totalTeamDamage).toLocaleString()} 點`;
+    }
+
+    if (statsList.length === 0 || totalTeamDamage === 0) {
+      container.innerHTML = `<div class="acquired-talents-empty" style="text-align:center;padding:24px 0;color:#a1887f;font-size:13px;font-weight:700;">防禦塔尚未造成任何戰鬥傷害</div>`;
+    } else {
+      container.innerHTML = statsList.map(item => {
+        const pct = totalTeamDamage > 0 ? Math.round((item.dmg / totalTeamDamage) * 100) : 0;
+        const iconKey = (item.key === 'ice') ? 'ice_crystal' : item.key;
+        return `
+          <div class="talent-card rarity-rare unclickable" style="border-color: rgba(255, 215, 0, 0.3);">
+            <div class="talent-card-icon">
+              <img class="talent-card-tower-img" src="assets/towers/tower_${iconKey}.svg" alt="${item.data.name}" />
+            </div>
+            <div class="talent-card-info" style="gap: 2px;">
+              <div class="talent-card-title">
+                <span>${item.data.name}</span>
+                <span class="dps-val-text">${item.dmg.toLocaleString()} 點 (${pct}%)</span>
+              </div>
+              <div style="font-size: 10px; color: #bcaaa4;">場上現存：${item.count} 座 · 傷害類型：${item.data.damageType === 'magic' ? '🔮 魔法' : '🏹 物理'}</div>
+              <div class="dps-bar-container">
+                <div class="dps-bar-fill" style="width: ${Math.max(3, pct)}%;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    modal.classList.remove('hidden');
+    this.sfx.play('tap');
+    dbgLog('⚔️ 開啟防禦塔傷害統計面板');
+  }
+
+  closeDamageStatsModal() {
+    if (this.state === 'paused') {
+      this.state = this.previousState || 'planning';
+      this.previousState = null;
+    }
+    document.getElementById('damage-stats-modal')?.classList.add('hidden');
+    this.sfx.play('tap');
   }
 
   closeAcquiredTalentsModal() {
@@ -8347,7 +8958,11 @@ class Game {
           if (!enemy.alive || proj.piercedEnemies.has(enemy)) continue;
           const d = dist(proj.x, proj.y, enemy.x, enemy.y);
           if (d <= proj.splashRadius) {
-            enemy.takeDamage(proj.damage * 0.5, proj.slowFactor, proj.slowDuration, 0, 0, proj.damageType, this);
+            const splashDmg = proj.damage * 0.5;
+            if (proj.tower) {
+              proj.tower.totalDamageDealt = (proj.tower.totalDamageDealt || 0) + splashDmg;
+            }
+            enemy.takeDamage(splashDmg, proj.slowFactor, proj.slowDuration, 0, 0, proj.damageType, this);
           }
         }
         // Splash effect
@@ -8441,26 +9056,7 @@ class Game {
       if (this.nextWaveCountdown !== null) {
         this.nextWaveCountdown -= dt;
         if (this.nextWaveCountdown <= 0) {
-          this.nextWaveCountdown = null;
-          this.currentWave++;
-          
-          // 遺物每波結束 Hook
-          if (typeof relicManager !== 'undefined') {
-            relicManager.onWaveEnd(this.currentWave, this);
-          }
-
-          // 🔮 幻境秘境：每滿 3 波（第 3, 6, 9, 12, 15... 波），觸發三選一神力抽卡
-          if (isRogue && this.currentWave % 3 === 0) {
-            this.openTalentPickModal();
-          } else {
-            this.waveManager.startWave(this.currentWave);
-            if (typeof relicManager !== 'undefined') {
-              relicManager.onWaveStart(this.currentWave, this);
-            }
-            this.sfx.play('wave');
-            this.showToast(`第 ${this.currentWave + 1} 波降臨！`);
-          }
-          this.updateUI();
+          this.advanceToNextWave(false);
         }
       }
       this.checkWaveComplete();

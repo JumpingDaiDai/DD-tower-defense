@@ -12,7 +12,7 @@
   <meta name="theme-color" content="#fffdf5">
   <title>🌳 精靈樹保衛戰 - DD Tower Defense</title>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1.11.2">
+  <link rel="stylesheet" href="style.css?v=1.13.0">
   <style>
     /* 強制確保頂部狀態列與底部卡槽為深棕琥珀色（非綠色） */
     #top-bar, #tower-panel {
@@ -56,12 +56,16 @@
     <div id="game-viewport">
       <canvas id="game-canvas"></canvas>
 
-      <!-- 幻境神力天賦按鈕 (浮動在右上方，點開展開詳情面板) -->
-      <button id="relic-btn" class="relic-hud-btn hidden" title="查看本局已獲取神力天賦">
-        <span class="relic-btn-icon">🔮</span>
-        <span class="relic-btn-text">神力</span>
-        <span id="relic-btn-count" class="relic-btn-count">0</span>
-      </button>
+      <!-- 右上方 HUD 浮動按鈕容器 (傷害統計與神力詳情) -->
+      <div id="hud-top-actions" class="hud-top-actions-wrap">
+        <button id="dps-btn" class="hud-action-pill-btn" title="查看各防禦塔累計輸出傷害">
+          <span class="hud-action-btn-text">傷害</span>
+        </button>
+        <button id="relic-btn" class="hud-action-pill-btn hidden" title="查看本局神力累計總效果">
+          <span class="hud-action-btn-text">神力</span>
+          <span id="relic-btn-count" class="relic-btn-count">0</span>
+        </button>
+      </div>
 
       <!-- 玩家主動技能快捷欄 (浮動在畫布右下方，專屬手繪 Canvas 魔法圖示) -->
       <div id="skill-bar">
@@ -208,7 +212,11 @@
 
         <button id="start-btn" class="btn-primary">
           <svg class="btn-icon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
-          <span>開始守衛</span>
+          <span id="start-btn-text">開始守衛</span>
+        </button>
+
+        <button id="rogue-abandon-btn" class="hidden" style="margin-top:8px;background:rgba(239,83,80,0.15);border:1px solid rgba(239,83,80,0.3);color:#e57373;font-size:12px;font-weight:700;cursor:pointer;padding:6px 14px;border-radius:20px;letter-spacing:0.5px;">
+          放棄進度，從第 1 波重開
         </button>
 
         <button id="reset-data-btn" style="margin-top:10px;background:none;border:none;color:#b0a89e;font-size:11px;text-decoration:underline;cursor:pointer;padding:4px;">
@@ -248,16 +256,27 @@
       </div>
     </div>
 
-    <!-- 🔮 已獲取神力天賦詳情彈窗 (點擊右上方 #relic-btn 展開) -->
-    <div id="acquired-talents-modal" class="screen hidden">
+    <!-- 🔮 自然神力累計總效果彈窗 (點擊右上方 #relic-btn 展開) -->
+    <div id="acquired-talents-modal" class="hidden">
       <div class="screen-content talent-modal-content" style="max-height: 82vh;">
         <div class="talent-modal-header">
-          <span class="talent-header-icon">🔮</span>
-          <h2>已獲取自然神力</h2>
-          <p class="talent-modal-subtitle" id="acquired-talents-subtitle">本局累計已啟動的神力天賦詳情</p>
+          <h2>自然神力累計效果</h2>
+          <p class="talent-modal-subtitle" id="acquired-talents-subtitle">本局神力天賦總效果一覽</p>
         </div>
-        <div id="acquired-talents-list" class="talent-cards-container" style="max-height: 52vh; overflow-y: auto;"></div>
+        <div id="acquired-summary-list" class="talent-cards-container" style="max-height: 52vh; overflow-y: auto;"></div>
         <button id="close-acquired-talents-btn" class="btn-primary" style="margin-top: 14px; width: 100%;">返回戰鬥</button>
+      </div>
+    </div>
+
+    <!-- ⚔️ 塔傷害統計彈窗 (點擊右上方 #dps-btn 展開，浮動半透明疊層) -->
+    <div id="damage-stats-modal" class="hidden">
+      <div class="screen-content talent-modal-content" style="max-height: 82vh;">
+        <div class="talent-modal-header">
+          <h2>各防禦塔輸出統計</h2>
+          <p class="talent-modal-subtitle" id="damage-stats-subtitle">本局戰鬥即時累計傷害排行</p>
+        </div>
+        <div id="damage-stats-list" class="talent-cards-container" style="max-height: 52vh; overflow-y: auto;"></div>
+        <button id="close-damage-stats-btn" class="btn-primary" style="margin-top: 14px; width: 100%;">返回戰鬥</button>
       </div>
     </div>
 
@@ -468,6 +487,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=1.11.2"></script>
+  <script src="game.js?v=1.13.0"></script>
 </body>
 </html>

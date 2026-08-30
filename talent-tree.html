@@ -200,10 +200,11 @@
   <div class="container">
     <div class="header">
       <h1>🔮 幻境秘境天賦技能樹</h1>
-      <p class="subtitle">Roguelike「幻境秘境」模式的三選一天賦系統。四大流派，每個流派 2 條分支，各自可獨立升到 Lv.3；兩條指定分支都到達門檻等級時，會解鎖只出現一次的隱藏合成天賦。</p>
+      <p class="subtitle">Roguelike「幻境秘境」模式的三選一天賦系統。八大流派，每個流派 3 條分支，各自可獨立升到 Lv.3；指定分支到達門檻等級時，會解鎖只出現一次的隱藏質變天賦。</p>
       <div class="rule-bar">
         <span class="rule-chip">🔁 分支最多抽 3 次，滿 Lv.3 不再出現</span>
         <span class="rule-chip">🔒 隱藏天賦門檻達成前不會出現，抽走即永久消失</span>
+        <span class="rule-chip">🛡️ 百分比傷害與斬殺對首領（Boss）設有保護上限與機制轉化</span>
         <span class="rule-chip">🎲 不分稀有度，符合條件的候選出現機率一律相同</span>
       </div>
     </div>
@@ -240,9 +241,9 @@
           <div>
             <div class="branch-name">強化冰爆</div>
             <ul class="level-list">
-              <li><span class="lv-tag">Lv.1</span><span>解鎖冰爆：擊殺緩速中的敵人，55px 範圍造成 20% 最大血量爆炸傷害</span></li>
-              <li><span class="lv-tag">Lv.2</span><span>範圍擴大至 70px，傷害提升至 27% 最大血量</span></li>
-              <li><span class="lv-tag">Lv.3</span><span>範圍擴大至 85px，傷害提升至 34%，並附加 1.5 秒緩速</span></li>
+              <li><span class="lv-tag">Lv.1</span><span>解鎖冰爆：擊殺緩速中的敵人，55px 範圍造成 20% 最大血量爆炸傷害（最高 250 點）</span></li>
+              <li><span class="lv-tag">Lv.2</span><span>範圍擴大至 70px，傷害提升至 27% 最大血量（最高 250 點）</span></li>
+              <li><span class="lv-tag">Lv.3</span><span>範圍擴大至 85px，傷害提升至 34%（最高 250 點），並附加 1.5 秒緩速</span></li>
             </ul>
           </div>
           <div>
@@ -311,7 +312,7 @@
             </div>
             <span class="hidden-tag">質變</span>
           </div>
-          <p class="hidden-desc">疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且中毒中血量低於 12% 的敵人會被毒素直接了結</p>
+          <p class="hidden-desc">疫病擴散不再受距離限制——中毒敵人死亡時，瘟疫瞬間感染場上所有敵人；且殘血 12% 敵人直接被毒素斬殺（首領免疫直接斬殺，改為承受 1.5 倍加深毒傷）</p>
         </div>
       </div>
 
@@ -610,7 +611,7 @@
             </div>
             <span class="hidden-tag">質變</span>
           </div>
-          <p class="hidden-desc">日光雷射消滅任何敵人時，引發超新星核爆，對直徑 90px 內所有敵人造成該敵人最大血量 40% 的高熱魔法爆炸傷害</p>
+          <p class="hidden-desc">日光雷射消滅任何敵人時，引發超新星核爆，對直徑 90px 內所有敵人造成該敵人最大血量 25% 的高熱魔法爆炸傷害（最高 350 點）</p>
         </div>
       </div>
 

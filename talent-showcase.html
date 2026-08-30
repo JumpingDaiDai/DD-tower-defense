@@ -280,54 +280,108 @@
   </div>
 
   <script>
-    // 天賦展示數據庫
+    // 全 8 大防禦塔全分支 Lv.1~3 與隱藏質變天賦完整數據庫
     const TALENTS_DATABASE = [
-      // 🌸 粉櫻箭塔專屬
-      { id: 'petal_speed', name: '急速射擊 Lv.1', desc: '粉櫻箭射速提升 20%，射程增加 10%', rarity: 'common', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
-      { id: 'petal_penetrate', name: '穿甲重矢 Lv.2', desc: '粉櫻箭傷害 +25%，無視敵人 60% 物理抗性', rarity: 'rare', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
-      { id: 'petal_blossom_storm', name: '萬花齊放', desc: '【質變】擊中原地炸裂 3 枚追蹤花瓣，追擊周遭敵人造成 60% 傷害。', rarity: 'legendary', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔隱藏質變' },
+      // 🌸 粉櫻箭塔 (petal) - 3 分支 × 3 等級 + 1 質變
+      { id: 'petal_speed_1', name: '風馳箭雨 Lv.1', desc: '粉櫻箭射速 +20%，射程 +10%', rarity: 'common', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_speed_2', name: '風馳箭雨 Lv.2', desc: '粉櫻箭射速再 +25%，射程再 +10%', rarity: 'rare', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_speed_3', name: '風馳箭雨 Lv.3', desc: '粉櫻箭射速再 +30%，射程再 +15%', rarity: 'epic', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_pierce_armor_1', name: '穿甲重矢 Lv.1', desc: '粉櫻箭傷害 +25%，無視敵人 30% 物理抗性', rarity: 'common', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_pierce_armor_2', name: '穿甲重矢 Lv.2', desc: '粉櫻箭傷害再 +25%，無視敵人 60% 物理抗性', rarity: 'rare', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_pierce_armor_3', name: '穿甲重矢 Lv.3', desc: '粉櫻箭傷害 +35%，無視 100% 物理抗性（全額真傷）', rarity: 'epic', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_multishot_1', name: '多重齊射 Lv.1', desc: '粉櫻塔攻擊有 25% 機率額外發射 1 枚散射花箭', rarity: 'common', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_multishot_2', name: '多重齊射 Lv.2', desc: '多重箭機率提升至 45%，且散射箭傷害提升至 80%', rarity: 'rare', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_multishot_3', name: '多重齊射 Lv.3', desc: '多重箭機率提升至 70%，且每次散射 2 枚全額花箭', rarity: 'epic', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔專屬' },
+      { id: 'petal_blossom_storm', name: '萬花齊放', desc: '【質變】擊中炸裂 3 枚追蹤花瓣，自動追擊周遭造成 60% 傷害。', rarity: 'legendary', towerKey: 'petal', categoryName: '🌸 粉櫻箭塔隱藏質變' },
 
-      // ❄️ 極光冰晶專屬
-      { id: 'ice_pierce', name: '強化貫穿 Lv.1', desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%', rarity: 'common', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
-      { id: 'ice_frost_field', name: '極地霜環 Lv.2', desc: '霜寒光環擴大至 125px，跑速 -25%，光環內受魔傷 +15%', rarity: 'rare', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      // ❄️ 極光冰晶塔 (ice_crystal) - 3 分支 × 3 等級 + 1 質變
+      { id: 'ice_pierce_1', name: '強化貫穿 Lv.1', desc: '冰晶塔穿透數量 +1 體，減速強度再提升 8%', rarity: 'common', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_pierce_2', name: '強化貫穿 Lv.2', desc: '穿透數量再 +1 體，減速強度再提升 8%', rarity: 'rare', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_pierce_3', name: '強化貫穿 Lv.3', desc: '穿透數量 +2 體，減速強度再提升 10%', rarity: 'epic', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_shatter_1', name: '強化冰爆 Lv.1', desc: '解鎖冰爆：擊殺緩速目標時，55px 範圍造成 20% 最大血量傷害（最高 250 點）', rarity: 'common', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_shatter_2', name: '強化冰爆 Lv.2', desc: '冰爆範圍擴至 70px，爆炸傷害提升至 27% 最大血量（最高 250 點）', rarity: 'rare', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_shatter_3', name: '強化冰爆 Lv.3', desc: '冰爆範圍 85px，傷害 34% 最大血量（最高 250 點）且附加 1.5 秒緩速', rarity: 'epic', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_aura_1', name: '極地霜環 Lv.1', desc: '冰晶塔周圍 100px 散發霜環，踏入者跑速降低 15%', rarity: 'common', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_aura_2', name: '極地霜環 Lv.2', desc: '霜寒光環擴至 125px，跑速 -25%，受魔傷 +15%', rarity: 'rare', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
+      { id: 'ice_aura_3', name: '極地霜環 Lv.3', desc: '霜寒光環擴至 150px，跑速 -35%，受魔傷 +30%', rarity: 'epic', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔專屬' },
       { id: 'absolute_zero', name: '絕對凍土', desc: '【質變】冰晶塔任何命中皆觸發冰爆，被炸死敵人連鎖引爆，最多連鎖 5 次。', rarity: 'legendary', towerKey: 'ice_crystal', categoryName: '❄️ 極光冰晶塔隱藏質變' },
 
-      // ⚡ 紫晶雷電法杖專屬
-      { id: 'chain_reach', name: '強化連鎖 Lv.1', desc: '紫晶雷電彈射次數 +1 次，彈射範圍 +12%', rarity: 'common', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
-      { id: 'crit_strike', name: '強化暴擊 Lv.2', desc: '解鎖暴擊：所有植物塔 15% 機率造成 2.0 倍暴擊傷害', rarity: 'rare', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      // ⚡ 紫晶雷電塔 (lavender) - 3 分支 × 3 等級 + 1 質變
+      { id: 'chain_reach_1', name: '強化連鎖 Lv.1', desc: '彈射次數 +1 次，彈射範圍 +12%', rarity: 'common', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'chain_reach_2', name: '強化連鎖 Lv.2', desc: '彈射次數再 +1 次，彈射範圍再 +12%', rarity: 'rare', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'chain_reach_3', name: '強化連鎖 Lv.3', desc: '彈射次數再 +1 次，彈射範圍再 +13%', rarity: 'epic', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'crit_strike_1', name: '強化暴擊 Lv.1', desc: '解鎖暴擊：所有植物塔 10% 機率造成 1.8 倍暴擊傷害', rarity: 'common', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'crit_strike_2', name: '強化暴擊 Lv.2', desc: '暴擊機率提升至 15%，倍率提升至 2.0 倍', rarity: 'rare', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'crit_strike_3', name: '強化暴擊 Lv.3', desc: '暴擊機率提升至 20%，倍率提升至 2.4 倍', rarity: 'epic', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'electromagnetic_field_1', name: '電磁感應 Lv.1', desc: '電弧每次命中，使敵人陷入 1.5 秒感電（受魔傷 +15%）', rarity: 'common', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'electromagnetic_field_2', name: '電磁感應 Lv.2', desc: '感電增傷 +25%，彈射衰減由 20% 減半為 10%', rarity: 'rare', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
+      { id: 'electromagnetic_field_3', name: '電磁感應 Lv.3', desc: '感電增傷 +40%，且彈射傷害不再衰減（每擊 100%）', rarity: 'epic', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔專屬' },
       { id: 'thunder_overload', name: '雷霆過載', desc: '【質變】電弧每次彈射獨立判定暴擊，且全額無衰減，連鎖越多暴擊越強。', rarity: 'legendary', towerKey: 'lavender', categoryName: '⚡ 紫晶雷電塔隱藏質變' },
 
-      // 🍄 魔幻劇毒蘑菇專屬
-      { id: 'mushroom_poison_dps', name: '強化猛毒 Lv.1', desc: '蘑菇毒傷 +15%，毒素持續時間 +1 秒', rarity: 'common', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
-      { id: 'mushroom_corrode', name: '腐蝕溶甲 Lv.2', desc: '中毒敵人受物理與魔傷 +25%，且毒傷跳頻加快 30%', rarity: 'rare', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
-      { id: 'lethal_plague', name: '絕命疫爆', desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺。', rarity: 'legendary', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔隱藏質變' },
+      // 🍄 魔幻蘑菇塔 (mushroom) - 3 分支 × 3 等級 + 1 質變
+      { id: 'toxin_potency_1', name: '強化猛毒 Lv.1', desc: '毒傷 +15%，持續時間 +1 秒', rarity: 'common', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_potency_2', name: '強化猛毒 Lv.2', desc: '毒傷再 +15%，持續時間再 +1 秒', rarity: 'rare', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_potency_3', name: '強化猛毒 Lv.3', desc: '毒傷再 +20%，持續時間再 +1 秒', rarity: 'epic', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_spread_1', name: '強化擴散 Lv.1', desc: '解鎖擴散：中毒死亡時，60px 內感染 70% 毒素', rarity: 'common', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_spread_2', name: '強化擴散 Lv.2', desc: '擴散半徑 75px，感染強度提升至 100%', rarity: 'rare', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_spread_3', name: '強化擴散 Lv.3', desc: '擴散半徑 95px，感染 100% 且具備無限連鎖傳染', rarity: 'epic', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_corrosion_1', name: '腐蝕溶甲 Lv.1', desc: '中毒敵人護甲遭受腐蝕：受到的所有物理與魔法傷害 +15%', rarity: 'common', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_corrosion_2', name: '腐蝕溶甲 Lv.2', desc: '受傷加深提升至 +25%，且毒傷跳傷害頻率加快 30%', rarity: 'rare', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'toxin_corrosion_3', name: '腐蝕溶甲 Lv.3', desc: '受傷加深提升至 +40%，且中毒期間敵人移動速度額外降低 20%', rarity: 'epic', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔專屬' },
+      { id: 'lethal_plague', name: '絕命疫爆', desc: '【質變】疫病擴散無距離限制，全場傳染；且殘血 12% 敵人直接被毒素斬殺（首領免疫直接斬殺，改為承受 1.5 倍加深毒傷）。', rarity: 'legendary', towerKey: 'mushroom', categoryName: '🍄 魔幻蘑菇塔隱藏質變' },
 
-      // 🌲 古木荊棘牢籠專屬
-      { id: 'treant_entangle', name: '森之纏繞 Lv.1', desc: '古木定身減速強度提升至 75%，持續時間 +1.0 秒', rarity: 'common', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
-      { id: 'treant_thorns_burst', name: '荊棘倒刺 Lv.2', desc: '定身受傷加深 +35%，且古木攻擊附帶 50px 劇烈震裂波', rarity: 'rare', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
-      { id: 'ancient_guardian', name: '遠古守護者', desc: '【質變】古木牢籠化身大地圖騰：周圍 130px 所有塔攻擊力 +35%、射速 +20%。', rarity: 'legendary', towerKey: 'treant', categoryName: '🌲 古木荊棘塔隱藏質變' },
+      // 🌲 古木荊棘塔 (treant) - 3 分支 × 3 等級 + 1 質變
+      { id: 'treant_entangle_1', name: '森之纏繞 Lv.1', desc: '古木定身減速強度提升至 75%，持續時間 +1.0 秒', rarity: 'common', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_entangle_2', name: '森之纏繞 Lv.2', desc: '古木定身減速強度提升至 85%，持續時間再 +1.0 秒', rarity: 'rare', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_entangle_3', name: '森之纏繞 Lv.3', desc: '古木定身強度提升至 95%，持續時間再 +1.5 秒', rarity: 'epic', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_thorns_1', name: '荊棘倒刺 Lv.1', desc: '處於古木定身/緩速狀態下的敵人，受傷加深 +20%', rarity: 'common', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_thorns_2', name: '荊棘倒刺 Lv.2', desc: '定身受傷加深 +35%，且古木攻擊附帶 50px 劇烈震裂波', rarity: 'rare', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_thorns_3', name: '荊棘倒刺 Lv.3', desc: '定身受傷加深 +50%，每定身 1 秒承受 100% 攻擊力真傷', rarity: 'epic', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_earthquake_1', name: '大地震撼 Lv.1', desc: '古木牢籠攻擊範圍 +15px，擊中震飛 60px 敵人並打斷衝刺', rarity: 'common', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_earthquake_2', name: '大地震撼 Lv.2', desc: '攻擊範圍再 +20px，震裂波傷害 100% 且附加 1 秒眩暈', rarity: 'rare', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'treant_earthquake_3', name: '大地震撼 Lv.3', desc: '大地震波擴及全圖 100px，全場怪物短暫停滯 1.2 秒', rarity: 'epic', towerKey: 'treant', categoryName: '🌲 古木荊棘塔專屬' },
+      { id: 'ancient_guardian', name: '遠古守護者', desc: '【質變】古木圖騰：周圍 130px 所有塔攻擊 +35%、射速 +20%。', rarity: 'legendary', towerKey: 'treant', categoryName: '🌲 古木荊棘塔隱藏質變' },
 
-      // 💣 熔岩熾火巨砲專屬
-      { id: 'cannon_blast', name: '核能彈頭 Lv.1', desc: '熔岩巨砲爆炸半徑 +20px，基礎傷害 +20%', rarity: 'common', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
-      { id: 'cannon_shrapnel', name: '焦土餘燼 Lv.2', desc: '爆炸留下 4.0 秒烈焰焦土，燃燒傷害 55/秒', rarity: 'rare', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
-      { id: 'orbital_cannon', name: '天基毀滅砲', desc: '【質變】熔岩巨砲每第 4 發升級為天基天火，覆蓋全場 180px 造成 3 倍真傷。', rarity: 'legendary', towerKey: 'cannon', categoryName: '💣 熾火巨砲隱藏質變' },
+      // 💣 熾火巨砲 (cannon) - 3 分支 × 3 等級 + 1 質變
+      { id: 'cannon_blast_1', name: '核能彈頭 Lv.1', desc: '熔岩巨砲爆炸半徑 +20px，基礎傷害 +20%', rarity: 'common', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_blast_2', name: '核能彈頭 Lv.2', desc: '爆炸半徑再 +20px，基礎傷害再 +25%', rarity: 'rare', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_blast_3', name: '核能彈頭 Lv.3', desc: '爆炸半徑 +25px，傷害 +30%，中心 40px 雙倍傷害', rarity: 'epic', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_scorched_earth_1', name: '焦土餘燼 Lv.1', desc: '解鎖焦土：地面留下 2.5 秒焦土，每秒受到 30 點燃燒傷害', rarity: 'common', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_scorched_earth_2', name: '焦土餘燼 Lv.2', desc: '焦土持續時間提升至 4.0 秒，燃燒傷害提升至 55/秒', rarity: 'rare', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_scorched_earth_3', name: '焦土餘燼 Lv.3', desc: '焦土持續 5.5 秒，燃燒 85/秒且降低敵人 25% 跑速', rarity: 'epic', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_cluster_shrapnel_1', name: '集束彈片 Lv.1', desc: '爆炸噴射 4 枚高溫彈片，對 70px 隨機敵人造成 35 點傷害', rarity: 'common', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_cluster_shrapnel_2', name: '集束彈片 Lv.2', desc: '彈片數量提升至 6 枚，每枚傷害提升至 60 點', rarity: 'rare', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'cannon_cluster_shrapnel_3', name: '集束彈片 Lv.3', desc: '彈片提升至 8 枚，每枚傷害 95 點且附帶微震擊退', rarity: 'epic', towerKey: 'cannon', categoryName: '💣 熾火巨砲專屬' },
+      { id: 'orbital_cannon', name: '天基毀滅砲', desc: '【質變】巨砲第 4 發升級天基天火，全場 180px 造成 3 倍真傷。', rarity: 'legendary', towerKey: 'cannon', categoryName: '💣 熾火巨砲隱藏質變' },
 
-      // 🔦 超弦日光雷射專屬
-      { id: 'laser_overcharge', name: '超導聚能 Lv.1', desc: '日光雷射射速 +15%，貫穿敵人數量 +1 體', rarity: 'common', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
-      { id: 'laser_prismatic_refract', name: '光束折射 Lv.2', desc: '穿透敵人後 50% 機率折射副光束（75% 傷害）打擊鄰近敵人', rarity: 'rare', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
-      { id: 'supernova_core', name: '超新星爆發', desc: '【質變】雷射消滅敵人時引發超新星核爆，對 90px 敵人造成最大血量 40% 傷害。', rarity: 'legendary', towerKey: 'laser', categoryName: '🔦 日光雷射塔隱藏質變' },
+      // 🔦 日光雷射塔 (laser) - 3 分支 × 3 等級 + 1 質變
+      { id: 'laser_overcharge_1', name: '超導聚能 Lv.1', desc: '日光雷射射速 +15%，貫穿敵人數量 +1 體', rarity: 'common', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_overcharge_2', name: '超導聚能 Lv.2', desc: '射速再 +20%，貫穿數量再 +1 體', rarity: 'rare', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_overcharge_3', name: '超導聚能 Lv.3', desc: '射速再 +25%，貫穿數量再 +2 體，且穿透傷害不再遞減衰減', rarity: 'epic', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_refract_1', name: '光束折射 Lv.1', desc: '雷射穿透敵人後，30% 機率折射副光束（50% 傷害）打擊鄰近敵人', rarity: 'common', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_refract_2', name: '光束折射 Lv.2', desc: '折射機率提升至 50%，副光束傷害提升至 75%', rarity: 'rare', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_refract_3', name: '光束折射 Lv.3', desc: '折射機率提升至 75%，副光束傷害 100%，並折射至 2 名敵人', rarity: 'epic', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_focus_beam_1', name: '烈陽聚焦 Lv.1', desc: '雷射持續打擊同一敵人時，每次增傷 15%（最多 3 層）', rarity: 'common', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_focus_beam_2', name: '烈陽聚焦 Lv.2', desc: '聚焦每層增傷 25%（最多 4 層），打擊 Boss 額外 +20%', rarity: 'rare', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'laser_focus_beam_3', name: '烈陽聚焦 Lv.3', desc: '聚焦每層增傷 35%（最多 5 層），打擊 Boss 額外 +40%', rarity: 'epic', towerKey: 'laser', categoryName: '🔦 日光雷射塔專屬' },
+      { id: 'supernova_core', name: '超新星爆發', desc: '【質變】消滅敵人引發超新星核爆，90px 造成最大血量 25% 傷害（對首領最高 350 點）。', rarity: 'legendary', towerKey: 'laser', categoryName: '🔦 日光雷射塔隱藏質變' },
 
-      // 🌻 陽光向日葵專屬
+      // 🌻 陽光向日葵 (sunflower) - 1 專屬分支 × 3 等級
       { id: 'gold_boost_1', name: '強化產金 Lv.1', desc: '向日葵產金 +20%，每波結束額外 +40 金幣', rarity: 'common', towerKey: 'sunflower', categoryName: '🌻 向日葵專屬' },
-      { id: 'gold_boost_3', name: '強化產金 Lv.3', desc: '向日葵產金 +25%，每波結束額外 +120 金幣', rarity: 'epic', towerKey: 'sunflower', categoryName: '🌻 向日葵專屬' }
+      { id: 'gold_boost_2', name: '強化產金 Lv.2', desc: '向日葵產金再 +20%，每波結束額外再 +40 金幣', rarity: 'rare', towerKey: 'sunflower', categoryName: '🌻 向日葵專屬' },
+      { id: 'gold_boost_3', name: '強化產金 Lv.3', desc: '向日葵產金再 +25%，每波結束額外再 +40 金幣', rarity: 'epic', towerKey: 'sunflower', categoryName: '🌻 向日葵專屬' }
     ];
 
     const SPECIAL_TALENTS = [
-      // 🌟 非單塔專屬天賦
-      { id: 'solar_wrath', name: '日輪天罰・金耀天劫', desc: '【專屬技能】戰鬥中消耗 10% 現有金幣，召喚全屏日冕金光造成等額真實傷害！', rarity: 'legendary', specialIconKey: 'solar_wrath', categoryName: '☀️ 局內專屬主動技能' },
-      { id: 'bountiful_blessing', name: '豐饒祝福', desc: '【質變】全場擊殺額外獲得 50% 金幣，每波結束基地自動回復 1 點生命。', rarity: 'legendary', specialIconKey: 'bountiful_blessing', categoryName: '💖 全域經濟 / 回復客製圖標' },
-      { id: 'tower_growth', name: '強化生長 Lv.2', desc: '所有植物防禦塔射速再 +7%，射程再 +5%', rarity: 'rare', specialIconKey: 'nature_growth', categoryName: '🍃 全植物塔增益客製圖標' },
-      { id: 'gold_interest', name: '利滾利息 Lv.2', desc: '每波結束時，依現有金幣獲得 7% 銀行利息（上限 +120 💰）', rarity: 'rare', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息客製圖標' }
+      // 🌟 非單塔專屬天賦 (向日葵流派中的通用分支 + 隱藏質變/跨流派主動技)
+      { id: 'tower_growth_1', name: '強化生長 Lv.1', desc: '所有植物塔射速 +7%，射程 +5%', rarity: 'common', specialIconKey: 'nature_growth', categoryName: '🍃 全植物塔增益' },
+      { id: 'tower_growth_2', name: '強化生長 Lv.2', desc: '射速再 +7%，射程再 +5%', rarity: 'rare', specialIconKey: 'nature_growth', categoryName: '🍃 全植物塔增益' },
+      { id: 'tower_growth_3', name: '強化生長 Lv.3', desc: '射速再 +8%，射程再 +5%', rarity: 'epic', specialIconKey: 'nature_growth', categoryName: '🍃 全植物塔增益' },
+      { id: 'gold_interest_1', name: '利滾利息 Lv.1', desc: '每波結束時，依現有金幣獲得 4% 利息獎勵（上限 +60 金幣）', rarity: 'common', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息' },
+      { id: 'gold_interest_2', name: '利滾利息 Lv.2', desc: '利息比率提升至 7%（上限 +120 金幣）', rarity: 'rare', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息' },
+      { id: 'gold_interest_3', name: '利滾利息 Lv.3', desc: '利息提升至 10%（上限 +200 💰），全塔升級費 -15%', rarity: 'epic', specialIconKey: 'gold_interest', categoryName: '🪙 金庫金融利息' },
+      { id: 'bountiful_blessing', name: '豐饒祝福', desc: '【質變】全場擊殺額外獲得 50% 金幣，每波結束基地自動回復 1 點生命。', rarity: 'legendary', specialIconKey: 'bountiful_blessing', categoryName: '💖 全域經濟 / 回復' },
+      { id: 'solar_wrath', name: '日輪天罰・金耀天劫', desc: '【專屬技能】戰鬥中消耗 10% 現有金幣，召喚全屏日冕金光造成等額真實傷害！', rarity: 'legendary', specialIconKey: 'solar_wrath', categoryName: '☀️ 跨流派主動技能' }
     ];
 
     // 遊戲本體精緻手繪 Vector Sprites (與遊戲內完全一致)
