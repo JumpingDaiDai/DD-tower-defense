@@ -1916,6 +1916,7 @@ html, body {
   flex-direction: column;
   gap: 9px;
   width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .talent-card {
