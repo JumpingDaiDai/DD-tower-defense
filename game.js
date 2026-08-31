@@ -76,7 +76,7 @@ dbgLog('Script loading...');
 
 // ─── 1. 遊戲設定 (總規格 6×8，外圍一圈行徑，中央 4×6 建造) ───────────
 const CONFIG = {
-  VERSION: 'v1.13.0',
+  VERSION: 'v1.13.1-dev',
   COLS: 6,
   ROWS: 8,
   CELL_SIZE: 80, // 超大好按格子 (480x640 完美填滿手機螢幕)
@@ -6528,7 +6528,7 @@ class Game {
         e.preventDefault();
         return;
       }
-      const inScrollableArea = e.target && e.target.closest('.screen, #tower-list, #debug-log, #debug-test-panel');
+      const inScrollableArea = e.target && e.target.closest('.screen, #tower-list, #debug-log, #debug-test-panel, .talent-cards-container');
       if (!inScrollableArea && e.cancelable) {
         e.preventDefault();
       }
